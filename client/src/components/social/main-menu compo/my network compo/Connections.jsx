@@ -27,7 +27,7 @@ const Connections = () => {
                 </p>
               </div>
               <div className="flex-row space-y-3 justify-center mt-2 items-center">
-                {connectionList.length > 0 ? (
+                {connectionList && connectionList.length > 0 ? (
                   connectionList.map((user) => {
                     return (
                       <div
