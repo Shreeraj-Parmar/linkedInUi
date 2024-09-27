@@ -26,13 +26,13 @@ const Connections = () => {
                   My Connections
                 </p>
               </div>
-              <div className="flex justify-center mt-2 items-center">
+              <div className="flex-row space-y-3 justify-center mt-2 items-center">
                 {connectionList.length > 0 ? (
                   connectionList.map((user) => {
                     return (
                       <div
                         key={user._id}
-                        className="bg-[#293138] flex items-center max-w-[100%]  w-[90%] p-2 min-h-[10%] rounded-md "
+                        className="bg-[#293138] m-auto flex items-center max-w-[100%]  w-[90%] p-2 min-h-[10%] rounded-md "
                       >
                         <div className="w-[] p-1 ">
                           <img
@@ -42,7 +42,10 @@ const Connections = () => {
                           />
                         </div>
                         <div className=" flex-row lg:min-w-[200px] ml-2 space-y-[-3px]">
-                          <p className="text-[#e8e8e8]"> {user.name}</p>
+                          <p className="text-[#e8e8e8] hover:text-blue-500 hover:underline cursor-pointer">
+                            {" "}
+                            {user.name}
+                          </p>
                           <p className="text-[#959799]"> {user.city}</p>
                           <p className="text-[#959799]">{user.gender}</p>
                         </div>

@@ -62,7 +62,9 @@ const MyNetwork = () => {
                 <div>
                   <div
                     onClick={() => {
-                      navigate("/my-network/connection");
+                      setTimeout(() => {
+                        navigate("/my-network/connection");
+                      }, 500);
                     }}
                     className="network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#2C2F33]"
                   >
@@ -77,7 +79,9 @@ const MyNetwork = () => {
                   </div>
                   <div
                     onClick={() => {
-                      navigate("/my-network/follow");
+                      setTimeout(() => {
+                        navigate("/my-network/follow");
+                      }, 500);
                     }}
                     className="network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#2C2F33]"
                   >
@@ -137,7 +141,10 @@ const MyNetwork = () => {
                             />
                           </div>
                           <div className=" flex-row ml-3 lg:min-w-[200px]  space-y-[-3px]">
-                            <p className="text-[#e8e8e8]"> {user.name}</p>
+                            <p className="text-[#e8e8e8] hover:text-blue-500 hover:underline cursor-pointer">
+                              {" "}
+                              {user.name}
+                            </p>
                             <p className="text-[#959799]"> {user.city}</p>
                             <p className="text-[#959799]">{user.gender}</p>
                           </div>

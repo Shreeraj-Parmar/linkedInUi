@@ -13,7 +13,7 @@ const Suggest = ({ setLoginDialog, loginDialog, isLogin }) => {
   }, [isLogin]);
 
   return (
-    <div className="text-[#DBDBDC] bg-[#1B1F23] h-[60%] border border-red-300 max-h-[70%] rounded-md p-2 ">
+    <div className="text-[#DBDBDC] bg-[#1B1F23] h-[60%]  max-h-[70%] rounded-md p-3 ">
       <p className="font-semibold">Near by Your Location</p>
       <div className="overflow-y-scroll max-h-[90%] rounded-md mt-2">
         {dataAccSameCity && dataAccSameCity[0] ? (

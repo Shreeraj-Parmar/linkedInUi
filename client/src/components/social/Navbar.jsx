@@ -31,7 +31,9 @@ const Navbar = () => {
             <div
               onClick={() => {
                 setCurrMenu("home");
-                navigate("/social");
+                setTimeout(() => {
+                  navigate("/social");
+                }, 500);
               }}
               className={` ${
                 currMenu === "home" ? "curr-menu-active" : ""
@@ -53,13 +55,15 @@ const Navbar = () => {
             </div>
             <div
               onClick={() => {
-                // if (!isLogin) {
-                //   navigate("/login");
-                //   return;
-                // } else {
-                setCurrMenu("network");
-                navigate("/my-network");
-                // }
+                if (!isLogin) {
+                  navigate("/login");
+                  return;
+                } else {
+                  setCurrMenu("network");
+                  setTimeout(() => {
+                    navigate("/my-network");
+                  }, 500);
+                }
               }}
               className={` ${
                 currMenu === "network" ? "curr-menu-active" : ""

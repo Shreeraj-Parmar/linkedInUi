@@ -98,7 +98,12 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       return new Date(b.createdAt) - new Date(a.createdAt); // Sort posts by newest first
     });
     console.log("sotred post is here", sortedPosts);
+
+    // let finalArr = sortedPosts.filter(
+    //   (post) => post.user._id !== currUserData._id
+
     setAllPost(sortedPosts);
+
     console.log("res.data.allPosts:", res.data.allPosts); // Check if posts are being fetched
     if (!Array.isArray(res.data.allPosts)) {
       console.error("Error: allPosts is not an array", res.data.allPosts);
@@ -252,13 +257,15 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                   <div className="post bg-[#1B1F23]   p-5  rounded-md w-[100%] h-fit space-y-2">
                     <div className="post-des flex    w-[100%] space-x-2">
                       <img
-                        src={post.user.profilePicture || ""}
+                        src={post.user.profilePicture || "/blank.png"}
                         alt="who posted this post"
                         className=" w-[9%] h-[55px] rounded-full"
                       />
-                      <div className="heading-post flex-row space-y-[-5px]">
-                        <p className="hover:underline hover:text-blue-500 cursor-pointer">
-                          {post.user.name}
+                      <div className="heading-post  lg:min-w-[200px] flex-row space-y-[-5px]">
+                        <p className="hover:underline  hover:text-blue-500 cursor-pointer">
+                          {currUserData && post.user._id === currUserData._id
+                            ? "You"
+                            : post.user.name}
                         </p>
                         <p className=" text-[#959799] text-sm   ">
                           {post.user.city.toLowerCase()}
@@ -267,18 +274,33 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           {moment(post.createdAt).fromNow()}
                         </p>
                       </div>
-                      <div className="follow-btn p-2 relative lg:left-72">
-                        <button
-                          onClick={() => {
-                            handleFollowClick(post.user._id);
-                          }}
-                          className="p-2  rounded-md text-[#AAD6FF] hover:bg-[#1F2F41]"
-                        >
-                          {followStatus[post.user._id]
-                            ? "Folllowing"
-                            : "+ Follow"}
-                        </button>
-                      </div>
+                      {currUserData && post.user._id !== currUserData._id ? (
+                        <div className="follow-btn p-2 relative lg:left-52">
+                          <button
+                            onClick={() => {
+                              handleFollowClick(post.user._id);
+                            }}
+                            className="p-2  rounded-md text-[#AAD6FF] hover:bg-[#1F2F41]"
+                          >
+                            {followStatus[post.user._id]
+                              ? "Folllowing"
+                              : "+ Follow"}
+                          </button>
+                        </div>
+                      ) : (
+                        !isLogin && (
+                          <div className="follow-btn p-2 relative lg:left-52">
+                            <button
+                              onClick={() => {
+                                setLoginDialog(true);
+                              }}
+                              className="p-2  rounded-md text-[#AAD6FF] hover:bg-[#1F2F41]"
+                            >
+                              +Follow
+                            </button>
+                          </div>
+                        )
+                      )}
                     </div>
                     <div className="post-text w-[100%]">
                       <div>

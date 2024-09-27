@@ -58,7 +58,10 @@ const Following = () => {
                 />
               </div>
               <div className=" flex-row ml-3 space-y-[-5px] lg:min-w-[200px]">
-                <p className="text-[#e8e8e8]"> {user.name}</p>
+                <p className="text-[#e8e8e8] hover:text-blue-500 hover:underline cursor-pointer">
+                  {" "}
+                  {user.name}
+                </p>
                 <p className="text-[#959799]"> {user.city}</p>
                 <p className="text-[#959799]">{user.gender}</p>
               </div>
