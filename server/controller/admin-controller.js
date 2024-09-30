@@ -7,27 +7,17 @@ export const sendUserDataAccId = async (req, res) => {
   //   console.log(req.params);
   const { id } = req.params;
   try {
-    let checkAdmin = await User.findOne({ email: req.user });
-    console.log("is admin or not :", checkAdmin.isAdmin);
-
-    if (checkAdmin.isAdmin) {
-      let userDataById = await User.findById(id).populate("posts");
-      //   console.log("User data after populate:", userDataById); // Log after populate
-      if (userDataById) {
-        res
-          .status(200)
-          .json({ message: "send data successfully", user: userDataById });
-      } else {
-        res.status(203).json({ message: "user not found !" });
-      }
+    let userDataById = await User.findById(id).select(
+      "name gender education followers connections profilePicture city state country connectionRequests"
+    );
+    //   console.log("User data after populate:", userDataById); // Log after populate
+    if (userDataById) {
+      res
+        .status(200)
+        .json({ message: "send data successfully", user: userDataById });
     } else {
-      res.status(201).json({ message: "You are not admin !" });
+      res.status(203).json({ message: "user not found !" });
     }
-    // if (dataAccCity) {
-    //   res.status(200).json({ dataAccCity });
-    // } else {
-    //   res.status(201).json({ message: "Somthing Error" });
-    // }
   } catch (error) {
     console.log(
       `error while calling sendUserDataAccId API & error is ${error.message}`

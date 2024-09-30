@@ -30,6 +30,7 @@ const UserContext = ({ children }) => {
   const [currUserData, setCurrUserData] = useState(null);
   const [file, setFile] = useState(null);
   const [currMenu, setCurrMenu] = useState("home");
+  const [currConversationId, setCurrConversationId] = useState(null);
 
   return (
     <AllContext.Provider
@@ -53,6 +54,8 @@ const UserContext = ({ children }) => {
         setFile,
         currMenu,
         setCurrMenu,
+        currConversationId,
+        setCurrConversationId,
       }}
     >
       {children}

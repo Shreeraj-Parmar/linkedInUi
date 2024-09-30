@@ -462,3 +462,100 @@ export const updateConnectionReq = async (data) => {
     );
   }
 };
+
+// send coonection req
+export const sendConnect = async (data) => {
+  try {
+    let res = await axios.post(`${API}/connection/req`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling sendConnect & error is : ${error.message}`
+    );
+  }
+};
+
+// set conversation
+export const setConversation = async (data) => {
+  try {
+    let res = await axios.post(`${API}/conversation`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling setConversation & error is : ${error.message}`
+    );
+  }
+};
+
+// get recever Data in coversation
+
+export const getReceiverData = async (data) => {
+  try {
+    let res = await axios.post(`${API}/conversation/receiver`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getReceiverData & error is : ${error.message}`
+    );
+  }
+};
+
+// get aall conversations
+
+export const getAllConversations = async () => {
+  try {
+    let res = await axios.get(`${API}/conversation`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllConversations & error is : ${error.message}`
+    );
+  }
+};
+
+// send msg
+
+export const sendMsg = async (data) => {
+  try {
+    let res = await axios.post(`${API}/msg`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling sendMsg & error is : ${error.message}`);
+  }
+};
+
+// get all msg from conversations
+export const getMsgAccConvId = async (id) => {
+  try {
+    let res = await axios.get(`${API}/msg/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getMsgAccConvId & error is : ${error.message}`
+    );
+  }
+};

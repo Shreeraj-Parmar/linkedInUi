@@ -90,7 +90,7 @@ const Navbar = () => {
                   return;
                 } else {
                   setCurrMenu("message");
-                  // navigate("/message");
+                  navigate("/message");
                 }
               }}
               className={` ${

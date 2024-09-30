@@ -259,13 +259,7 @@ export const saveFollow = async (req, res) => {
       receiver.followers.push(sender._id);
       sender.following.push(receiverId);
       // Add connection if both users are now following each other
-      if (
-        sender.following.includes(receiverId) &&
-        receiver.followers.includes(sender._id)
-      ) {
-        receiver.connections.push(sender._id);
-        sender.connections.push(receiverId);
-      }
+
       await receiver.save();
       await sender.save();
       return res
@@ -482,6 +476,48 @@ export const updateConnectionInDB = async (req, res) => {
   } catch (error) {
     console.log(
       `Error while calling updateConnectionInDB API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// send connection req
+export const sendConnectReq = async (req, res) => {
+  // console.log(req.body);
+  let { receiverId } = req.body;
+
+  try {
+    // Find sender and receiver details
+    let sender = await User.findById(req._id).select(
+      "connections followers following"
+    );
+    let receiver = await User.findById(receiverId).select(
+      "connections followers connectionRequests following"
+    );
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!receiver.connectionRequests.includes(sender._id)) {
+      receiver.connectionRequests.push(sender._id);
+    }
+    if (!receiver.followers.includes(sender._id)) {
+      receiver.followers.push(sender._id);
+    }
+
+    if (!sender.following.includes(receiverId)) {
+      sender.following.push(receiverId);
+    }
+
+    // Save the updated data for both sender and receiver
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).json({ message: "Connectio nreq sends" });
+  } catch (error) {
+    console.log(
+      `Error while calling sendConnectReq API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

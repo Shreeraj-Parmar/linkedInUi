@@ -23,9 +23,10 @@ import {
   checkIfFollowingUser,
 } from "../../services/api.js";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
-  const { setCurrUserData, currUserData } = useContext(AllContext);
+  const { setCurrUserData, currUserData, setCurrMenu } = useContext(AllContext);
   const [commentBoxOpen, setCommentBoxOpen] = useState({});
   const [postDialog, setPostDialog] = useState(false);
   const [allPost, setAllPost] = useState([]);
@@ -36,6 +37,9 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const commentInputRef = useRef();
   const [commentCount, setCommentCount] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
+  const navigate = useNavigate();
+
+  console.log("in postview islogin is: ", isLogin);
 
   const getCommentCountFunction = async () => {
     let res = await getCommentCount();
@@ -262,7 +266,15 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                         className=" w-[9%] h-[55px] rounded-full"
                       />
                       <div className="heading-post  lg:min-w-[200px] flex-row space-y-[-5px]">
-                        <p className="hover:underline  hover:text-blue-500 cursor-pointer">
+                        <p
+                          onClick={() => {
+                            setCurrMenu("");
+                            setTimeout(() => {
+                              navigate(`/user/${post.user._id}`);
+                            }, 500);
+                          }}
+                          className="hover:underline  hover:text-blue-500 cursor-pointer"
+                        >
                           {currUserData && post.user._id === currUserData._id
                             ? "You"
                             : post.user.name}

@@ -13,10 +13,12 @@ import FormValidation from "./components/Experiments/FormValidation";
 
 import "./App.css";
 import ViewProfile from "./components/social/ViewProfile";
-import UserProfile from "./components/All ShowList/UserProfile";
+// import UserProfile from "./components/All ShowList/UserProfile";
 import MyNetwork from "./components/social/main-menu compo/MyNetwork";
 import Connections from "./components/social/main-menu compo/my network compo/Connections";
 import FollowAndFollowing from "./components/social/main-menu compo/my network compo/FollowAndFollowing";
+import UserProfile from "./components/social/UserProfile";
+import Message from "./components/Message/Message";
 
 function App() {
   const UserRouter = createBrowserRouter([
@@ -44,10 +46,7 @@ function App() {
       path: "/profile",
       element: <ViewProfile />,
     },
-    {
-      path: "/admin/user/profile/:userId",
-      element: <UserProfile />,
-    },
+
     {
       path: "/my-network",
       element: <MyNetwork />,
@@ -59,6 +58,14 @@ function App() {
     {
       path: "/my-network/follow",
       element: <FollowAndFollowing />,
+    },
+    {
+      path: "/user/:userId",
+      element: <UserProfile />,
+    },
+    {
+      path: "/message",
+      element: <Message />,
     },
   ]);
   return (

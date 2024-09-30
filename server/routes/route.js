@@ -15,6 +15,7 @@ import {
   sendConnectionCount,
   sendAllConnectionReq,
   updateConnectionInDB,
+  sendConnectReq,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -37,6 +38,17 @@ import {
   sendCount,
 } from "../controller/admin-controller.js";
 
+import {
+  newConversation,
+  sendReceiverData,
+  sendAllConversations,
+} from "../controller/conversation-controller.js";
+
+import {
+  saveMSGInDB,
+  sendALlMsgAccConvId,
+} from "../controller/msg-controller.js";
+
 router.post("/user/signup", saveNewUser);
 router.post("/user/url-check", jwtMiddle, checkURL);
 router.post("/user/login", checkLogin);
@@ -55,7 +67,7 @@ router.get("/comment/count", sendCommentCount);
 router.get("/user/same-city", jwtMiddle, sendDataAccCity);
 
 // for admin
-router.get("/user/:id", jwtMiddle, sendUserDataAccId);
+router.get("/user/:id", sendUserDataAccId); // access all users
 router.get("/admin/verify", jwtMiddle, checkAdminOrNot);
 router.get("/admin/count", jwtMiddle, sendCount);
 
@@ -69,6 +81,18 @@ router.get("/follow", jwtMiddle, sendFollowerOrFollowingList);
 router.get("/follow/check/:userId", jwtMiddle, checkFollowOrNot);
 router.get("/connection/count", jwtMiddle, sendConnectionCount);
 router.get("/connection", jwtMiddle, sendAllConnectionReq);
+router.post("/connection/req", jwtMiddle, sendConnectReq);
 
 router.put("/connection", jwtMiddle, updateConnectionInDB);
+
+// conversation routs
+
+router.post("/conversation", jwtMiddle, newConversation);
+router.get("/conversation", jwtMiddle, sendAllConversations);
+router.post("/conversation/receiver", jwtMiddle, sendReceiverData);
+
+// msg
+router.post("/msg", jwtMiddle, saveMSGInDB);
+router.get("/msg/:convId", jwtMiddle, sendALlMsgAccConvId);
+
 export default router;
