@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup"; // Import Yup for validation
 import { useNavigate } from "react-router-dom";
+import Loader from "./Loader/Loader.jsx";
 import {
   verifyTokenFunc,
   checkAdminFunc,
@@ -19,16 +20,18 @@ import Tostify from "./Tostify";
 import { AllContext } from "../context/UserContext";
 
 const Login = () => {
-  const { loginData, setIsLogin, setLoginData, isLogin } =
+  const { loginData, setIsLogin, setLoginData, isLogin, setLoading } =
     useContext(AllContext);
   const navigate = useNavigate();
 
   useEffect(() => {
+    setLoading(true);
     if (localStorage.getItem("token")) {
       if (!loginRedirect()) {
         console.log("continue please");
       }
     }
+    setLoading(false);
   }, []);
 
   // formik validation
@@ -45,6 +48,7 @@ const Login = () => {
       password: Yup.string().required("Password is required"),
     }),
     onSubmit: async (values) => {
+      setLoading(true);
       // This will be executed when the form is submitted
       console.log(values); // Log the values here
 
@@ -70,6 +74,7 @@ const Login = () => {
         });
         setLoginData(values);
         setTimeout(() => {
+          setLoading(false);
           navigate("/social");
         }, 2000);
       } else if (res.status === 201) {
@@ -83,6 +88,7 @@ const Login = () => {
           progress: undefined,
           theme: "light",
         });
+        setLoading(false);
       } else if (res.status === 202) {
         console.log(res);
         setIsLogin(true);
@@ -107,6 +113,7 @@ const Login = () => {
           theme: "light",
         });
         setTimeout(() => {
+          setLoading(false);
           navigate("/lists");
         }, 2000);
       } else {
@@ -120,6 +127,7 @@ const Login = () => {
           progress: undefined,
           theme: "light",
         });
+        setLoading(false);
       }
     },
   });
@@ -127,6 +135,7 @@ const Login = () => {
   return (
     <div className="login-wrapper p-5 flex w-[100%] justify-center">
       <Tostify />
+      <Loader />
       <div className="login mt-16 flex flex-col items-center gap-4 p-5 border border-black rounded-md w-[25%]">
         <h2 className="font-semibold text-2xl  text-center w-[100%]">
           Login Here

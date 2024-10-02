@@ -17,17 +17,33 @@ import Navbar from "./Navbar";
 //icons
 
 const Overview = () => {
-  const { isLogin, setIsLogin, file, setFile, currMenu, setCurrMenu } =
-    useContext(AllContext);
+  const {
+    isLogin,
+    setIsLogin,
+    file,
+
+    currMenu,
+    setCurrMenu,
+    currUserData,
+    lightMode,
+  } = useContext(AllContext);
   const navigate = useNavigate();
   const [loginDialog, setLoginDialog] = useState(false);
-  // const [file, setFile] = useState(null);
+
   const [imgUrl, setImgUrl] = useState(null);
 
   //file functions here
   // const handleFileChange = (e) => {
   //   setFile(e.target.files[0]);
   // };
+
+  useEffect(() => {
+    if (!isLogin) {
+      setTimeout(() => {
+        setLoginDialog(true);
+      }, 20000);
+    }
+  }, []);
 
   const verifyTokenForIslogin = async () => {
     let res = await verifyToken();
@@ -44,13 +60,13 @@ const Overview = () => {
     verifyTokenForIslogin();
   }, []);
 
-  const handleSubmitFile = async (e) => {
+  const handleSubmitFile = async (e, isFile) => {
     if (isLogin) {
-      console.log("in overview file is", file);
-      if (file) {
+      console.log("in overview file is", isFile);
+      if (isFile) {
         e.preventDefault();
         let generatedURlResponse = await getPresignedURL({
-          fileType: file.type,
+          fileType: isFile.type,
         }); // Get the presigned URL from backend
         console.log("generated url", generatedURlResponse.data.url);
         // setUploadURL(generatedURlResponse.data.url);
@@ -60,8 +76,8 @@ const Overview = () => {
 
         let resFromAWS = await uploadFileAWS({
           uploadURL: generatedURlResponse.data.url,
-          postFile: file,
-          fileType: file.type,
+          postFile: isFile,
+          fileType: isFile.type,
         }); // Upload the file to S3 using presigned URL
         console.log(resFromAWS);
         if (resFromAWS.status === 200) {
@@ -77,6 +93,16 @@ const Overview = () => {
         }
       } else {
         console.log("file not selected");
+        toast.error(`File Not Selectedd Please Try Again !`, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
     } else {
       toast.error(`Login to enable Select File.`, {
@@ -93,7 +119,11 @@ const Overview = () => {
   };
 
   return (
-    <div className="main-overview w-[100vw] bg-black h-auto">
+    <div
+      className={`main-overview w-[100vw]  h-auto ${
+        lightMode && "bg-[#F4F2EE]"
+      }`}
+    >
       <Tostify />
       <LoginDialog
         isLogin={isLogin}
@@ -116,9 +146,9 @@ const Overview = () => {
                   // handleFileChange={handleFileChange}
                   handleSubmitFile={handleSubmitFile}
                   setImgUrl={setImgUrl}
+                  lightMode={lightMode}
                   imgUrl={imgUrl}
-                  file={file}
-                  setFile={setFile}
+                  currUserData={currUserData}
                   isLogin={isLogin}
                 />
               </div>
@@ -136,7 +166,9 @@ const Overview = () => {
                 <Suggest
                   setLoginDialog={setLoginDialog}
                   loginDialog={loginDialog}
+                  lightMode={lightMode}
                   isLogin={isLogin}
+                  setCurrMenu={setCurrMenu}
                 />
               </div>
             </div>

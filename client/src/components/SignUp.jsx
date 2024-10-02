@@ -29,6 +29,9 @@ import Tostify from "./Tostify";
 import Input from "./Reusable Components/Input";
 import Button from "./Reusable Components/Button";
 
+// loader
+import Loader from "./Loader/Loader.jsx";
+
 //utils
 const HobbyArr = ["Dancing", "Raceing", "Advanture", "Reading", "Cooking"];
 
@@ -36,7 +39,7 @@ const SignUp = () => {
   useEffect(() => {
     // if (localStorage.getItem("token")) navigate("/lists");
   }, []);
-  const { signUpData, setSignUpData, isLogin, defaultSignUpdata } =
+  const { signUpData, setSignUpData, isLogin, defaultSignUpdata, setLoading } =
     useContext(AllContext);
   const [gender, setGender] = useState(null);
   const [selectedHobby, setSelectedHobby] = useState([]);
@@ -102,10 +105,12 @@ const SignUp = () => {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
+      setLoading(true);
       // Handle form submission
       console.log(values);
       let res = await sendSignUpData(values);
       console.log(res.data);
+
       if (res.status === 200) {
         toast.success(
           `Welcome ${signUpData.name} You will redirect on Login Page`,
@@ -122,6 +127,7 @@ const SignUp = () => {
         );
         setTimeout(() => {
           navigate("/login");
+          setLoading(false);
         }, 2000);
       } else {
         console.log(res.data);
@@ -135,6 +141,7 @@ const SignUp = () => {
           progress: undefined,
           theme: "light",
         });
+        setLoading(false);
       }
     },
   });
@@ -142,6 +149,7 @@ const SignUp = () => {
   return (
     <div className="signup-wrapper p-5 flex justify-center items-center">
       <Tostify />
+      <Loader />
       <div className="border border-black p-5 mt-10 rounded-md">
         <div className="heading mb-2">
           <h2 className="font-semibold text-3xl text-center">

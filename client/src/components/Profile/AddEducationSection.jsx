@@ -94,7 +94,7 @@ const AddEducationSection = ({ addEduDialog }) => {
             <inputLabel>Enter School Name</inputLabel>
             <input
               className={
-                "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
               id="school"
               value={formik.values.school}
@@ -116,7 +116,7 @@ const AddEducationSection = ({ addEduDialog }) => {
 
             <input
               className={
-                "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
               id="university"
               value={formik.values.university}
@@ -138,7 +138,7 @@ const AddEducationSection = ({ addEduDialog }) => {
 
             <input
               className={
-                "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
               id="grade"
               value={formik.values.grade}
@@ -154,7 +154,7 @@ const AddEducationSection = ({ addEduDialog }) => {
 
             <input
               className={
-                "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
               id="degree"
               value={formik.values.degree}
@@ -175,7 +175,7 @@ const AddEducationSection = ({ addEduDialog }) => {
 
             <textarea
               className={
-                "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
               id="description"
               value={formik.values.description}
@@ -193,11 +193,13 @@ const AddEducationSection = ({ addEduDialog }) => {
 
                 <Select
                   name="startDate.month"
-                  className={"border border-[#fff] bg-[#1B1F23]  rounded-md "}
+                  className={
+                    "border  bg-white border-gray-400 border-opacity-40  rounded-md "
+                  }
                   value={formik.values.startDate.month}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  sx={{ height: "49px", color: "white" }}
+                  sx={{ height: "49px", color: "black" }}
                 >
                   {months.map((month) => (
                     <MenuItem key={month} value={month}>
@@ -219,7 +221,7 @@ const AddEducationSection = ({ addEduDialog }) => {
               <inputLabel>Start Year</inputLabel>
               <input
                 className={
-                  "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                  "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
                 }
                 id="startDate.year"
                 value={formik.values.startDate.year}
@@ -247,11 +249,11 @@ const AddEducationSection = ({ addEduDialog }) => {
                 <Select
                   name="endDate.month"
                   className={
-                    "border border-[#fff] bg-[#1B1F23]rounded-md  text-white   "
+                    "border  bg-white border-gray-400 border-opacity-40rounded-md  text-white   "
                   }
                   value={formik.values.endDate.month}
                   onChange={formik.handleChange}
-                  sx={{ height: "49px", color: "white" }}
+                  sx={{ height: "49px", color: "black" }}
                   onBlur={formik.handleBlur}
                 >
                   {months.map((month) => (
@@ -275,7 +277,7 @@ const AddEducationSection = ({ addEduDialog }) => {
               <inputLabel>End Month</inputLabel>
               <input
                 className={
-                  "border border-[#fff] bg-[#1B1F23] placeholder:text-[#000] rounded-md w-[100%] p-3"
+                  "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
                 }
                 id="endDate.year"
                 value={formik.values.endDate.year}
@@ -298,7 +300,7 @@ const AddEducationSection = ({ addEduDialog }) => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="p-2 bg-[#aad6ff] rounded-md mt-2 text-black"
+              className="p-2 bg-[#48a7ff] rounded-md mt-2 text-black"
             >
               Add Education
             </button>

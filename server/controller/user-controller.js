@@ -417,6 +417,10 @@ export const updateConnectionInDB = async (req, res) => {
         sender.connections.push(receiverId);
       }
 
+      if (!receiver.connections.includes(sender._id)) {
+        receiver.connections.push(sender._id);
+      }
+
       // Add receiverId to sender's following if not included
       if (!sender.following.includes(receiverId)) {
         sender.following.push(receiverId);

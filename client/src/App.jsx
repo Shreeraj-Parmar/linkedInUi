@@ -1,4 +1,4 @@
-// import { useState } from "react";
+import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 // Context:
 import UserContext from "./context/UserContext";
@@ -19,6 +19,7 @@ import Connections from "./components/social/main-menu compo/my network compo/Co
 import FollowAndFollowing from "./components/social/main-menu compo/my network compo/FollowAndFollowing";
 import UserProfile from "./components/social/UserProfile";
 import Message from "./components/Message/Message";
+import CheckInternet from "./components/Internet/CheckInternet";
 
 function App() {
   const UserRouter = createBrowserRouter([
@@ -71,6 +72,7 @@ function App() {
   return (
     <>
       <UserContext>
+        <CheckInternet />
         <RouterProvider router={UserRouter} />
       </UserContext>
     </>

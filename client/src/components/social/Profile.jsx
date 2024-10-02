@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { ckeckURLAvailable } from "../../services/api";
 import { useNavigate } from "react-router-dom";
+import { AllContext } from "../../context/UserContext";
 import { toast } from "react-toastify";
+import LaunchIcon from "@mui/icons-material/Launch";
 
 const Profile = ({
   handleFileChange,
@@ -11,9 +13,11 @@ const Profile = ({
   isLogin,
   setImgUrl,
   imgUrl,
-  setFile,
+  lightMode,
+  currUserData,
 }) => {
   const chooseFileRef = useRef(null);
+  const { file, setFile } = useContext(AllContext);
   const [isUploadMode, setIsUploadMode] = useState(false);
   const navigate = useNavigate();
 
@@ -41,9 +45,10 @@ const Profile = ({
   const handleFileSelection = (e) => {
     if (isLogin) {
       setFile(e.target.files[0]);
+      const isFile = e.target.files[0];
       console.log("selected file is", e.target.files[0]);
       // handleFileChange(e); // Call the passed-in handleFileChange to handle file data
-      handleSubmitFile(e); // Automatically submit after selecting a file
+      handleSubmitFile(e, isFile); // Automatically submit after selecting a file
     } else {
       setLoginDialog(true);
     }
@@ -61,62 +66,68 @@ const Profile = ({
   }, [isLogin]);
 
   return (
-    <div className="profile-wrapper w-[100%] bg-[#1B1F23] h-[48vh] rounded-lg p-2">
+    <div
+      className={`profile-wrapper w-[100%] bg-[#1B1F23] h-[48vh] ${
+        lightMode &&
+        "bg-[#ffffff] border-2 shadow-sm border-gray-400 border-opacity-40"
+      } rounded-lg p-2`}
+    >
       {/* logic of aws */}
 
       <div
-        className={`image-wrapper bg-[#1B1F23] flex justify-center  ${
-          isLogin && "profile-upload"
-        }`}
+        className={`image-wrapper bg-[#1B1F23] ${
+          lightMode && "bg-[#ffffff] "
+        } flex justify-center  ${isLogin && "profile-upload"}`}
         onClick={handleProfilePicture}
       >
         <img
           src={imgUrl || "/blank.png"} // Show profile image if imgUrl exists, else show dummy image
           alt="profile or upload image"
-          className="profile-img cursor-pointer rounded-full min-w-[80%] max-w-[80%] h-[80%] mt-5"
+          className={`profile-img cursor-pointer rounded-full lg:min-w-[170px] lg:min-h-[170px]  lg:max-w-[170px] lg:max-h-[170px] mt-5 ${
+            lightMode && "border-2 border-gray-400 border-opacity-40"
+          }`}
         />
 
         {isLogin &&
-          (imgUrl ? <span>Update Photo</span> : <span>Upload Profile</span>)}
+          (imgUrl ? (
+            <span className={`${lightMode && " text-black"}  `}>
+              <p className="text-black"> Change Photo</p>
+            </span>
+          ) : (
+            <span className={`${lightMode && " text-black"}`}>
+              <p className="text-black"> Upload Photo</p>
+            </span>
+          ))}
       </div>
       {isLogin && (
         <>
           <div className="mt-4">
-            <p className="text-[#E2E0DD] text-center font-semibold">My name</p>
+            <p
+              className={`hover:underline cursor-pointer text-center ${
+                lightMode && "text-[#000]"
+              } font-semibold`}
+            >
+              {currUserData && currUserData.name
+                ? currUserData.name
+                : "No Name"}
+            </p>
           </div>
 
           <div
-            className="cursor-pointer mt-2 "
+            className=" mt-2 hover:underline cursor-pointer  flex justify-center items-center"
             onClick={(e) => handleViewProfileClick(e)}
           >
-            <p className="text-[#ffedd1] text-center ">View My Profile</p>
+            <p
+              className={`text-[#ffedd1]  text-center ${
+                lightMode && " text-black"
+              }`}
+            >
+              View My Profile
+            </p>
+            <LaunchIcon fontSize="small" />
           </div>
         </>
       )}
-
-      <div className="flex justify-center mt-2">
-        {isLogin ? (
-          <button
-            className="p-2 bg-[#71B7FB] rounded-md text-black"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            Logout
-          </button>
-        ) : (
-          <button
-            className="p-2 bg-[#71B7FB] mt-3 rounded-md text-black"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            Login
-          </button>
-        )}
-      </div>
 
       <div className="text-[#E2E0DD] w-[100%] flex-row items-center profile-file-form">
         <div>

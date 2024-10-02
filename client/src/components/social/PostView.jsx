@@ -9,6 +9,8 @@ import { AllContext } from "../../context/UserContext.jsx";
 
 // icons
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import { toast } from "react-toastify";
+
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
 import PostDialog from "../../Post Compo/PostDialog";
@@ -24,9 +26,11 @@ import {
 } from "../../services/api.js";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import Tostify from "../Tostify.jsx";
 
 const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
-  const { setCurrUserData, currUserData, setCurrMenu } = useContext(AllContext);
+  const { setCurrUserData, currUserData, setCurrMenu, lightMode } =
+    useContext(AllContext);
   const [commentBoxOpen, setCommentBoxOpen] = useState({});
   const [postDialog, setPostDialog] = useState(false);
   const [allPost, setAllPost] = useState([]);
@@ -38,8 +42,6 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [commentCount, setCommentCount] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
   const navigate = useNavigate();
-
-  console.log("in postview islogin is: ", isLogin);
 
   const getCommentCountFunction = async () => {
     let res = await getCommentCount();
@@ -71,6 +73,16 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         [receiver]: !prevStatus[receiver],
       }));
     } else {
+      toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
       console.error("Error while following/unfollowing:", res.data.message);
     }
   };
@@ -158,16 +170,6 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       [postId]: !currentLikeStatus, // Toggle like status
     }));
 
-    //     post._id === postId
-    //       ? {
-    //           ...post,
-    //           likedBy: !currentLikeStatus
-    //             ? [...post.likedBy, currUserData._id]
-    //             : post.likedBy.filter((id) => id !== currUserData._id),
-    //         }
-    //       : post
-    //   );
-    // });
     console.log("curr id is", currUserData);
     let res = await toggleLikeOnPost({
       postId: postId,
@@ -223,9 +225,16 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
 
   return (
     <div className="post-wrapper  w-[100%]  h-[100%] flex-row space-y-3">
+      <Tostify />
       <PostDialog postDialog={postDialog} setPostDialog={setPostDialog} />
-      <div className="write-post text-[#DBDBDC] bg-[#1B1F23] w-[100%] h-[10vh] rounded-md p-2    ">
-        <div className="write-post-wrapper  flex justify-center items-center ">
+      <div
+        className={`write-post text-[#DBDBDC] bg-[#1B1F23] w-[100%] h-[10vh] rounded-md p-2 ${
+          lightMode && " bg-white text-black"
+        }  ${lightMode && " border-2 border-gray-400 border-opacity-40"}  `}
+      >
+        <div
+          className={`write-post-wrapper  flex justify-center items-center `}
+        >
           <div className="write-post-left w-[10%]">
             <img
               src={imgUrl || "/blank.png"}
@@ -234,7 +243,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
             />
           </div>
           <div
-            className="write-post-right w-[90%] p-5 h-[50px] border border-[#DBDBDC] rounded-full flex justify-start items-center hover:bg-[#DBDBDC] hover:bg-opacity-10 cursor-pointer"
+            className={`write-post-right w-[90%] p-5 h-[50px] border border-[#DBDBDC] rounded-full flex justify-start items-center hover:bg-[#DBDBDC] hover:bg-opacity-10 cursor-pointer ${
+              lightMode &&
+              " border border-black border-opacity-50 shadow-sm hover:bg-[#cecece]"
+            }`}
             onClick={() => {
               if (!isLogin) {
                 setLoginDialog(true);
@@ -250,7 +262,11 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       </div>
       {/* Show All Posts */}
 
-      <div className="posts text-[#DBDBDC] bg-[#000000] h-fit  w-[100%]   p-1 rounded-md">
+      <div
+        className={`posts text-[#DBDBDC]  h-fit  w-[100%]   p-1 rounded-md ${
+          lightMode && "  text-black"
+        }`}
+      >
         <div className=" h-[100%]  p-2  flex-row space-y-3  ">
           {/* map post logic here */}
 
@@ -258,10 +274,18 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
             allPost.map((post) => {
               return (
                 <div className="flex justify-center" key={post._id}>
-                  <div className="post bg-[#1B1F23]   p-5  rounded-md w-[100%] h-fit space-y-2">
+                  <div
+                    className={`post bg-[#1B1F23]   p-5  rounded-md w-[100%] h-fit space-y-2 ${
+                      lightMode &&
+                      " bg-white border-2 shadow-sm border-gray-400 border-opacity-40"
+                    }`}
+                  >
                     <div className="post-des flex    w-[100%] space-x-2">
                       <img
-                        src={post.user.profilePicture || "/blank.png"}
+                        src={
+                          (post.user && post.user.profilePicture) ||
+                          "/blank.png"
+                        }
                         alt="who posted this post"
                         className=" w-[9%] h-[55px] rounded-full"
                       />
@@ -273,26 +297,29 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               navigate(`/user/${post.user._id}`);
                             }, 500);
                           }}
-                          className="hover:underline  hover:text-blue-500 cursor-pointer"
+                          className={
+                            "hover:underline  hover:text-blue-500 cursor-pointer"
+                          }
                         >
-                          {currUserData && post.user._id === currUserData._id
-                            ? "You"
-                            : post.user.name}
+                          {post.user && post.user.name}
                         </p>
-                        <p className=" text-[#959799] text-sm   ">
-                          {post.user.city.toLowerCase()}
+                        <p className={" text-[#959799] text-sm   "}>
+                          {post.user && post.user.city.toLowerCase()}
                         </p>
-                        <p className="text-[#959799] text-sm    ">
-                          {moment(post.createdAt).fromNow()}
+                        <p className={"text-[#959799] text-sm    "}>
+                          {moment(post.user && post.createdAt).fromNow()}
                         </p>
                       </div>
                       {currUserData && post.user._id !== currUserData._id ? (
                         <div className="follow-btn p-2 relative lg:left-52">
                           <button
                             onClick={() => {
-                              handleFollowClick(post.user._id);
+                              handleFollowClick(post.user && post.user._id);
                             }}
-                            className="p-2  rounded-md text-[#AAD6FF] hover:bg-[#1F2F41]"
+                            className={`p-2  rounded-md ${
+                              lightMode &&
+                              " text-[#004182]  font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
+                            }`}
                           >
                             {followStatus[post.user._id]
                               ? "Folllowing"
@@ -306,7 +333,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               onClick={() => {
                                 setLoginDialog(true);
                               }}
-                              className="p-2  rounded-md text-[#AAD6FF] hover:bg-[#1F2F41]"
+                              className={`p-2  rounded-md  text-[#AAD6FF] hover:bg-[#1F2F41] ${
+                                lightMode &&
+                                " text-[#004182]  font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
+                              }`}
                             >
                               +Follow
                             </button>
@@ -326,14 +356,14 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                         <img
                           src={post.url || ""}
                           alt="this is post image"
-                          className=" w-[95%] rounded-md h-auto"
+                          className={"w-[95%] max-h-[800px] rounded-md h-auto"}
                         />
                       </div>
                     )}
 
                     <div className="flex justify-between">
-                      <p className="text-[#959799]">{post.likeCount} likes</p>
-                      <p className="text-[#959799]">
+                      <p className={"text-[#959799]"}>{post.likeCount} likes</p>
+                      <p className={"text-[#959799]"}>
                         {commentCount.find(
                           (comment) => comment._id === post._id
                         )?.comments.length ?? 0}{" "}
@@ -345,7 +375,9 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                     <div className="like-comment">
                       <div className="like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2">
                         <div
-                          className="like flex space-x-1 cursor-pointer hover:bg-[#293138] p-2 rounded-md"
+                          className={`like flex space-x-1 cursor-pointer ${
+                            lightMode && "hover:bg-[#F4F2EE] "
+                          }  hover:bg-[#293138] p-2 rounded-md`}
                           onClick={() => {
                             handleLike(post._id);
                           }}
@@ -359,7 +391,9 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           <button className="like">Like</button>
                         </div>
                         <div
-                          className="comment flex space-x-1 cursor-pointer hover:bg-[#293138] p-2 rounded-md"
+                          className={`comment flex space-x-1 ${
+                            lightMode && "hover:bg-[#F4F2EE] "
+                          }  cursor-pointer hover:bg-[#293138] p-2 rounded-md`}
                           onClick={() => {
                             handleCommentClick(post._id);
                             getAllCommentsFunc(post._id);
@@ -380,7 +414,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           <div className="flex  items-center space-x-2">
                             <img
                               src={imgUrl || "/blank.png"}
-                              className="rounded-full  w-[7%] h-[40px]"
+                              className="rounded-full  w-[7%] h-[40px] border border-gray-400 border-opacity-40"
                               alt="your profile picture"
                             />
                             <div className="w-[100%]">
@@ -390,7 +424,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                 ref={commentInputRef}
                                 placeholder="Give Your Comment"
                                 id="comment"
-                                className="rounded-md p-2 bg-[#1B1F23] border border-[#fff] w-[100%]"
+                                className={`rounded-md p-2 bg-[#F4F2EE] border border-gray-400 border-opacity-40 w-[100%]`}
                                 onChange={(e) => {
                                   handleCommentInputChange(e);
                                   enableDisableCommentPostBtn();
@@ -428,22 +462,29 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                   >
                                     <div className="flex space-x-2">
                                       <img
-                                        src={comment.user.profilePicture}
+                                        src={
+                                          comment.user &&
+                                          comment.user.profilePicture
+                                        }
                                         alt="who commented"
-                                        className="rounded-full  w-[7%] h-[40px]"
+                                        className="rounded-full border border-gray-400 border-opacity-40  w-[7%] h-[40px]"
                                       />
-                                      <div className="commet-des heading-post p-2 w-[100%] pl-3 rounded-md bg-[#293138] flex-row space-y-[-5px]">
+                                      <div className="commet-des heading-post p-2 w-[100%] pl-3 rounded-md bg-[#F4F2EE] border border-gray-400 border-opacity-40 flex-row space-y-[-5px]">
                                         <p className="hover:underline hover:text-blue-500 cursor-pointer">
-                                          {comment.user.name}
+                                          {comment.user && comment.user.name}
                                         </p>
                                         <p className=" text-[#959799] text-sm   ">
-                                          {comment.user.city.toLowerCase()}
+                                          {comment.user &&
+                                            comment.user.city.toLowerCase()}
                                         </p>
                                         <p className="text-[#959799] text-sm    ">
-                                          {moment(comment.createdAt).fromNow()}
+                                          {comment.user &&
+                                            moment(comment.createdAt).fromNow()}
                                         </p>
                                         <div className="comment-text">
-                                          <p className="mt-2">{comment.text}</p>
+                                          <p className="mt-2">
+                                            {comment.user && comment.text}
+                                          </p>
                                         </div>
                                       </div>
                                     </div>

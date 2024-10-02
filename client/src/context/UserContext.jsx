@@ -31,6 +31,11 @@ const UserContext = ({ children }) => {
   const [file, setFile] = useState(null);
   const [currMenu, setCurrMenu] = useState("home");
   const [currConversationId, setCurrConversationId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [lightMode, setLightMode] = useState(true);
+
+  // for loader
+  const [loading, setLoading] = useState(false);
 
   return (
     <AllContext.Provider
@@ -56,6 +61,13 @@ const UserContext = ({ children }) => {
         setCurrMenu,
         currConversationId,
         setCurrConversationId,
+        messages,
+        setMessages,
+        loading,
+
+        setLoading,
+        lightMode,
+        setLightMode,
       }}
     >
       {children}

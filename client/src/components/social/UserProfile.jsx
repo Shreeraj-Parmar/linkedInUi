@@ -5,6 +5,7 @@ import {
   sendFollowReq,
   sendConnect,
   setConversation,
+  getMsgAccConvId,
 } from "../../services/api.js";
 import LoginDialog from "./LoginDialog.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
@@ -17,6 +18,7 @@ const UserProfile = () => {
     setLoginDialog,
     loginDialog,
     currUserData,
+    setMessages,
 
     setCurrConversationId,
   } = useContext(AllContext);
@@ -84,6 +86,13 @@ const UserProfile = () => {
     if (res.status === 200) {
       console.log(res.data);
       setCurrConversationId(res.data.id);
+
+      let res2 = await getMsgAccConvId(res.data.id);
+      if (res2.status === 200) {
+        console.log("messages is", res2.data);
+        setMessages(res2.data);
+      }
+
       console.log("connection set");
       setTimeout(() => {
         navigate("/message");
@@ -103,7 +112,7 @@ const UserProfile = () => {
   //   }, []);
 
   return (
-    <div className="main-overview w-[100vw] bg-black h-auto">
+    <div className="main-overview w-[100vw] bg-[#F4F2EE] h-auto">
       <LoginDialog
         isLogin={isLogin}
         setIsLogin={setIsLogin}
@@ -116,91 +125,103 @@ const UserProfile = () => {
 
         <div className="main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  ">
           <div className="main-down mt-[60px] w-[95%]  min-h-[70%]">
-            <div className="profile-wrapper-all bg-[#1B1F23]  w-[65%] p-5 pl-10 rounded-md flex-row space-y-3  ">
+            <div className="profile-wrapper-all bg-[#fff] border-2 shadow-sm border-gray-400 border-opacity-40 w-[65%] p-5 pl-10 rounded-md flex-row space-y-3  ">
               <div className="profil-pic">
                 <img
-                  src={userData ? userData.profilePicture : "/blank.png"}
-                  className="min-w-[150px] min-h-[150px] cursor-pointer rounded-full max-w-[150px] max-h-[150px] border border-red-500"
+                  src={
+                    userData && userData.profilePicture
+                      ? userData.profilePicture
+                      : "/blank.png"
+                  }
+                  className="min-w-[150px] border-2 
+ border-gray-400 shadow-sm border-opacity-40 min-h-[150px]  rounded-full max-w-[150px] max-h-[150px] "
                   alt="profil pic"
                 />
               </div>
               <div className="profil-details">
-                <p className="text-[#EDEDED] text-2xl font-semibold hover:bg-[#44474B] w-fit cursor-pointer rounded-md">
+                <p className="text-[#000] text-2xl font-semibold hover:bg-[#c2c2c2] w-fit cursor-pointer rounded-md">
                   {userData ? userData.name : "Name"}
                 </p>
-                <p className="text-[#A4A59F] text-sm">
+                <p className="text-[#686868] text-sm">
                   {`${userData ? userData.city : ""}, ${
                     userData ? userData.state : ""
                   }, ${userData ? userData.country : ""}`}
                 </p>
-                <p className="text-[#A4A59F] text-sm">
+                <p className="text-[#686868] text-sm">
                   {userData ? userData.followers.length : ""} followers
                 </p>
               </div>
-              <div className="follow-btns flex space-x-2">
-                <button
-                  onClick={async () => {
-                    if (isLogin) {
-                      await sendFollowReq({ receiverId: userData._id });
-                      console.group("sdfsdfsfd");
-                      getUserDataFunc();
-                    } else {
-                      // setLoginDialog(true);
-                    }
-                  }}
-                  className="p-2 w-[100px]  rounded-full  bg-[#71B7FB] text-[#000] hover:bg-[#AAD6FF] hover:text-[] "
-                >
-                  {follow ? "UnFollow" : "Follow"}
-                </button>
-                <button
-                  onClick={() => {
-                    setConversationFunction({ receiverId: userData._id });
-                  }}
-                  className="p-2 w-[100px] rounded-full border-[2px] border-[#71B7FB] bg-[] text-[#71B7FB] hover:bg-[#1F2F41] hover:text-[] "
-                >
-                  Messege
-                </button>
-                {!connection && !pendinConnection && (
-                  <button
-                    onClick={() => {
-                      sendConnectionReq(userData._id);
-                      getUserDataFunc();
-                    }}
-                    className="p-2 w-[100px] rounded-full border-2 border-white bg-[] text-[#fff] hover:bg-[#2C2F33] hover:text-[]"
-                  >
-                    Connect
-                  </button>
-                )}
+              {currUserData &&
+                userData &&
+                currUserData._id !== userData._id && (
+                  <div className="follow-btns flex space-x-2">
+                    <button
+                      onClick={async () => {
+                        if (isLogin) {
+                          await sendFollowReq({ receiverId: userData._id });
+                          console.group("sdfsdfsfd");
+                          getUserDataFunc();
+                        } else {
+                          // setLoginDialog(true);
+                        }
+                      }}
+                      className="p-2 w-[100px]  rounded-full  bg-[#0A66C2] text-[#fff] hover:bg-[#004182] hover:text-[] "
+                    >
+                      {follow ? "UnFollow" : "Follow"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConversationFunction({ receiverId: userData._id });
+                      }}
+                      className="p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] "
+                    >
+                      Messege
+                    </button>
+                    {!connection && !pendinConnection && (
+                      <button
+                        onClick={() => {
+                          sendConnectionReq(userData._id);
+                          getUserDataFunc();
+                        }}
+                        className="p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]"
+                      >
+                        Connect
+                      </button>
+                    )}
 
-                {pendinConnection && (
-                  <button className="p-2 w-[100px] rounded-full border-2 border-white bg-[] text-[#fff] hover:bg-[#2C2F33] hover:text-[]">
-                    pending
-                  </button>
+                    {pendinConnection && (
+                      <button className="p-2 w-[100px] rounded-full border-2 border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]">
+                        pending
+                      </button>
+                    )}
+                  </div>
                 )}
-              </div>
             </div>
-            <div className="profile-wrapper-all bg-[#1B1F23] mt-3 w-[65%] p-3 pl-10 rounded-md flex-row space-y-3  ">
-              <p className="text-[#EDEDED] text-xl font-semibold">Education</p>
+            <div
+              className="profile-wrapper-all bg-[#fff] border-2 
+ border-gray-400 border-opacity-40 mt-3 w-[65%] p-3 pl-10 rounded-md flex-row space-y-3  "
+            >
+              <p className="text-[#000] text-xl font-semibold">Education</p>
               {userData && userData.education[0] ? (
                 userData.education.map((edu) => {
                   return (
                     <div
                       key={userData._id}
-                      className="profile-edu bg-[#293138] p-2 pl-3 rounded-md w-[80%] flex  items-center"
+                      className="profile-edu bg-[#F4F2EE] p-2 pl-3 rounded-md w-[80%] flex  items-center"
                     >
                       <div>
-                        <p className="text-[#EDEDED]">{edu.degree}</p>
+                        <p className="text-[#000]">{edu.degree}</p>
 
-                        <p className="text-[#A4A59F] -mb-1 text-sm">
+                        <p className="text-[#686868] -mb-1 text-sm">
                           {edu.university}
                         </p>
-                        <p className="text-[#A4A59F] -mb-1 text-sm">{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
+                        <p className="text-[#686868] -mb-1 text-sm">{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <p className="text-[#ededed]">No Any Education Here</p>
+                <p className="text-[#000]">No Any Education Here</p>
               )}
             </div>
           </div>

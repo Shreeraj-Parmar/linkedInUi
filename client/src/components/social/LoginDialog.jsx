@@ -7,6 +7,7 @@ import Button from "../Reusable Components/Button.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
 
 import { toast } from "react-toastify";
+import CloseIcon from "@mui/icons-material/Close";
 import { useFormik } from "formik";
 import * as Yup from "yup"; // Import Yup for validation
 import { useNavigate } from "react-router-dom";
@@ -21,7 +22,7 @@ const dialogStyle = {
 
   margin: "auto",
   width: "35vw",
-  color: "#E2E0DD",
+  color: "#000",
 
   maxHeight: "50vh",
 
@@ -30,7 +31,7 @@ const dialogStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: "#1B1F23",
+  backgroundColor: "#F4F2EE",
 };
 
 const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
@@ -154,7 +155,7 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
                 type={"email"}
                 placeholder={"Enter Email"}
                 className={
-                  "w-[100%] border border-white placeholder:text-white p-2 rounded-md bg-[#1B1F23]"
+                  "w-[100%] border border-gray-400 border-opacity-40 placeholder:text-black p-2 rounded-md bg-[#fff]"
                 }
                 value={formik.values.email}
                 onChange={formik.handleChange}
@@ -172,7 +173,7 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
                 type={"password"}
                 placeholder={"Enter Password"}
                 className={
-                  "w-[100%] border border-white placeholder:text-white p-2 rounded-md  bg-[#1B1F23]"
+                  "w-[100%] border border-gray-400 border-opacity-40 placeholder:text-black p-2 rounded-md  bg-[#fff]"
                 }
                 value={formik.values.password}
                 onChange={formik.handleChange}
@@ -190,7 +191,7 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
                 type={"submit"}
                 lable={"Login"}
                 className={
-                  " bg-[#e2e0dd] hover:bg-white p-3 text-black rounded-md w-[100px]"
+                  " bg-[#000] hover:bg-white hover:text-black p-3 text-white rounded-md w-[100px]"
                 }
               />
             </div>
@@ -214,7 +215,7 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
           setLoginDialog(false);
         }}
       >
-        X
+        <CloseIcon />
       </div>
     </Dialog>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import { Dialog, DialogContent } from "@mui/material";
 import AddEducationSection from "./AddEducationSection";
+import CloseIcon from "@mui/icons-material/Close";
 
 // dialog style
 const dialogStyle = {
@@ -12,7 +13,7 @@ const dialogStyle = {
 
   margin: "auto",
   Width: "70vw",
-  color: "#E2E0DD",
+  color: "#000",
 
   maxHeight: "85vh",
 
@@ -21,7 +22,7 @@ const dialogStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: "#1B1F23",
+  backgroundColor: "#F4F2EE",
 };
 
 const AddEducationDialog = ({ addEduDialog, setAddEduDialog }) => {
@@ -45,7 +46,7 @@ const AddEducationDialog = ({ addEduDialog, setAddEduDialog }) => {
           setAddEduDialog(false);
         }}
       >
-        X
+        <CloseIcon />
       </div>
     </Dialog>
   );

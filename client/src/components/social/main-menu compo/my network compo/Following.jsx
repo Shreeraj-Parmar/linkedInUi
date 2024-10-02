@@ -1,8 +1,10 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 
 import { getMyFollowers, sendFollowReq } from "../../../../services/api.js";
+import { toast } from "react-toastify";
+import Tostify from "../../../Tostify.jsx";
 
-const Following = () => {
+const Following = ({ navigate, setCurrMenu }) => {
   const [followingList, setFollowingList] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
 
@@ -19,6 +21,17 @@ const Following = () => {
         initialFollowStatus[user._id] = user.isFollowing; // 'isFollowing' is returned by backend
       });
       setFollowStatus(initialFollowStatus);
+    } else {
+      toast.error(`Error While feaching Your followings , refresh it . !`, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   };
 
@@ -34,6 +47,19 @@ const Following = () => {
         [receiverId]: !prevStatus[receiverId],
       }));
     } else {
+      toast.error(
+        `Error While follow/unfollow please try again , refresh it . !`,
+        {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
       console.error("Error while following/unfollowing:", res.data.message);
     }
   };
@@ -48,17 +74,26 @@ const Following = () => {
           return (
             <div
               key={user._id}
-              className="bg-[#293138] flex items-center max-w-[100%]  w-[100%] p-2 min-h-[10%] rounded-md "
+              className=" flex items-center max-w-[100%] border-b border-gray-400 border-opacity-40 w-[100%] p min-h-[10%] rounded-md "
             >
+              <Tostify />
               <div className="w-[] p-1 ">
                 <img
                   src={user.profilePicture || "/blank.png"}
                   alt=""
-                  className="min-w-[70px] max-w-[70px] h-[70px] rounded-full  "
+                  className="min-w-[70px] border border-gray-400 border-opacity-40 max-w-[70px] h-[70px] rounded-full  "
                 />
               </div>
               <div className=" flex-row ml-3 space-y-[-5px] lg:min-w-[200px]">
-                <p className="text-[#e8e8e8] hover:text-blue-500 hover:underline cursor-pointer">
+                <p
+                  onClick={() => {
+                    setCurrMenu("");
+                    setTimeout(() => {
+                      navigate(`/user/${user._id}`);
+                    }, 500);
+                  }}
+                  className="text-[#000] hover:text-blue-500 hover:underline cursor-pointer"
+                >
                   {" "}
                   {user.name}
                 </p>

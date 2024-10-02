@@ -11,17 +11,32 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const Navbar = () => {
-  const { isLogin, setIsLogin, file, setFile, currMenu, setCurrMenu } =
-    useContext(AllContext);
+  const {
+    isLogin,
+    setIsLogin,
+    file,
+    setFile,
+    currMenu,
+    setCurrMenu,
+    lightMode,
+  } = useContext(AllContext);
   const navigate = useNavigate();
   return (
-    <div className="flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ">
-      <div className="main-up h-[7vh]  text-white flex justify-center items-center  border-b-[1px] border-b-[rgb(186,186,186)]  w-[100%]">
+    <div
+      className={`flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ${
+        lightMode && " bg-white"
+      }`}
+    >
+      <div
+        className={` main-up h-[7vh]  text-white flex justify-center items-center  border-b-[1px] border-b-[rgb(186,186,186)]  w-[100%] ${
+          lightMode && " text-black"
+        }`}
+      >
         <div className="up-header-wrapper flex justify-between w-[80%]">
           <div className="logo-side flex justify-center ml-5 items-center">
             <div className="flex justify-center items-center">
               <LinkedInIcon
-                className="text-white cursor-pointer"
+                className={` cursor-pointer ${lightMode && " text-blue-600"}`}
                 fontSize="large"
               />
             </div>
@@ -43,7 +58,7 @@ const Navbar = () => {
                 <button>
                   <HomeIcon
                     fontSize="medium"
-                    className="text-[#abacad] hover:text-[#e9e9e9]"
+                    className="text-[#6c6c6c] hover:text-[#e9e9e9]"
                   />
                 </button>
               </div>
@@ -73,12 +88,12 @@ const Navbar = () => {
                 <button>
                   <PeopleIcon
                     fontSize="medium"
-                    className="text-[#abacad] hover:text-[#e9e9e9]"
+                    className="text-[#6c6c6c] hover:text-[#000]"
                   />
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#abacad] hover:text-[#e9e9e9]">
+                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
                   My Network
                 </p>
               </div>
@@ -90,7 +105,9 @@ const Navbar = () => {
                   return;
                 } else {
                   setCurrMenu("message");
-                  navigate("/message");
+                  setTimeout(() => {
+                    navigate("/message");
+                  }, 500);
                 }
               }}
               className={` ${
@@ -101,12 +118,12 @@ const Navbar = () => {
                 <button>
                   <ChatIcon
                     fontSize="medium"
-                    className="text-[#abacad] hover:text-[#e9e9e9]"
+                    className="text-[#6c6c6c] hover:text-[#000]"
                   />
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#abacad] hover:text-[#e9e9e9]">
+                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
                   Messaging
                 </p>
               </div>
@@ -118,7 +135,9 @@ const Navbar = () => {
                   return;
                 } else {
                   setCurrMenu("notification");
-                  // navigate("/notification");
+                  //  setTimeout(() => {
+                  // // navigate("/notification");
+                  //  }, 500);
                 }
               }}
               className={` ${
@@ -129,12 +148,12 @@ const Navbar = () => {
                 <button>
                   <NotificationsActiveIcon
                     fontSize="medium"
-                    className="text-[#abacad] hover:text-[#e9e9e9]"
+                    className="text-[#6c6c6c] hover:text-[#000]"
                   />
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#abacad] hover:text-[#e9e9e9]">
+                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
                   Notifications
                 </p>
               </div>
@@ -146,7 +165,9 @@ const Navbar = () => {
                   return;
                 } else {
                   setCurrMenu("profile");
-                  // navigate("/profile");
+                  setTimeout(() => {
+                    navigate("/profile");
+                  }, 500);
                 }
               }}
               className={` ${
@@ -157,12 +178,12 @@ const Navbar = () => {
                 <button>
                   <AccountCircleIcon
                     fontSize="medium"
-                    className="text-[#abacad] hover:text-[#e9e9e9]"
+                    className="text-[#6c6c6c] hover:text-[#000]"
                   />
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#abacad] hover:text-[#e9e9e9]">
+                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
                   Me
                 </p>
               </div>
