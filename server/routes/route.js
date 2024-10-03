@@ -47,6 +47,7 @@ import {
 import {
   saveMSGInDB,
   sendALlMsgAccConvId,
+  markAsReadUpdate,
 } from "../controller/msg-controller.js";
 
 router.post("/user/signup", saveNewUser);
@@ -94,5 +95,6 @@ router.post("/conversation/receiver", jwtMiddle, sendReceiverData);
 // msg
 router.post("/msg", jwtMiddle, saveMSGInDB);
 router.get("/msg/:convId", jwtMiddle, sendALlMsgAccConvId);
+router.post("/msg/read", jwtMiddle, markAsReadUpdate);
 
 export default router;

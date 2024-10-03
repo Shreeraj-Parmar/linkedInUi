@@ -42,11 +42,21 @@ io.on("connection", (client) => {
   // join a unique conversation room    // 1st join room
   client.on("join_conversation", (conversationId) => {
     client.join(conversationId); // join specific ID    // here room = conversationId
-    console.log("user joined conversation : ", conversationId);
+    console.log("user joined conversation :  ", conversationId);
   });
 
   // Handle incoming messages from the client
   client.on("send_message", (data) => {
+    console.log(
+      `
+    
+      asd
+      sad
+      asd
+      asd
+      `,
+      data
+    );
     const { conversationId, message } = data;
     console.log("recieved msg is", message);
 

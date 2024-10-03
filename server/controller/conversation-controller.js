@@ -75,14 +75,14 @@ export const sendAllConversations = async (req, res) => {
   try {
     const currUserId = req._id; // Assuming the sender's ID is available from the request token/session
 
-    console.log("curruserid is", req._id);
+    // console.log("curruserid is", req._id);
     // Step 1: Find all conversations where the current user is a member
     const conversations = await Conversation.find({
       members: { $in: [currUserId] },
     })
       .populate({
         path: "members", // Populate user details for each member
-        select: "name profilePicture", // Only get the user's name and profilePic
+        select: "name profilePicture unreadMessages", // Only get the user's name and profilePic & unread...
       })
       .populate({
         path: "lastMessage", // Populate the last message
@@ -100,13 +100,14 @@ export const sendAllConversations = async (req, res) => {
         (member) => member._id.toString() !== currUserId.toString()
       );
 
-      console.log("reciever is", receiver);
+      // console.log("reciever is", receiver);
       const lastMessage = conversation.lastMessage;
 
       return {
         conversationId: conversation._id,
         receiverId: receiver._id,
         receiverName: receiver.name,
+        unreadMessages: conversation.unreadMessages,
 
         receiverProfilePicture: receiver.profilePicture,
         lastMessage: conversation.lastMessage

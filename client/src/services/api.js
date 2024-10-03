@@ -559,3 +559,17 @@ export const getMsgAccConvId = async (id) => {
     );
   }
 };
+
+// mark as read message sysytem
+export const markAsRead = async (data) => {
+  try {
+    let res = await axios.post(`${API}/msg/read`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling markAsRead & error is : ${error.message}`);
+  }
+};

@@ -6,6 +6,7 @@ import {
   sendConnect,
   setConversation,
   getMsgAccConvId,
+  markAsRead,
 } from "../../services/api.js";
 import LoginDialog from "./LoginDialog.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
@@ -87,10 +88,18 @@ const UserProfile = () => {
       console.log(res.data);
       setCurrConversationId(res.data.id);
 
+      let convId = res.data.id;
+
       let res2 = await getMsgAccConvId(res.data.id);
       if (res2.status === 200) {
         console.log("messages is", res2.data);
         setMessages(res2.data);
+      }
+
+      console.log("conversation id selected", convId);
+      let res3 = await markAsRead({ convId, userId });
+      if (res3.status === 200) {
+        console.log("message seen by user");
       }
 
       console.log("connection set");

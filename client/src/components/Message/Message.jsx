@@ -11,6 +11,7 @@ import { AllContext } from "../../context/UserContext";
 import { io } from "socket.io-client";
 import { toast } from "react-toastify";
 import Brightness1Icon from "@mui/icons-material/Brightness1";
+import Badge from "@mui/material/Badge";
 
 import moment from "moment";
 
@@ -20,6 +21,7 @@ import {
   getAllConversations,
   sendMsg,
   getMsgAccConvId,
+  markAsRead,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
 
@@ -65,6 +67,11 @@ const Message = () => {
 
     // Listen for new messages
     socket.current.on("receive_message", (message) => {
+      console.log("this is receved msg from socketio", message);
+      if (message.conversationId === currConversationId) {
+        // Mark message as read if conversation is active
+        markAsReadFunction(currConversationId, currUserData._id);
+      }
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
@@ -76,6 +83,12 @@ const Message = () => {
       socket.current.disconnect(); // Disconnect when component unmounts
     };
   }, [currConversationId]);
+
+  useEffect(() => {
+    if (currConversationId) {
+      handleConversationSelect(currConversationId);
+    }
+  }, []);
 
   // Register user on connection
   useEffect(() => {
@@ -114,6 +127,7 @@ const Message = () => {
 
   const handleConversationSelect = (convId) => {
     setCurrConversationId(convId);
+    markAsReadFunction(convId, currUserData._id);
     fetchMessagesFunc(convId);
   };
 
@@ -183,6 +197,13 @@ const Message = () => {
     }
   };
 
+  const markAsReadFunction = async (convId, userId) => {
+    let res = await markAsRead({ convId, userId });
+    if (res.status === 200) {
+      console.log("message seen by user");
+    }
+  };
+
   useEffect(() => {
     if (currConversationId) {
       findReceiverData();
@@ -206,6 +227,12 @@ const Message = () => {
       }, 1000);
     }
   }, []);
+  const truncateMessage = (message, maxLength = 10) => {
+    return message.length > maxLength
+      ? `${message.substring(0, maxLength)}...`
+      : message;
+  };
+
   return (
     <div className="main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]">
       <Tostify />
@@ -238,12 +265,18 @@ const Message = () => {
                         </div>
                         <div className="w-[70%] ">
                           <p className="text-black">{conv.receiverName}</p>
-                          <p className="text-[#ACACAC] text-sm">
-                            {currUserData &&
-                            conv.lastMessageSenderId === currUserData._id
-                              ? "You"
-                              : conv.receiverName}
-                            : {conv.lastMessage}
+                          <p className="text-[#ACACAC] text-sm flex  items-center">
+                            {truncateMessage(conv.lastMessage)}
+                            <p className=" text-right  flex ml-20 justify-end">
+                              <Badge
+                                badgeContent={
+                                  currUserData &&
+                                  conv.unreadMessages[currUserData._id]
+                                }
+                                color="primary"
+                                className=""
+                              ></Badge>
+                            </p>
                           </p>
                         </div>
                       </div>
@@ -298,16 +331,21 @@ const Message = () => {
                 </div>
               </div>
               <div className="chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-y-scroll">
-                {messages &&
-                  messages.map((msg) => {
+                {Array.isArray(messages) &&
+                  messages.map((msg, index) => {
+                    if (!msg || !msg.text) {
+                      console.warn("Undefined message or text found:", msg);
+                      return null; // Skip undefined or invalid messages
+                    }
                     const isCurrentUser =
                       currUserData &&
                       currUserData._id &&
+                      msg &&
                       msg.senderId === currUserData._id;
                     return (
                       <div
-                        key={msg._id}
-                        className={`message   flex r  mt-2 ${
+                        key={index}
+                        className={`message   flex   mt-2 ${
                           isCurrentUser ? "justify-end" : " justify-start"
                         }`}
                       >
@@ -323,10 +361,10 @@ const Message = () => {
                               isCurrentUser ? "  text-black " : " text-white "
                             }`}
                           >
-                            {msg.text}
+                            {msg && msg.text}
                           </p>
                           <p className="text-gray-400">
-                            {moment(msg.createdAt).fromNow()}
+                            {moment(msg && msg.createdAt).fromNow()}
                           </p>
                         </div>
                       </div>
