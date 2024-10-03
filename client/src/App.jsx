@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 // Context:
 import UserContext from "./context/UserContext";
-
+// import { SocketProvider } from "./context/SocketContext";
 //components:
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
@@ -73,8 +73,10 @@ function App() {
   return (
     <>
       <UserContext>
+        {/* <SocketProvider> */}
         <CheckInternet />
         <RouterProvider router={UserRouter} />
+        {/* </SocketProvider> */}
       </UserContext>
     </>
   );

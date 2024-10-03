@@ -47,16 +47,6 @@ io.on("connection", (client) => {
 
   // Handle incoming messages from the client
   client.on("send_message", (data) => {
-    console.log(
-      `
-    
-      asd
-      sad
-      asd
-      asd
-      `,
-      data
-    );
     const { conversationId, message } = data;
     console.log("recieved msg is", message);
 

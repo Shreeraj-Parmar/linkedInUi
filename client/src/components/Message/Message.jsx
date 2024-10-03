@@ -72,7 +72,11 @@ const Message = () => {
         // Mark message as read if conversation is active
         markAsReadFunction(currConversationId, currUserData._id);
       }
-      setMessages((prevMessages) => [...prevMessages, message]);
+      if (message.senderId !== currUserData._id) {
+        // Only add the message if it's not from the current user
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
+      /// change it..
     });
 
     // Listen for the response to get all currently online users

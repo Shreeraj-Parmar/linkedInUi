@@ -47,19 +47,19 @@ export const sendALlMsgAccConvId = async (req, res) => {
 
 // mark as read msg
 export const markAsReadUpdate = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const { convId, userId } = req.body;
   try {
     const conv = await Conversation.findById(convId);
 
-    console.log("conv is............", conv);
+    // console.log("conv is............", conv);
 
-    console.log("before......conv.unread", conv.unreadMessages);
+    // console.log("before......conv.unread", conv.unreadMessages);
 
     if (!conv.unreadMessages) {
       conv.unreadMessages = new Map();
     }
-    console.log("after......conv.unread", conv.unreadMessages);
+    // console.log("after......conv.unread", conv.unreadMessages);
 
     if (conv.unreadMessages.has(userId)) {
       conv.unreadMessages.set(userId, 0);
@@ -67,7 +67,7 @@ export const markAsReadUpdate = async (req, res) => {
 
     let result = await conv.save();
 
-    console.log(result);
+    // console.log(result);
 
     if (result) {
       return res.status(200).json({ message: "Message seen.." });
