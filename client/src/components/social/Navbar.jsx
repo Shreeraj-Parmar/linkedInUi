@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 
 import { AllContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import { getAllUnreadMsg } from "../../services/api.js";
 //icons
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import HomeIcon from "@mui/icons-material/Home";
@@ -9,6 +10,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import ChatIcon from "@mui/icons-material/Chat";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import Badge from "@mui/material/Badge";
 
 const Navbar = () => {
   const {
@@ -18,9 +20,21 @@ const Navbar = () => {
     setFile,
     currMenu,
     setCurrMenu,
+    messages,
     lightMode,
   } = useContext(AllContext);
   const navigate = useNavigate();
+  const [unreadMSGCount, setMSGUnreadCount] = useState(0);
+  const getAllUnreadMessagesFunc = async () => {
+    let res = await getAllUnreadMsg();
+    res.status === 200 && console.log(res.data);
+    res.status === 200 && setMSGUnreadCount(res.data);
+  };
+
+  useEffect(() => {
+    getAllUnreadMessagesFunc();
+  }, [messages]);
+
   return (
     <div
       className={`flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ${
@@ -116,10 +130,23 @@ const Navbar = () => {
             >
               <div className=" flex justify-center items-center">
                 <button>
-                  <ChatIcon
-                    fontSize="medium"
-                    className="text-[#6c6c6c] hover:text-[#000]"
-                  />
+                  {currMenu !== "message" ? (
+                    <Badge
+                      badgeContent={unreadMSGCount}
+                      style={{ width: "25px", height: "15px" }}
+                      color="primary"
+                    >
+                      <ChatIcon
+                        fontSize="small"
+                        className="text-[#6c6c6c] hover:text-[#000]"
+                      />
+                    </Badge>
+                  ) : (
+                    <ChatIcon
+                      fontSize="medium"
+                      className="text-[#6c6c6c] hover:text-[#000]"
+                    />
+                  )}
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">

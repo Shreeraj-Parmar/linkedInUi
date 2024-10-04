@@ -39,7 +39,7 @@ export const saveNewUser = async (req, res) => {
         // console.log("new user withou jwt", newUser);
         // token
         let data = await newUser.save();
-        console.log(data);
+        // console.log(data);
 
         res.status(200).json({
           message: "user registered successfully",
@@ -80,7 +80,7 @@ export const checkLogin = async (req, res) => {
       { $set: { refreshToken: refreshToken } },
       { new: true } // Options
     );
-    console.log("user hash", userHash);
+    // console.log("user hash", userHash);
     if (userHash) {
       bcrypt.compare(req.body.password, userHash.hash, function (err, result) {
         if (result) {
@@ -153,7 +153,7 @@ export const checkURL = async (req, res) => {
 export const sendUserData = async (req, res) => {
   try {
     let user = await User.findOne({ email: req.user });
-    console.log(user);
+    // console.log(user);
     if (user) {
       res.status(200).json({ user });
     } else {
@@ -200,7 +200,7 @@ export const sendDataAccCity = async (req, res) => {
       city: data.city,
       _id: { $ne: data._id }, // Exclude the current user based on _id
     }).select("city pincode profilePicture name gender _id");
-    console.log(dataAccCity);
+    // console.log(dataAccCity);
 
     if (dataAccCity) {
       res.status(200).json({ dataAccCity });
@@ -285,7 +285,7 @@ export const checkFollowOrNot = async (req, res) => {
     }
 
     const isFollowing = user.following.includes(userId); // boolean
-    console.log(isFollowing);
+    // console.log(isFollowing);
     res.status(200).json({ isFollowing });
   } catch (error) {
     console.log(
@@ -372,10 +372,10 @@ export const sendAllConnectionReq = async (req, res) => {
         path: "connectionRequests", // The field that contains the array of user references
         select: "name city gender", // Specify the fields you want to retrieve for each connection request
       });
-    console.log(
-      ".................../n/n .............. connection req of user is ",
-      user
-    );
+    // console.log(
+    //   ".................../n/n .............. connection req of user is ",
+    //   user
+    // );
 
     // Check if the user or their connection requests exist
     if (!user || !user.connectionRequests) {
@@ -394,7 +394,7 @@ export const sendAllConnectionReq = async (req, res) => {
 
 // update connection req
 export const updateConnectionInDB = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   let { receiverId, reqStatus } = req.body;
 
   try {

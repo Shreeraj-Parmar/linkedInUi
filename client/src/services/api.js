@@ -573,3 +573,22 @@ export const markAsRead = async (data) => {
     console.log(`error while calling markAsRead & error is : ${error.message}`);
   }
 };
+
+// get all unread msg for
+
+export const getAllUnreadMsg = async () => {
+  console.log("trrrrrrrrrigrerererer");
+  console.log("token isssssssssssssssssss", localStorage.getItem("token"));
+  try {
+    let res = await axios.get(`${API}/msg-unread`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllUnreadMsg & error is : ${error.message}`
+    );
+  }
+};

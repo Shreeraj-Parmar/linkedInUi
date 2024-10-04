@@ -79,3 +79,52 @@ export const markAsReadUpdate = async (req, res) => {
     return res.status(500).json(error.message);
   }
 };
+
+// send all unread msg for show in navbar
+export const sendAllUnreadMSG = async (req, res) => {
+  console.log(`Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    
+    
+    asdasd858585
+    
+    asssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+    
+    
+    
+    
+    asssssssssssssssssssssssssssssssss`);
+  try {
+    const userId = req._id; // Assuming req._id holds the user ID
+
+    // Query to find all conversations where the user is a member and has unread messages
+    const allUnreadConversations = await Conversation.aggregate([
+      {
+        $match: {
+          members: { $in: [userId] }, // Find conversations where the user is a member
+          [`unreadMessages.${userId}`]: { $gt: 0 }, // Only return conversations where the user has unread messages
+        },
+      },
+      {
+        $group: {
+          _id: null, // Group all conversations together to calculate the total
+          totalUnread: { $sum: { $toInt: `$unreadMessages.${userId}` } }, // Sum the unread message count for the user
+        },
+      },
+    ]);
+
+    // If there are unread messages, return the count, otherwise return 0
+    const unreadCount =
+      allUnreadConversations.length > 0
+        ? allUnreadConversations[0].totalUnread
+        : 0;
+
+    console.log(`User hello ${userId} has ${unreadCount} unread messages.`);
+
+    return res.status(200).json(unreadCount);
+  } catch (error) {
+    console.log(
+      `error while calling sendAllUnreadMSG & error is : ${error.message}`
+    );
+    return res.status(500).json(error.message);
+  }
+};
