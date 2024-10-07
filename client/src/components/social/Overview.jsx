@@ -29,6 +29,7 @@ const Overview = () => {
   } = useContext(AllContext);
   const navigate = useNavigate();
   const [loginDialog, setLoginDialog] = useState(false);
+  const [profileSkeleton, setProfileSkeleton] = useState(false);
 
   const [imgUrl, setImgUrl] = useState(null);
 
@@ -62,6 +63,7 @@ const Overview = () => {
 
   const handleSubmitFile = async (e, isFile) => {
     if (isLogin) {
+      setProfileSkeleton(true);
       console.log("in overview file is", isFile);
       if (isFile) {
         e.preventDefault();
@@ -104,6 +106,7 @@ const Overview = () => {
           theme: "light",
         });
       }
+      setProfileSkeleton(false);
     } else {
       toast.error(`Login to enable Select File.`, {
         position: "top-right",
@@ -150,6 +153,8 @@ const Overview = () => {
                   imgUrl={imgUrl}
                   currUserData={currUserData}
                   isLogin={isLogin}
+                  setProfileSkeleton={setProfileSkeleton}
+                  profileSkeleton={profileSkeleton}
                 />
               </div>
               {/* posts */}

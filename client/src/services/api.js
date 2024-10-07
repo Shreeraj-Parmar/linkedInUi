@@ -592,3 +592,70 @@ export const getAllUnreadMsg = async () => {
     );
   }
 };
+
+// check each other connected or not , if connecct than we redirect to message otherwise not..
+export const checkConnectionEachOther = async (data) => {
+  try {
+    let res = await axios.post(`${API}/msg/verify`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling checkConnectionEachOther & error is : ${error.message}`
+    );
+  }
+};
+
+// new notification
+export const sendNotification = async (data) => {
+  console.log("new notification client function trigger");
+  try {
+    let res = await axios.post(`${API}/notification`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling sendNotification & error is : ${error.message}`
+    );
+  }
+};
+
+// get count of notifications that user unread
+// new notification
+export const getAllUnreadNotiCount = async () => {
+  try {
+    let res = await axios.get(`${API}/notification/count`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllUnreadNotiCount & error is : ${error.message}`
+    );
+  }
+};
+
+// get all notification details
+
+export const fatchAllNotifications = async (page, limit) => {
+  try {
+    let res = await axios.get(`${API}/notifications`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      params: { limit, page }, // Use `page` instead of `skip`
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling fatchAllNotifications: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};

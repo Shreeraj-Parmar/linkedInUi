@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 
 import { AllContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import { getAllUnreadMsg } from "../../services/api.js";
+import { getAllUnreadMsg, getAllUnreadNotiCount } from "../../services/api.js";
 //icons
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import HomeIcon from "@mui/icons-material/Home";
@@ -25,14 +25,21 @@ const Navbar = () => {
   } = useContext(AllContext);
   const navigate = useNavigate();
   const [unreadMSGCount, setMSGUnreadCount] = useState(0);
+  const [unreadNotiCount, setUnreadNotiCount] = useState(0);
   const getAllUnreadMessagesFunc = async () => {
     let res = await getAllUnreadMsg();
     res.status === 200 && console.log(res.data);
     res.status === 200 && setMSGUnreadCount(res.data);
   };
 
+  const getAllUnreadNotifications = async () => {
+    let res = await getAllUnreadNotiCount();
+    res.status === 200 && setUnreadNotiCount(res.data);
+  };
+
   useEffect(() => {
     getAllUnreadMessagesFunc();
+    getAllUnreadNotifications();
   }, [messages]);
 
   return (
@@ -133,7 +140,10 @@ const Navbar = () => {
                   {currMenu !== "message" ? (
                     <Badge
                       badgeContent={unreadMSGCount}
-                      style={{ width: "25px", height: "15px" }}
+                      className={`${
+                        unreadMSGCount > 0 && " w-[25px] h-[15px]"
+                      }`}
+                      // style={{ width: "25px", height: "15px" }}
                       color="primary"
                     >
                       <ChatIcon
@@ -162,9 +172,9 @@ const Navbar = () => {
                   return;
                 } else {
                   setCurrMenu("notification");
-                  //  setTimeout(() => {
-                  // // navigate("/notification");
-                  //  }, 500);
+                  setTimeout(() => {
+                    navigate("/notification");
+                  }, 500);
                 }
               }}
               className={` ${
@@ -173,10 +183,26 @@ const Navbar = () => {
             >
               <div className=" flex justify-center items-center">
                 <button>
-                  <NotificationsActiveIcon
-                    fontSize="medium"
-                    className="text-[#6c6c6c] hover:text-[#000]"
-                  />
+                  {currMenu !== "notification" ? (
+                    <Badge
+                      badgeContent={unreadNotiCount}
+                      className={`${
+                        unreadNotiCount > 0 && " w-[25px] h-[15px]"
+                      }`}
+                      // style={{ width: "25px", height: "15px" }}
+                      color="primary"
+                    >
+                      <NotificationsActiveIcon
+                        fontSize="small"
+                        className="text-[#6c6c6c] hover:text-[#000]"
+                      />
+                    </Badge>
+                  ) : (
+                    <NotificationsActiveIcon
+                      fontSize="medium"
+                      className="text-[#6c6c6c] hover:text-[#000]"
+                    />
+                  )}
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">

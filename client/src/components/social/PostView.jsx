@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { AllContext } from "../../context/UserContext.jsx";
+import { Skeleton } from "@mui/material";
 
 // icons
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
@@ -23,6 +24,7 @@ import {
   getCommentCount,
   sendFollowReq,
   checkIfFollowingUser,
+  sendNotification,
 } from "../../services/api.js";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +44,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [commentCount, setCommentCount] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
   const navigate = useNavigate();
+
+  // loading state:
+  const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
+  const [loadingComments, setLoadingComments] = useState({}); // Loading state for
 
   const getCommentCountFunction = async () => {
     let res = await getCommentCount();
@@ -67,6 +73,14 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     let res = await sendFollowReq({ receiverId: receiver });
     if (res.status === 200) {
       console.log(res.data.message);
+      if (res.data.message === "Now you are following the user!") {
+        await sendNotification({
+          recipient: receiver,
+          sender: currUserData._id,
+          type: "follow",
+          message: "you have new follower",
+        });
+      }
       // Toggle the follow status locally
       setFollowStatus((prevStatus) => ({
         ...prevStatus,
@@ -109,6 +123,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   };
 
   const postFunc = async () => {
+    setLoadingPost(true);
     let res = await getAllPostFromDB();
     let sortedPosts = res.data.allPosts.sort((a, b) => {
       return new Date(b.createdAt) - new Date(a.createdAt); // Sort posts by newest first
@@ -138,6 +153,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       setLikes({});
     }
     checkFollowStatus();
+    setLoadingPost(false);
   };
   useLayoutEffect(() => {
     getData();
@@ -183,8 +199,9 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       console.error("Error updating like status on server", res.data.message);
     }
   };
-  // get all comment
+  // get all comment acc id
   const getAllCommentsFunc = async (id) => {
+    setLoadingComments((prevComment) => ({ ...prevComment, [id]: true }));
     let res = await getCommentAccPost(id);
     if (res && res.status === 200) {
       // Update state with comments
@@ -201,6 +218,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     } else {
       console.error("Failed to fetch comments:", res); // Log an error message if API call fails
     }
+    setLoadingComments((prevComment) => ({ ...prevComment, [id]: false }));
   };
 
   // send CommentData to the Backend
@@ -217,10 +235,14 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     });
     if (res.status === 200) {
       console.log(res.data.message);
+
       getAllCommentsFunc(id);
     } else {
       console.log("error somthing :", res.data.message);
     }
+    console.log("before comment text : ", commentText);
+    setCommentText("");
+    console.log("after comment text : ", commentText);
   };
 
   return (
@@ -268,10 +290,12 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         }`}
       >
         <div className=" h-[100%]  p-2  flex-row space-y-3  ">
+          {/* Skeleton Of Posts */}
           {/* map post logic here */}
 
           {allPost && allPost.length > 0 ? (
             allPost.map((post) => {
+              // all posts
               return (
                 <div className="flex justify-center" key={post._id}>
                   <div
@@ -404,6 +428,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                         </div>
                       </div>
                     </div>
+
                     {commentBoxOpen[post._id] && (
                       <div key={post._id}>
                         <div
@@ -421,6 +446,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               <input
                                 type="text"
                                 name="comment"
+                                value={commentText} // imp for clearing the commentText
                                 ref={commentInputRef}
                                 placeholder="Give Your Comment"
                                 id="comment"

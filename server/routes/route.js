@@ -49,7 +49,14 @@ import {
   sendALlMsgAccConvId,
   markAsReadUpdate,
   sendAllUnreadMSG,
+  availableForSendingMsgOrNot,
 } from "../controller/msg-controller.js";
+
+import {
+  saveNewNotification,
+  sendAllNotifications,
+  sendNotiCount,
+} from "../controller/notification-controller.js";
 
 router.post("/user/signup", saveNewUser);
 router.post("/user/url-check", jwtMiddle, checkURL);
@@ -98,5 +105,11 @@ router.post("/msg", jwtMiddle, saveMSGInDB);
 router.get("/msg/:convId", jwtMiddle, sendALlMsgAccConvId);
 router.post("/msg/read", jwtMiddle, markAsReadUpdate);
 router.get("/msg-unread", jwtMiddle, sendAllUnreadMSG);
+router.post("/msg/verify", jwtMiddle, availableForSendingMsgOrNot);
+
+// notification
+router.post("/notification", jwtMiddle, saveNewNotification);
+router.get("/notification/count", jwtMiddle, sendNotiCount);
+router.get("/notifications", jwtMiddle, sendAllNotifications);
 
 export default router;

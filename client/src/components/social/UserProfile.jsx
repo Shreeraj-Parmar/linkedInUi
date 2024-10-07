@@ -7,10 +7,13 @@ import {
   setConversation,
   getMsgAccConvId,
   markAsRead,
+  checkConnectionEachOther,
 } from "../../services/api.js";
 import LoginDialog from "./LoginDialog.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
 import Navbar from "./Navbar.jsx";
+import { toast } from "react-toastify";
+import Tostify from "../Tostify.jsx";
 
 const UserProfile = () => {
   const {
@@ -82,30 +85,56 @@ const UserProfile = () => {
     console.log(res.data);
   };
 
-  const setConversationFunction = async (data) => {
-    let res = await setConversation(data);
+  const checkConnectionEachOtherFunction = async (data) => {
+    let res = await checkConnectionEachOther(data);
     if (res.status === 200) {
-      console.log(res.data);
-      setCurrConversationId(res.data.id);
+      console.log("you enable to msg");
+      return true;
+    } else if (res.status === 201) {
+      console.log("you not .. enable to msg first connect please");
+      toast.error(`${res.data}`, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      return false;
+    }
+  };
 
-      let convId = res.data.id;
+  const setConversationFunction = async (data) => {
+    // console.log(await checkConnectionEachOtherFunction(data));
+    // here logic of if connections done than msg other wise not in starting otherwise new conversation made
+    if (await checkConnectionEachOtherFunction(data)) {
+      let res = await setConversation(data);
+      if (res.status === 200) {
+        console.log(res.data);
+        setCurrConversationId(res.data.id);
 
-      let res2 = await getMsgAccConvId(res.data.id);
-      if (res2.status === 200) {
-        console.log("messages is", res2.data);
-        setMessages(res2.data);
+        let convId = res.data.id;
+
+        let res2 = await getMsgAccConvId(res.data.id);
+        if (res2.status === 200) {
+          console.log("messages is", res2.data);
+          setMessages(res2.data);
+        }
+
+        console.log("conversation id selected", convId);
+        let res3 = await markAsRead({ convId, userId });
+        if (res3.status === 200) {
+          console.log("message seen by user");
+        }
+
+        console.log("connection set");
+
+        setTimeout(() => {
+          navigate("/message");
+        }, 500);
       }
-
-      console.log("conversation id selected", convId);
-      let res3 = await markAsRead({ convId, userId });
-      if (res3.status === 200) {
-        console.log("message seen by user");
-      }
-
-      console.log("connection set");
-      setTimeout(() => {
-        navigate("/message");
-      }, 500);
     }
   };
 
@@ -131,6 +160,7 @@ const UserProfile = () => {
       <div className="main-overview-wrapper   max-w-[100vw]  overflow-x-hidden">
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
+        <Tostify />
 
         <div className="main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  ">
           <div className="main-down mt-[60px] w-[95%]  min-h-[70%]">

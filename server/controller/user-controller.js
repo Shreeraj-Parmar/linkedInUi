@@ -1,4 +1,5 @@
 import User from "../model/user.js";
+import Notification from "../model/notification.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 

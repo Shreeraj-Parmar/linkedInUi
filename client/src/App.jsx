@@ -20,6 +20,7 @@ import FollowAndFollowing from "./components/social/main-menu compo/my network c
 import UserProfile from "./components/social/UserProfile";
 import Message from "./components/Message/Message";
 import CheckInternet from "./components/Internet/CheckInternet";
+import Notifications from "./components/Notifications/Notifications";
 
 function App() {
   const UserRouter = createBrowserRouter([
@@ -67,6 +68,10 @@ function App() {
     {
       path: "/message",
       element: <Message />,
+    },
+    {
+      path: "/notification",
+      element: <Notifications />,
     },
   ]);
 

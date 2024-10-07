@@ -21,6 +21,7 @@ import {
   getAllConversations,
   sendMsg,
   getMsgAccConvId,
+  checkConnectionEachOther,
   markAsRead,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
@@ -150,32 +151,48 @@ const Message = () => {
   };
 
   const handleSendMsg = async () => {
-    if (currConversationId) {
-      let res = await sendMsg({
-        receiverId: receiverId,
-        conversationId: currConversationId,
-        text: sendMsgText,
-      });
-      if (res.status === 200) {
-        // send to socket server
-        const message = {
-          senderId: currUserData._id,
+    let resChek = await checkConnectionEachOther({ receiverId: receiverId });
+    if (resChek.status === 200) {
+      console.log("you enable to msg");
+
+      if (currConversationId) {
+        let res = await sendMsg({
           receiverId: receiverId,
           conversationId: currConversationId,
           text: sendMsgText,
-
-          createdAt: new Date(),
-        };
-
-        socket.current.emit("send_message", {
-          conversationId: currConversationId,
-          message,
         });
-        console.log(res.data);
-        fetchMessagesFunc(currConversationId);
-        setSendMsgText("");
+        if (res.status === 200) {
+          // send to socket server
+          const message = {
+            senderId: currUserData._id,
+            receiverId: receiverId,
+            conversationId: currConversationId,
+            text: sendMsgText,
+
+            createdAt: new Date(),
+          };
+
+          socket.current.emit("send_message", {
+            conversationId: currConversationId,
+            message,
+          });
+          console.log(res.data);
+          fetchMessagesFunc(currConversationId);
+          setSendMsgText("");
+        } else {
+          toast.error(`Somthing Error To Send Message, please refresh page`, {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+        }
       } else {
-        toast.error(`Somthing Error To Send Message, please refresh page`, {
+        toast.error(`please first select conversation`, {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
@@ -185,9 +202,11 @@ const Message = () => {
           progress: undefined,
           theme: "light",
         });
+        setSendMsgText("");
       }
-    } else {
-      toast.error(`please first select conversation`, {
+    } else if (resChek.status === 201) {
+      console.log("you not .. enable to msg first connect please");
+      toast.error(`${resChek.data}`, {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -197,7 +216,7 @@ const Message = () => {
         progress: undefined,
         theme: "light",
       });
-      setSendMsgText("");
+      return;
     }
   };
 

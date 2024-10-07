@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AllContext } from "../../context/UserContext";
 import { toast } from "react-toastify";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { Skeleton } from "@mui/material";
 
 const Profile = ({
   handleFileChange,
@@ -15,6 +16,8 @@ const Profile = ({
   imgUrl,
   lightMode,
   currUserData,
+  setProfileSkeleton,
+  profileSkeleton,
 }) => {
   const chooseFileRef = useRef(null);
   const { file, setFile } = useContext(AllContext);
@@ -72,33 +75,41 @@ const Profile = ({
         "bg-[#ffffff] border-2 shadow-sm border-gray-400 border-opacity-40"
       } rounded-lg p-2`}
     >
-      {/* logic of aws */}
+      {isLogin && profileSkeleton ? (
+        <div
+          className={`image-wrapper bg-[#1B1F23] ${
+            lightMode && "bg-[#ffffff] "
+          } flex justify-center  ${isLogin && "profile-upload"}`}
+          onClick={handleProfilePicture}
+        ></div>
+      ) : (
+        <div
+          className={`image-wrapper bg-[#1B1F23] ${
+            lightMode && "bg-[#ffffff] "
+          } flex justify-center  ${isLogin && "profile-upload"}`}
+          onClick={handleProfilePicture}
+        >
+          <img
+            src={imgUrl || "/blank.png"} // Show profile image if imgUrl exists, else show dummy image
+            alt="profile or upload image"
+            className={`profile-img cursor-pointer rounded-full lg:min-w-[170px] lg:min-h-[170px]  lg:max-w-[170px] lg:max-h-[170px] mt-5 ${
+              lightMode && "border-2 border-gray-400 border-opacity-40"
+            }`}
+          />
 
-      <div
-        className={`image-wrapper bg-[#1B1F23] ${
-          lightMode && "bg-[#ffffff] "
-        } flex justify-center  ${isLogin && "profile-upload"}`}
-        onClick={handleProfilePicture}
-      >
-        <img
-          src={imgUrl || "/blank.png"} // Show profile image if imgUrl exists, else show dummy image
-          alt="profile or upload image"
-          className={`profile-img cursor-pointer rounded-full lg:min-w-[170px] lg:min-h-[170px]  lg:max-w-[170px] lg:max-h-[170px] mt-5 ${
-            lightMode && "border-2 border-gray-400 border-opacity-40"
-          }`}
-        />
+          {isLogin &&
+            (imgUrl ? (
+              <span className={`${lightMode && " text-black"}  `}>
+                <p className="text-black"> Change Photo</p>
+              </span>
+            ) : (
+              <span className={`${lightMode && " text-black"}`}>
+                <p className="text-black"> Upload Photo</p>
+              </span>
+            ))}
+        </div>
+      )}
 
-        {isLogin &&
-          (imgUrl ? (
-            <span className={`${lightMode && " text-black"}  `}>
-              <p className="text-black"> Change Photo</p>
-            </span>
-          ) : (
-            <span className={`${lightMode && " text-black"}`}>
-              <p className="text-black"> Upload Photo</p>
-            </span>
-          ))}
-      </div>
       {isLogin && (
         <>
           <div className="mt-4">

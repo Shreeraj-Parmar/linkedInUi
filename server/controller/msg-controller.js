@@ -1,5 +1,6 @@
 import Message from "../model/message.js";
 import Conversation from "../model/conversation.js";
+import User from "../model/user.js";
 
 export const saveMSGInDB = async (req, res) => {
   let { receiverId, conversationId, text } = req.body;
@@ -84,15 +85,7 @@ export const markAsReadUpdate = async (req, res) => {
 export const sendAllUnreadMSG = async (req, res) => {
   console.log(`Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     
-    
-    asdasd858585
-    
-    asssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
-    
-    
-    
-    
-    asssssssssssssssssssssssssssssssss`);
+   s`);
   try {
     const userId = req._id; // Assuming req._id holds the user ID
 
@@ -125,6 +118,29 @@ export const sendAllUnreadMSG = async (req, res) => {
     console.log(
       `error while calling sendAllUnreadMSG & error is : ${error.message}`
     );
+    return res.status(500).json(error.message);
+  }
+};
+
+// check if user for sending message to other user available or not via chaking connections
+
+export const availableForSendingMsgOrNot = async (req, res) => {
+  console.log("recever id body is", req.body.receiverId);
+  try {
+    const sender = await User.findById(req._id).select("connections");
+    const receiver = await User.findById(req.body.receiverId).select(
+      "connections"
+    );
+
+    if (
+      sender.connections.includes(receiver._id) &&
+      receiver.connections.includes(sender._id)
+    ) {
+      res.status(200).json("now you can message");
+    } else {
+      res.status(201).json("you can not send msg untile not connected !");
+    }
+  } catch (error) {
     return res.status(500).json(error.message);
   }
 };
