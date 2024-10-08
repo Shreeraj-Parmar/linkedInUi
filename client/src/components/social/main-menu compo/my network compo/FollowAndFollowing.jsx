@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useLayoutEffect } from "react";
 import Navbar from "../../Navbar";
 import Following from "./Following";
 import Followers from "./Followers";
@@ -10,6 +10,12 @@ const Connections = () => {
   const navigate = useNavigate();
 
   const { setCurrMenu } = useContext(AllContext);
+
+  useLayoutEffect(() => {
+    if (window.location.pathname === "/my-network/follow") {
+      setCurrMenu("network");
+    }
+  }, []);
 
   return (
     <div className="main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]">

@@ -4,6 +4,7 @@ import {
   getUserDataAccId,
   sendFollowReq,
   sendConnect,
+  sendNotification,
   setConversation,
   getMsgAccConvId,
   markAsRead,
@@ -34,6 +35,19 @@ const UserProfile = () => {
   const [follow, setFollow] = useState(false);
   const [connection, setConnection] = useState(false);
   const [pendinConnection, setPendingConnection] = useState(false);
+
+  const createNoti = async () => {
+    await sendNotification({
+      recipient: userId,
+      sender: currUserData._id,
+      type: "profile_view",
+      message: "you have new view on your Profile",
+    });
+  };
+
+  useEffect(() => {
+    if (isLogin) createNoti();
+  }, []);
 
   const getUserDataFunc = async () => {
     console.log("use trigger");
@@ -138,7 +152,7 @@ const UserProfile = () => {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     console.log("sadasdasd");
     getUserDataFunc();
   }, []);

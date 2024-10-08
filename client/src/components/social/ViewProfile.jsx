@@ -7,10 +7,14 @@ import Navbar from "./Navbar.jsx";
 import { useNavigate } from "react-router-dom";
 
 const ViewProfile = () => {
-  const { currUserData, setCurrUserData, isLogin } = useContext(AllContext);
+  const { currUserData, setCurrUserData, isLogin, setCurrMenu } =
+    useContext(AllContext);
   const [addEduDialog, setAddEduDialog] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
+    if (window.location.pathname === "/profile") {
+      setCurrMenu("profile");
+    }
     const getData = async () => {
       let res = await getUserData();
       console.log(res.data);

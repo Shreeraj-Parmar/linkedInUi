@@ -158,7 +158,7 @@ const Overview = () => {
                 />
               </div>
               {/* posts */}
-              <div className="posts w-[60%] ">
+              <div className="posts w-[60%]  ">
                 <PostView
                   imgUrl={imgUrl}
                   setLoginDialog={setLoginDialog}

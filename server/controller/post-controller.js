@@ -53,21 +53,32 @@ export const savePostDataIntoDB = async (req, res) => {
 
 // send all post to frontend
 export const sendAllPosts = async (req, res) => {
-  // console.log("runiing......................");
-  try {
-    let allPosts = await Post.find()
-      .populate("user", "name city profilePicture")
-      .populate(""); // Populate user for the post
+  // Extract page and limit from the request query parameters
+  const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10 if not provided
 
-    // console.log("all post start here", allPosts);
-    if (allPosts) {
-      res.status(200).json({ allPosts });
-    } else {
-      res.status(201).json({ message: "Somthing error" });
-    }
+  try {
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    // Calculate the number of posts to skip
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Fetch posts with pagination
+    let allPosts = await Post.find()
+      .populate("user", "name city profilePicture") // Populate user information
+      .sort({ createdAt: -1 }) // Sort by creation date, latest first
+      .skip(skip) // Skip the posts according to pagination
+      .limit(limitNumber); // Limit the number of posts fetched
+
+    // Get the total number of posts for further use (like checking if there are more posts)
+    // const totalPosts = await Post.countDocuments();
+
+    // Return posts and information about pagination
+    res.status(200).json({ allPosts });
   } catch (error) {
     console.log(
-      `error while calling sendAllPosts API & error is ${error.message}`
+      `Error while calling sendAllPosts API & error is: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

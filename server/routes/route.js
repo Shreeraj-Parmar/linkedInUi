@@ -56,6 +56,8 @@ import {
   saveNewNotification,
   sendAllNotifications,
   sendNotiCount,
+  updateNotiClickOn,
+  deleteFromDBNoti,
 } from "../controller/notification-controller.js";
 
 router.post("/user/signup", saveNewUser);
@@ -68,7 +70,7 @@ router.post("/aws/generate", jwtMiddle, sendPreSignedURL);
 router.post("/aws/post/generate", jwtMiddle, sendPreSignedURLFORPOST);
 router.post("/aws/url", jwtMiddle, saveURLIntoDB);
 router.post("/post", jwtMiddle, savePostDataIntoDB);
-router.post("/post/all", sendAllPosts);
+router.get("/post/all", sendAllPosts);
 router.post("/like", jwtMiddle, updateLike);
 router.post("/comment", jwtMiddle, saveCommentIntoDB);
 router.get("/comment", sendCommentAccPost);
@@ -109,6 +111,8 @@ router.post("/msg/verify", jwtMiddle, availableForSendingMsgOrNot);
 
 // notification
 router.post("/notification", jwtMiddle, saveNewNotification);
+router.delete("/notification", jwtMiddle, deleteFromDBNoti);
+router.put("/notification", jwtMiddle, updateNotiClickOn);
 router.get("/notification/count", jwtMiddle, sendNotiCount);
 router.get("/notifications", jwtMiddle, sendAllNotifications);
 

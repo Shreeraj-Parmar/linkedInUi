@@ -16,6 +16,9 @@ const Connections = () => {
   };
 
   useLayoutEffect(() => {
+    if (window.location.pathname === "/my-network/connection") {
+      setCurrMenu("network");
+    }
     getAllConnectionsFunc();
   }, []);
   return (

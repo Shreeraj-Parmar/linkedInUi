@@ -79,3 +79,43 @@ export const sendAllNotifications = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" }); // Handle errors
   }
 };
+
+// update noticlick on
+
+export const updateNotiClickOn = async (req, res) => {
+  // console.log(req.body);
+  try {
+    let newNoti = await Notification.updateOne(
+      { _id: req.body.notiId },
+      { $set: { isClicked: true } },
+      { new: true }
+    );
+
+    console.log(newNoti);
+    // if (unreadCount && unreadCount > 0) {
+    //   res.status(200).json(unreadCount);
+    // }
+  } catch (error) {
+    console.log(
+      `error while calling updateNotiClickOn API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const deleteFromDBNoti = async (req, res) => {
+  console.log('"sdsddelete triffffffff');
+  // console.log(req.body);
+  try {
+    let deletedNoti = await Notification.deleteOne({ _id: req.body.notiId });
+
+    if (deletedNoti) {
+      res.status(200).json("deleted");
+    }
+  } catch (error) {
+    console.log(
+      `error while calling deleteFromDBNoti API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

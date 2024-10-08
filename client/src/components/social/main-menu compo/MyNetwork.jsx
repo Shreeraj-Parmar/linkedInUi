@@ -58,6 +58,9 @@ const MyNetwork = () => {
   };
 
   useLayoutEffect(() => {
+    if (window.location.pathname === "/my-network") {
+      setCurrMenu("network");
+    }
     getConnectionReqFromBackend();
     connectionCountFunction();
   }, []);

@@ -44,6 +44,9 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [commentCount, setCommentCount] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
   const navigate = useNavigate();
+  const [page, setPage] = useState(1); // For pagination
+  const [hasMore, setHasMore] = useState(true); // For checking if there are more notifications to load
+  const limit = 3; // Number of notifications to load at a time
 
   // loading state:
   const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
@@ -122,46 +125,59 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     }));
   };
 
-  const postFunc = async () => {
-    setLoadingPost(true);
-    let res = await getAllPostFromDB();
-    let sortedPosts = res.data.allPosts.sort((a, b) => {
-      return new Date(b.createdAt) - new Date(a.createdAt); // Sort posts by newest first
-    });
-    console.log("sotred post is here", sortedPosts);
+  const postFunc = async (page, limit) => {
+    setLoadingPost(true); // Start loading
+    let res = await getAllPostFromDB(page, limit); // Fetch posts from the database
 
-    // let finalArr = sortedPosts.filter(
-    //   (post) => post.user._id !== currUserData._id
+    if (res.status === 200) {
+      // Check if the response is successful
+      // let res.data.allPosts = res.data.allPosts.sort((a, b) => {
+      //   return new Date(b.createdAt) - new Date(a.createdAt); // Sort posts by newest first
+      // });
+      console.log("Sorted posts:", res.data.allPosts);
 
-    setAllPost(sortedPosts);
+      // Update all posts state with the newly fetched and sorted posts
+      setAllPost((prevPosts) => [...prevPosts, ...res.data.allPosts]);
 
-    console.log("res.data.allPosts:", res.data.allPosts); // Check if posts are being fetched
-    if (!Array.isArray(res.data.allPosts)) {
-      console.error("Error: allPosts is not an array", res.data.allPosts);
-    }
+      // Check if there are more posts to load
+      if (res.data.allPosts.length < limit) {
+        setHasMore(false); // No more posts to load
+      }
 
-    if (currUserData) {
-      const initialLikes = {};
-      res.data.allPosts.forEach((post) => {
-        // Check if the current user has liked the post
-        initialLikes[post._id] = post.likedBy.includes(currUserData._id);
-      });
-      setLikes(initialLikes);
-      console.log("Likes initialized:", initialLikes);
+      if (currUserData) {
+        const initialLikes = {};
+        res.data.allPosts.forEach((post) => {
+          // Check if the current user has liked the post
+          initialLikes[post._id] = post.likedBy.includes(currUserData._id);
+        });
+        setLikes(initialLikes); // Update likes state
+        console.log("Likes initialized:", initialLikes);
+      } else {
+        setLikes({}); // User is not logged in
+      }
+
+      checkFollowStatus(); // Check follow status
     } else {
-      // User is not logged in, set an empty object for likes
-      setLikes({});
+      console.error("Failed to fetch posts:", res); // Handle error
     }
-    checkFollowStatus();
-    setLoadingPost(false);
+
+    setLoadingPost(false); // Stop loading
   };
+
   useLayoutEffect(() => {
     getData();
   }, [isLogin]);
+
+  // useEffect(() => {
+  //   postFunc(page, limit); // Fetch posts once user data is available
+  //   getCommentCountFunction();
+  // }, [currUserData, !postDialog]);
+
   useEffect(() => {
-    postFunc(); // Fetch posts once user data is available
-    getCommentCountFunction();
-  }, [currUserData, !postDialog]);
+    if (hasMore) {
+      postFunc(page, limit);
+    }
+  }, [page]); // Add page as a dependency
 
   // get user data
   const getData = async () => {
@@ -172,13 +188,15 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
 
   // for like update
 
-  const handleLike = async (postId) => {
+  const handleLike = async (postId, userId) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
     }
     // getData();
     const currentLikeStatus = likes[postId];
+
+    console.log("currunt like status", currentLikeStatus);
 
     // Optimistically update UI before waiting for response
     setLikes((prev) => ({
@@ -194,7 +212,15 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     });
     if (res.status === 200) {
       console.log(res.data.message);
-      postFunc(postId); // Call postFunc after successful like update
+      if (res.data.message === "Like status updated") {
+        await sendNotification({
+          recipient: userId,
+          sender: currUserData._id,
+          type: "like",
+          message: "You Have new Liked On your post",
+        });
+      }
+      postFunc(page, limit); // Call postFunc after successful like update
     } else {
       console.error("Error updating like status on server", res.data.message);
     }
@@ -221,8 +247,21 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     setLoadingComments((prevComment) => ({ ...prevComment, [id]: false }));
   };
 
+  const handleScrollPost = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+    if (
+      scrollTop + clientHeight >= scrollHeight - 10 &&
+      hasMore &&
+      !loadingPost
+    ) {
+      // If user is near the bottom of the list, load more notifications
+      setPage((prevPage) => prevPage + 1); // Move to the next page
+    }
+  };
+
   // send CommentData to the Backend
-  const handleCommentPost = async (id) => {
+  const handleCommentPost = async (id, userId) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
@@ -235,7 +274,13 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     });
     if (res.status === 200) {
       console.log(res.data.message);
-
+      if (res.data.message === "Comment Added")
+        await sendNotification({
+          recipient: userId,
+          sender: currUserData._id,
+          type: "comment",
+          message: "you have new comment on post",
+        });
       getAllCommentsFunc(id);
     } else {
       console.log("error somthing :", res.data.message);
@@ -246,7 +291,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   };
 
   return (
-    <div className="post-wrapper  w-[100%]  h-[100%] flex-row space-y-3">
+    <div className="post-wrapper  w-[100%]   flex-row space-y-3">
       <Tostify />
       <PostDialog postDialog={postDialog} setPostDialog={setPostDialog} />
       <div
@@ -285,7 +330,8 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       {/* Show All Posts */}
 
       <div
-        className={`posts text-[#DBDBDC]  h-fit  w-[100%]   p-1 rounded-md ${
+        onScroll={handleScrollPost}
+        className={`posts text-[#DBDBDC]  overflow-auto max-h-[100vh]  w-[100%]   p-1 rounded-md ${
           lightMode && "  text-black"
         }`}
       >
@@ -403,7 +449,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                             lightMode && "hover:bg-[#F4F2EE] "
                           }  hover:bg-[#293138] p-2 rounded-md`}
                           onClick={() => {
-                            handleLike(post._id);
+                            handleLike(post._id, post.user._id);
                           }}
                         >
                           {likes[post._id] ? (
@@ -466,7 +512,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                   : "bg-[#71B7FB] text-black"
                               } p-2 rounded-md`}
                               onClick={() => {
-                                handleCommentPost(post._id);
+                                handleCommentPost(post._id, post.user._id);
                               }}
                               disabled={isDisabledPostBtn}
                             >

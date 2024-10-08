@@ -175,9 +175,14 @@ export const savePostData = async (data) => {
 };
 
 // get all post from DB
-export const getAllPostFromDB = async (data) => {
+
+export const getAllPostFromDB = async (page, limit) => {
   try {
-    let res = await axios.post(`${API}/post/all`, data, {
+    // Construct the URL with query parameters
+    const url = `${API}/post/all?page=${page}&limit=${limit}`;
+
+    // Use GET request with the constructed URL
+    let res = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -185,7 +190,7 @@ export const getAllPostFromDB = async (data) => {
     return res;
   } catch (error) {
     console.log(
-      `error while calling getAllPostFromDB & error is : ${error.message}`
+      `Error while calling getAllPostFromDB & error is: ${error.message}`
     );
   }
 };
@@ -656,6 +661,39 @@ export const fatchAllNotifications = async (page, limit) => {
     return res;
   } catch (error) {
     console.log(`Error while calling fatchAllNotifications: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// update isClick on notification
+
+export const updateNotiClick = async (data) => {
+  try {
+    let res = await axios.put(`${API}/notification`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling updateNotiClick: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// delete notification by id
+
+export const deleteNoti = async (data) => {
+  try {
+    let res = await axios.delete(`${API}/notification`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      data: data, // Pass data as part of the config
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling deleteNoti: ${error.message}`);
     return null; // Return null or handle the error as needed
   }
 };

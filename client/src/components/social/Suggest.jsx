@@ -71,7 +71,7 @@ const Suggest = ({
         ) : (
           <div className="p-2">
             <div>
-              <img src={"/login.png"} alt="" className=" shadow-sm" />
+              <img src={"/login.jpg"} alt="" className=" shadow-sm" />
             </div>
 
             <p className=" text-center">
