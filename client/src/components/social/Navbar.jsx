@@ -92,10 +92,17 @@ const Navbar = () => {
             >
               <div className=" flex justify-center items-center">
                 <button>
-                  <HomeIcon
-                    fontSize="medium"
-                    className="text-[#6c6c6c] hover:text-[#e9e9e9]"
-                  />
+                  {currMenu === "home" ? (
+                    <HomeIcon
+                      fontSize="medium"
+                      className="text-[#6c6c6c] hover:text-[#e9e9e9]"
+                    />
+                  ) : (
+                    <HomeIcon
+                      fontSize="small"
+                      className="text-[#6c6c6c] hover:text-[#e9e9e9]"
+                    />
+                  )}
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">
@@ -132,7 +139,7 @@ const Navbar = () => {
                       color="primary"
                     >
                       <PeopleIcon
-                        fontSize="medium"
+                        fontSize="small"
                         className="text-[#6c6c6c] hover:text-[#000]"
                       />
                     </Badge>
@@ -261,10 +268,17 @@ const Navbar = () => {
               >
                 <div className=" flex justify-center items-center">
                   <button>
-                    <AccountCircleIcon
-                      fontSize="medium"
-                      className="text-[#6c6c6c] hover:text-[#000]"
-                    />
+                    {currMenu !== "profile" ? (
+                      <AccountCircleIcon
+                        fontSize="small"
+                        className="text-[#6c6c6c] hover:text-[#000]"
+                      />
+                    ) : (
+                      <AccountCircleIcon
+                        fontSize="medium"
+                        className="text-[#6c6c6c] hover:text-[#000]"
+                      />
+                    )}
                   </button>
                 </div>
                 <div className=" flex justify-center mt-[-5px] items-center">
