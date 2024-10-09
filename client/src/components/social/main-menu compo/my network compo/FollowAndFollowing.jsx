@@ -58,7 +58,7 @@ const Connections = () => {
                 </div>
                 <div className="divider"></div>
               </div>
-              <div className="flex-row justify-center mt-2 space-y-2  items-center">
+              <div className="">
                 {/* logic of follow & following swapping components */}
 
                 {f2Click === "following" && (

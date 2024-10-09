@@ -196,21 +196,25 @@ export const saveEDUDetails = async (req, res) => {
 // send data according to city
 export const sendDataAccCity = async (req, res) => {
   try {
+    const { page = 1, limit = 10 } = req.query; // Set default values for page and limit
     let data = await User.findOne({ email: req.user });
+
     let dataAccCity = await User.find({
       city: data.city,
-      _id: { $ne: data._id }, // Exclude the current user based on _id
-    }).select("city pincode profilePicture name gender _id");
-    // console.log(dataAccCity);
+      _id: { $ne: data._id }, // Exclude the current user
+    })
+      .select("city pincode profilePicture name gender _id")
+      .skip((page - 1) * limit) // Skip documents based on the current page
+      .limit(parseInt(limit)); // Limit the number of documents returned
 
     if (dataAccCity) {
       res.status(200).json({ dataAccCity });
     } else {
-      res.status(201).json({ message: "Somthing Error" });
+      res.status(404).json({ message: "No users found" });
     }
   } catch (error) {
     console.log(
-      `error while calling sendDataAccCity API & error is ${error.message}`
+      `Error while calling sendDataAccCity API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -299,30 +303,18 @@ export const checkFollowOrNot = async (req, res) => {
 //send followers list || Following List
 export const sendFollowerOrFollowingList = async (req, res) => {
   let { what } = req.query;
-  console.log("what is", what);
+  const page = parseInt(req.query.page) || 1; // Default to page 1
+  const limit = parseInt(req.query.limit) || 10; // Default to limit of 10
+
   try {
-    if (what === "connections") {
-      let user = await User.findById(req._id).select(`${what}`);
-
-      // Fetch full details of the followers/following with user details like { id, name, profilePic, city }
-      let list = await User.find({ _id: { $in: user[what] } }).select(
-        "name profilePicture city gender"
-      );
-
-      console.log(list);
-      if (list) {
-        return res.status(200).json({ list: list });
-      }
-      return;
-    }
-
     let user = await User.findById(req._id).select(`${what}`);
 
     // Fetch full details of the followers/following with user details like { id, name, profilePic, city }
-    let list = await User.find({ _id: { $in: user[what] } }).select(
-      "name profilePicture city gender"
-    );
-    // console.log(list);
+    let list = await User.find({ _id: { $in: user[what] } })
+      .select("name profilePicture city gender")
+      .skip((page - 1) * limit) // Skip records for pagination
+      .limit(limit); // Limit records to fetch
+
     let modifiedList = await Promise.all(
       list.map(async (userInList) => {
         let isFollowing = await User.exists({
@@ -335,7 +327,7 @@ export const sendFollowerOrFollowingList = async (req, res) => {
         };
       })
     );
-    console.log(modifiedList);
+
     if (modifiedList) {
       res.status(200).json({ list: modifiedList });
     }
@@ -375,11 +367,7 @@ export const sendAllConnectionReq = async (req, res) => {
       });
 
     // Check if the user or their connection requests exist
-    if (
-      !user ||
-      !user.connectionRequests ||
-      user.connectionRequests.length === 0
-    ) {
+    if (!user || !user.connectionRequests) {
       return res.status(404).json({ message: "No connection requests found." });
     }
 
@@ -388,6 +376,8 @@ export const sendAllConnectionReq = async (req, res) => {
       user: req.user, // The populated user details
       isRead: req.isRead, // Include isRead status
     }));
+
+    console.log("all connection req is : ", connectionRequests);
 
     // Respond with the populated connection request details
     res.status(200).json({ connectionRequests });
@@ -534,18 +524,24 @@ export const sendConnectReq = async (req, res) => {
 
 // send connection req count
 export const sendConnectReqCount = async (req, res) => {
-  // console.log("send connenctio nhiited");
   try {
-    let user = await User.findById({ _id: req._id }).select(
-      "connectionRequests"
-    );
+    let user = await User.findById(req._id).select("connectionRequests");
 
-    console.log("is not read ", user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    res.status(200).json({ count: user.connectionRequests.length });
+    const unreadCount = user.connectionRequests.filter(
+      (req) => req.isRead === false
+    ).length;
+
+    // const unreadCount = user.connectionRequests.length;
+
+    console.log("Unread connection requests count: ", unreadCount);
+    res.status(200).json({ count: unreadCount });
   } catch (error) {
     console.log(
-      `error while calling sendConnectReqCount API & error is ${error.message}`
+      `Error while calling sendConnectReqCount API: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -553,14 +549,30 @@ export const sendConnectReqCount = async (req, res) => {
 
 // update isRead:true
 export const UpdateConnectReqRead = async (req, res) => {
-  console.log("send connenctio nhiited");
+  console.log(`UpdateConnectReqRead API hit
+    
+    
+    okey ........................`);
   try {
-    await User.findByIdAndUpdate({ _id: req._id }, { isRead: true });
+    // Update all connection requests where isRead is false to true
+    await User.findByIdAndUpdate(
+      req._id,
+      {
+        $set: { "connectionRequests.$[elem].isRead": true },
+      },
+      {
+        arrayFilters: [{ "elem.isRead": false }], // Only update unread connection requests
+        multi: true, // Update multiple connection requests if necessary
+        new: true, // Return the modified document
+      }
+    );
 
-    res.status(200).json({ message: "update done lets go " });
+    res
+      .status(200)
+      .json({ message: "All unread connection requests marked as read" });
   } catch (error) {
     console.log(
-      `error while calling UpdateConnectReqRead API & error is ${error.message}`
+      `Error while calling UpdateConnectReqRead API: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

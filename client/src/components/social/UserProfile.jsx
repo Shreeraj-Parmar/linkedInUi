@@ -52,12 +52,14 @@ const UserProfile = () => {
   const getUserDataFunc = async () => {
     console.log("use trigger");
     let res = await getUserDataAccId(userId);
-    console.log(res.data.user);
+    console.log("this is users info", res.data.user);
     if (res.status === 200) {
       setUserData(res.data.user);
       console.log(isLogin);
       if (isLogin) {
         console.log(currUserData._id);
+
+        // follow
         if (
           res.data.user &&
           res.data.user.followers.includes(currUserData._id)
@@ -67,22 +69,31 @@ const UserProfile = () => {
           setFollow(false);
         }
 
+        // pending connection
+        if (res.data.user.connectionRequests.length === 0) {
+          console.log("lenght is", res.data.user.connectionRequests.length);
+          setPendingConnection(false);
+        }
+
         // connection req
         if (
           res.data.user &&
-          res.data.user.connectionRequests.includes(currUserData._id)
+          res.data.user.connectionRequests.length !== 0 &&
+          res.data.user.connectionRequests.map(
+            (req) => req.user._id === currUserData._id
+          )
         ) {
           setPendingConnection(true);
-        } else {
-          // setConnection(true);
+          console.log("check pending connection", pendinConnection);
+        }
 
-          // connection
-          if (
-            res.data.user &&
-            res.data.user.connections.includes(currUserData._id)
-          ) {
-            setConnection(true);
-          }
+        // connection
+        if (
+          res.data.user &&
+          res.data.user.connections.includes(currUserData._id)
+        ) {
+          setConnection(true);
+          setPendingConnection(false);
         }
       }
     } else {

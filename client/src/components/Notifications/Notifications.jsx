@@ -17,13 +17,12 @@ const Notifications = () => {
   const { isLogin, setCurrMenu } = useContext(AllContext);
   const [notificationsList, setNotificationLists] = useState([]);
   const [page, setPage] = useState(1); // For pagination
-  const [loading, setLoading] = useState(false); // For loading state
+  const [loadingSkeleton, setLoadingSkeleton] = useState(true); // For loading state
   const [hasMore, setHasMore] = useState(true); // For checking if there are more notifications to load
   const navigate = useNavigate();
-  const limit = 8; // Number of notifications to load at a time
+  const limit = 7; // Number of notifications to load at a time
 
   const fatchAllNotificationsFunction = async (page, limit) => {
-    setLoading(true); // Start loading
     let res = await fatchAllNotifications(page, limit); // API to fetch notifications
     if (res.status === 200) {
       // Update notification list with newly fetched data
@@ -37,12 +36,13 @@ const Notifications = () => {
         setHasMore(false); // If no more notifications are found, stop loading more
       }
     }
-    setTimeout(() => {
-      setLoading(false); // Stop loading
-    }, 2000);
   };
 
   useLayoutEffect(() => {
+    setLoadingSkeleton(true);
+    setTimeout(() => {
+      setLoadingSkeleton(false); // Stop loading
+    }, 1000);
     if (!isLogin) {
       navigate("/login");
     } else {
@@ -60,7 +60,7 @@ const Notifications = () => {
   // Infinite scrolling logic
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore && !loading) {
+    if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
       // If user is near the bottom of the list, load more notifications
       setPage((prevPage) => prevPage + 1); // Move to the next page
     }
@@ -127,7 +127,7 @@ const Notifications = () => {
           <div className="p-2 border-b-2 border-gray-400 border-opacity-40 border-collapse">
             <p className=" text-xl p-1">All Notifications</p>
           </div>
-          {loading && (
+          {loadingSkeleton && (
             <div className="notifications flex-row">
               {[1, 2, 3, 4, 5, 6].map((noti, index) => (
                 <div
@@ -173,7 +173,9 @@ const Notifications = () => {
           )}
 
           <div className="notifications flex-row">
-            {notificationsList && !loading && notificationsList.length > 0
+            {notificationsList &&
+            !loadingSkeleton &&
+            notificationsList.length > 0
               ? notificationsList.map((noti) => (
                   <div
                     onClick={() => {
@@ -208,7 +210,7 @@ const Notifications = () => {
                         className="max-w-[80px] w-[80px] max-h-[80px] h-[80px] border border-gray-400 border-opacity-40 rounded-full"
                       />
                     </div>
-                    <div className="lg:mr-[255px]">
+                    <div className=" lg:min-w-[500px]">
                       {noti.type === "follow" && (
                         <p className="flex">
                           You Have New Follower
@@ -256,18 +258,18 @@ const Notifications = () => {
                         </p>
                       )}
                       {noti.type === "comment" && (
-                        <p className="flex">
-                          You Have New Comment On your Post, Commented By
-                          <p
-                            onClick={() => {
-                              setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
-                              }, 300);
-                            }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                          >
+                        <p
+                          onClick={() => {
+                            setTimeout(() => {
+                              navigate(`/user/${noti.sender._id}`);
+                            }, 300);
+                          }}
+                          className="flex"
+                        >
+                          You Have New Comment On your Post, Commented By{" "}
+                          <span className="hover:underline hover:text-blue-700 ml-1 font-semibold">
                             {noti.sender.name}
-                          </p>
+                          </span>
                         </p>
                       )}
                       {noti.type === "connection_request" && (
@@ -330,21 +332,23 @@ const Notifications = () => {
                         {noti.type === "profile_view" && "View Profile"}
                       </button>
                     </div>
-                    <div className="lg:mr-[px] flex-row">
-                      <p className="text-center relative right-5 text-[#8f8f8f]">
+                    <div className="lg:min-w-[150px] flex-row">
+                      <p className="text-center  text-[#8f8f8f]">
                         {moment(noti.createdAt).fromNow()}
                       </p>
-                      <DeleteIcon
-                        fontSize="large"
-                        className="cursor-pointer text-red-500 hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10"
-                        onClick={() => {
-                          handleDeleteNoti(noti._id);
-                        }}
-                      />
+                      <div className="flex justify-center items-center">
+                        <DeleteIcon
+                          fontSize="large"
+                          className="cursor-pointer text-[#7e7e7e] hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10"
+                          onClick={() => {
+                            handleDeleteNoti(noti._id);
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))
-              : !loading && (
+              : !loadingSkeleton && (
                   <div>
                     <div className="p-2 flex justify-center items-center">
                       <img

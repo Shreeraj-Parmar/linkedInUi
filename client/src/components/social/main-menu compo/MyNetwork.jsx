@@ -151,6 +151,20 @@ const MyNetwork = () => {
                     : "No Pending Invitations"}
                 </p>
               </div>
+              {connectionReq.length === 0 && (
+                <>
+                  <div className="flex justify-center items-center">
+                    <img
+                      src="/no-data.jpg"
+                      alt=" "
+                      className="h-[250px] w-[250px]"
+                    />
+                  </div>
+                  <p className="text-[#444444] text-center">
+                    No Pending Invitations
+                  </p>
+                </>
+              )}
               {connectionReq.map((request) => {
                 const user = request.user; // Access the user object from the request
                 return (

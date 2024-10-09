@@ -70,7 +70,9 @@ const Profile = ({
 
   return (
     <div
-      className={`profile-wrapper w-[100%] bg-[#1B1F23] h-[48vh] ${
+      className={`profile-wrapper w-[100%] bg-[#1B1F23] ${
+        isLogin ? "h-[48vh]" : "h-[40vh]"
+      } ${
         lightMode &&
         "bg-[#ffffff] border-2 shadow-sm border-gray-400 border-opacity-40"
       } rounded-lg p-2`}

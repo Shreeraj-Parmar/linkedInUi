@@ -13,18 +13,42 @@ const Suggest = ({
   const [dataAccSameCity, setDataAccSameCity] = useState([]);
   const [suggSkeleton, setSuggSkeleton] = useState(true);
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 7;
+
+  const getData = async (page, limit) => {
+    let res = await getUserDataAccSameCity(page, limit);
+    console.log("data acc city", res.data.dataAccCity);
+    if (res.data.dataAccCity.length < limit) {
+      setHasMore(false); // No more data if the number of items fetched is less than the limit
+    }
+    setDataAccSameCity((prevData) => [...prevData, ...res.data.dataAccCity]); // Append new data
+  };
+
   useEffect(() => {
-    const getData = async () => {
-      setSuggSkeleton(true);
-      let res = await getUserDataAccSameCity();
-      console.log(res.data.dataAccCity);
-      setDataAccSameCity(res.data.dataAccCity);
-      setTimeout(() => {
-        setSuggSkeleton(false);
-      }, 2000);
-    };
-    getData();
+    setTimeout(() => {
+      // Hide skeleton after fetching data
+      setSuggSkeleton(false);
+    }, 2000);
+    if (isLogin) {
+      getData(page, limit); // Fetch initial data when the component mounts
+    }
   }, [isLogin]);
+
+  useEffect(() => {
+    if (page > 1) {
+      getData(page, limit);
+    }
+  }, [page]);
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
+      // If user is near the bottom of the list, load more notifications
+      setPage((prevPage) => prevPage + 1); // Move to the next page
+    }
+  };
 
   return (
     <div
@@ -34,7 +58,10 @@ const Suggest = ({
       }`}
     >
       <p className="font-semibold">Near by Your Location</p>
-      <div className="overflow-y-scroll max-h-[90%] rounded-md mt-2">
+      <div
+        onScroll={handleScroll}
+        className="overflow-auto max-h-[90%] rounded-md mt-2"
+      >
         {suggSkeleton &&
           Array(7)
             .fill()
@@ -69,10 +96,10 @@ const Suggest = ({
             ))}
 
         {dataAccSameCity && !suggSkeleton && dataAccSameCity[0]
-          ? dataAccSameCity.map((data) => {
+          ? dataAccSameCity.map((data, index) => {
               return (
                 <div
-                  key={data._id}
+                  key={data._id ? data._id : `${data._id}_${index}`}
                   className={`rounded-md bg-[#293138] m-1 ${
                     lightMode &&
                     " bg-[#F4F2EE] border border-gray-50 border-opacity-40"

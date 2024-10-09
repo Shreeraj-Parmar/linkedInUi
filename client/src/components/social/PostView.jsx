@@ -111,12 +111,8 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     }
   };
 
-  //
-  const handleCommentInputChange = (e) => {
-    setCommentText(e.target.value);
-  };
-
   const enableDisableCommentPostBtn = () => {
+    // move to onChange function
     let hii = commentInputRef.current.value.trim();
     if (hii === "") {
       setIsDisabledPostBtn(true);
@@ -152,13 +148,18 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       }
 
       if (currUserData) {
-        const initialLikes = {};
+        const newLikes = {}; // Store the likes for the newly loaded posts
         res.data.allPosts.forEach((post) => {
           // Check if the current user has liked the post
-          initialLikes[post._id] = post.likedBy.includes(currUserData._id);
+          newLikes[post._id] = post.likedBy.includes(currUserData._id);
         });
-        setLikes(initialLikes); // Update likes state
-        console.log("Likes initialized:", initialLikes);
+
+        // Use functional setLikes to merge with the existing likes state
+        setLikes((prevLikes) => ({
+          ...prevLikes, // Spread the previous likes to keep them
+          ...newLikes, // Add the new likes from the newly fetched posts
+        }));
+        console.log("Likes initialized:", newLikes);
       } else {
         setLikes({}); // User is not logged in
       }
@@ -196,13 +197,13 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
 
   // for like update
 
-  const handleLike = async (postId, userId) => {
+  const handleLike = async (postId, userId, likeArr) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
     }
     // getData();
-    const currentLikeStatus = likes[postId];
+    const currentLikeStatus = likeArr.includes(currUserData._id);
 
     console.log("currunt like status", currentLikeStatus);
 
@@ -282,6 +283,8 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     });
     if (res.status === 200) {
       console.log(res.data.message);
+      setCommentText("");
+
       if (res.data.message === "Comment Added")
         await sendNotification({
           recipient: userId,
@@ -292,9 +295,11 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       getAllCommentsFunc(id);
     } else {
       console.log("error somthing :", res.data.message);
+      setCommentText("");
     }
     console.log("before comment text : ", commentText);
     setCommentText("");
+
     console.log("after comment text : ", commentText);
   };
 
@@ -565,7 +570,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               lightMode && "hover:bg-[#F4F2EE] "
                             }  hover:bg-[#293138] p-2 rounded-md`}
                             onClick={() => {
-                              handleLike(post._id, post.user._id);
+                              handleLike(post._id, post.user._id, post.likedBy);
                             }}
                           >
                             {likes[post._id] ? (
@@ -614,7 +619,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                   id="comment"
                                   className={`rounded-md p-2 bg-[#F4F2EE] border border-gray-400 border-opacity-40 w-[100%]`}
                                   onChange={(e) => {
-                                    handleCommentInputChange(e);
+                                    setCommentText(e.target.value);
                                     enableDisableCommentPostBtn();
                                   }}
                                 />

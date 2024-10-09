@@ -245,18 +245,21 @@ export const getCommentAccPost = async (postId) => {
 };
 
 // get limited user data which have same city
-export const getUserDataAccSameCity = async () => {
+export const getUserDataAccSameCity = async (page, limit) => {
   try {
-    // Append postId to the URL as a query parameter
-    let res = await axios.get(`${API}/user/same-city`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    // Pass page and limit as query parameters
+    let res = await axios.get(
+      `${API}/user/same-city?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(
-      `error while calling getUserDataAccSameCity & error is : ${error.message}`
+      `Error while calling getUserDataAccSameCity & error is: ${error.message}`
     );
   }
 };
@@ -402,13 +405,17 @@ export const checkIfFollowingUser = async (userId) => {
 };
 
 // get user followers list
-export const getMyFollowers = async (what) => {
+export const getMyFollowers = async (what, page) => {
   try {
-    let res = await axios.get(`${API}/follow?what=${what}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    let res = await axios.get(
+      `${API}/follow?what=${what}&page=${page}&limit=7`,
+      {
+        // Pass page and limit
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(
@@ -716,8 +723,9 @@ export const getConnectionReqCount = async () => {
 // mark as read connection req
 
 export const markAsReadConn = async () => {
+  console.log("mark as read connection req");
   try {
-    let res = await axios.put(`${API}/connection-req`, {
+    let res = await axios.get(`${API}/connection-req`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
