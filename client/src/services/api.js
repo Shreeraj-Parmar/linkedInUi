@@ -697,3 +697,34 @@ export const deleteNoti = async (data) => {
     return null; // Return null or handle the error as needed
   }
 };
+
+// get all connectionReq count of user
+export const getConnectionReqCount = async () => {
+  try {
+    let res = await axios.get(`${API}/connection-req/count`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling getConnectionReqCount: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// mark as read connection req
+
+export const markAsReadConn = async () => {
+  try {
+    let res = await axios.put(`${API}/connection-req`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling markAsReadConn: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};

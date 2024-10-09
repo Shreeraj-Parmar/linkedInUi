@@ -11,6 +11,15 @@
   background: transparent;
 }
 
+@keyframes skeleton-gradient {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
 ::-webkit-scrollbar-thumb {
   background: rgba(95, 95, 95, 0.2);
 }

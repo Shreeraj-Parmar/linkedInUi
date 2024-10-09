@@ -16,6 +16,8 @@ import {
   sendAllConnectionReq,
   updateConnectionInDB,
   sendConnectReq,
+  UpdateConnectReqRead,
+  sendConnectReqCount,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -93,6 +95,8 @@ router.get("/follow/check/:userId", jwtMiddle, checkFollowOrNot);
 router.get("/connection/count", jwtMiddle, sendConnectionCount);
 router.get("/connection", jwtMiddle, sendAllConnectionReq);
 router.post("/connection/req", jwtMiddle, sendConnectReq);
+router.get("/connection-req/count", jwtMiddle, sendConnectReqCount);
+router.put("/connection-req", jwtMiddle, UpdateConnectReqRead);
 
 router.put("/connection", jwtMiddle, updateConnectionInDB);
 

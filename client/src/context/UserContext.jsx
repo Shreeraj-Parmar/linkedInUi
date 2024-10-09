@@ -33,6 +33,7 @@ const UserContext = ({ children }) => {
   const [currConversationId, setCurrConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [lightMode, setLightMode] = useState(true);
+  const [loginDialog, setLoginDialog] = useState(false);
 
   // for loader
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,8 @@ const UserContext = ({ children }) => {
 
         isLogin,
         setIsLogin,
+        loginDialog,
+        setLoginDialog,
         file,
         setFile,
         currMenu,

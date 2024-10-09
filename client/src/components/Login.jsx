@@ -75,7 +75,7 @@ const Login = () => {
         setLoginData(values);
         setTimeout(() => {
           setLoading(false);
-          navigate("/social");
+          navigate("/");
         }, 2000);
       } else if (res.status === 201) {
         toast.error("Invalid Email or Password", {
@@ -191,7 +191,7 @@ const Login = () => {
           <span
             className="text-blue-600 cursor-pointer"
             onClick={() => {
-              navigate("/");
+              navigate("/signup");
             }}
           >
             Register

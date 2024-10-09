@@ -98,7 +98,10 @@ const userSchema = new mongoose.Schema(
       { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Mutual followers (Connections)
     ],
     connectionRequests: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Users who sent a connection request
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // The user reference
+        isRead: { type: Boolean, default: false }, // New isRead field
+      }, // Users who sent a connection request
     ],
   },
   {

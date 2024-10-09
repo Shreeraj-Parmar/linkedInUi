@@ -26,9 +26,10 @@ const Overview = () => {
     setCurrMenu,
     currUserData,
     lightMode,
+    loginDialog,
+    setLoginDialog,
   } = useContext(AllContext);
   const navigate = useNavigate();
-  const [loginDialog, setLoginDialog] = useState(false);
   const [profileSkeleton, setProfileSkeleton] = useState(false);
 
   const [imgUrl, setImgUrl] = useState(null);
@@ -41,8 +42,10 @@ const Overview = () => {
   useEffect(() => {
     if (!isLogin) {
       setTimeout(() => {
-        setLoginDialog(true);
-      }, 20000);
+        if (!isLogin) {
+          setLoginDialog(true);
+        }
+      }, 10000);
     }
   }, []);
 

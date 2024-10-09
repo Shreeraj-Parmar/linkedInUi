@@ -366,25 +366,31 @@ export const sendConnectionCount = async (req, res) => {
 // send all connections lists
 export const sendAllConnectionReq = async (req, res) => {
   try {
-    // Find the user by ID and select the connectionRequests field (without _id)
+    // Find the user by ID and select the connectionRequests field
     let user = await User.findById(req._id)
       .select("connectionRequests -_id") // Fetch only the connectionRequests
       .populate({
-        path: "connectionRequests", // The field that contains the array of user references
-        select: "name city gender", // Specify the fields you want to retrieve for each connection request
+        path: "connectionRequests.user", // Populating the user field inside connectionRequests
+        select: "name city gender profilePicture", // Specify the fields you want to retrieve for each connection request
       });
-    // console.log(
-    //   ".................../n/n .............. connection req of user is ",
-    //   user
-    // );
 
     // Check if the user or their connection requests exist
-    if (!user || !user.connectionRequests) {
+    if (
+      !user ||
+      !user.connectionRequests ||
+      user.connectionRequests.length === 0
+    ) {
       return res.status(404).json({ message: "No connection requests found." });
     }
 
+    // Map through the connectionRequests to return user data along with isRead status
+    const connectionRequests = user.connectionRequests.map((req) => ({
+      user: req.user, // The populated user details
+      isRead: req.isRead, // Include isRead status
+    }));
+
     // Respond with the populated connection request details
-    res.status(200).json({ connectionRequests: user.connectionRequests });
+    res.status(200).json({ connectionRequests });
   } catch (error) {
     console.log(
       `Error while calling sendAllConnectionReq API & error is ${error.message}`
@@ -445,18 +451,16 @@ export const updateConnectionInDB = async (req, res) => {
       }
 
       // Add sender's id to receiver's followers if not included
-      if (!receiver.followers.includes(sender._id)) {
-        receiver.followers.push(sender._id);
-      }
+      sender.connectionRequests = sender.connectionRequests.filter(
+        (req) => req.user.toString() !== receiverId.toString()
+      );
     } else {
       // Case 2: If reqStatus is false (rejected)
 
       // Remove receiverId from sender's connectionRequests if included
-      if (sender.connectionRequests.includes(receiverId)) {
-        sender.connectionRequests = sender.connectionRequests.filter(
-          (id) => id.toString() !== receiverId.toString()
-        );
-      }
+      sender.connectionRequests = sender.connectionRequests.filter(
+        (req) => req.user.toString() !== receiverId.toString()
+      );
 
       // Remove receiverId from sender's following if included
       if (sender.following.includes(receiverId)) {
@@ -504,8 +508,8 @@ export const sendConnectReq = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!receiver.connectionRequests.includes(sender._id)) {
-      receiver.connectionRequests.push(sender._id);
+    if (!receiver.connectionRequests.some((req) => req.user === sender._id)) {
+      receiver.connectionRequests.push({ user: sender._id, isRead: false });
     }
     if (!receiver.followers.includes(sender._id)) {
       receiver.followers.push(sender._id);
@@ -523,6 +527,40 @@ export const sendConnectReq = async (req, res) => {
   } catch (error) {
     console.log(
       `Error while calling sendConnectReq API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// send connection req count
+export const sendConnectReqCount = async (req, res) => {
+  // console.log("send connenctio nhiited");
+  try {
+    let user = await User.findById({ _id: req._id }).select(
+      "connectionRequests"
+    );
+
+    console.log("is not read ", user);
+
+    res.status(200).json({ count: user.connectionRequests.length });
+  } catch (error) {
+    console.log(
+      `error while calling sendConnectReqCount API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// update isRead:true
+export const UpdateConnectReqRead = async (req, res) => {
+  console.log("send connenctio nhiited");
+  try {
+    await User.findByIdAndUpdate({ _id: req._id }, { isRead: true });
+
+    res.status(200).json({ message: "update done lets go " });
+  } catch (error) {
+    console.log(
+      `error while calling UpdateConnectReqRead API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

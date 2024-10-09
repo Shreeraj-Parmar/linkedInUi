@@ -34,8 +34,9 @@ const dialogStyle = {
   backgroundColor: "#F4F2EE",
 };
 
-const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
-  const { loginData, setLoginData } = useContext(AllContext);
+const LoginDialog = ({ isLogin, setIsLogin }) => {
+  const { loginData, setLoginData, loginDialog, setLoginDialog } =
+    useContext(AllContext);
   const navigate = useNavigate();
   // form logic
   const formik = useFormik({
@@ -77,7 +78,7 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
         setLoginData(values);
         setTimeout(() => {
           setLoginDialog(false);
-          navigate("/social");
+          navigate("/");
         }, 1000);
       } else if (res.status === 201) {
         toast.error("Invalid Email or Password", {
@@ -93,15 +94,15 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
       } else if (res.status === 202) {
         console.log(res);
         setIsLogin(true);
-        console.log("res data for login", res.data);
+        // console.log("res data for login", res.data);
         localStorage.setItem("token", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
 
-        console.log("set token for admin : ", localStorage.getItem("token"));
-        console.log(
-          "set refreshToken for admin : ",
-          localStorage.getItem("refreshToken")
-        );
+        // console.log("set token for admin : ", localStorage.getItem("token"));
+        // console.log(
+        //   "set refreshToken for admin : ",
+        //   localStorage.getItem("refreshToken")
+        // );
         // toast success for admin login
         toast.success("Welcome Back Admin", {
           position: "top-right",
@@ -202,7 +203,7 @@ const LoginDialog = ({ isLogin, setIsLogin, loginDialog, setLoginDialog }) => {
           <span
             className="text-blue-500 hover:text-blue-600 cursor-pointer"
             onClick={() => {
-              navigate("/");
+              navigate("/signup");
             }}
           >
             {""} Register

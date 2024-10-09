@@ -25,7 +25,7 @@ import Notifications from "./components/Notifications/Notifications";
 function App() {
   const UserRouter = createBrowserRouter([
     {
-      path: "/",
+      path: "/signup",
       element: <SignUp />,
     },
     {
@@ -41,7 +41,7 @@ function App() {
       element: <FormValidation />,
     },
     {
-      path: "/social",
+      path: "/",
       element: <Overview />,
     },
     {

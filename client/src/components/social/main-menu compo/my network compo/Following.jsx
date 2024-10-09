@@ -3,12 +3,15 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import { getMyFollowers, sendFollowReq } from "../../../../services/api.js";
 import { toast } from "react-toastify";
 import Tostify from "../../../Tostify.jsx";
+import { Skeleton } from "@mui/material";
 
 const Following = ({ navigate, setCurrMenu }) => {
   const [followingList, setFollowingList] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
+  const [followingSkeleton, setFollowingSkeleton] = useState(true);
 
   const getAllFollowersDataFunc = async () => {
+    setFollowingSkeleton(true);
     let res = await getMyFollowers("following");
     console.log(res.data);
 
@@ -33,6 +36,9 @@ const Following = ({ navigate, setCurrMenu }) => {
         theme: "light",
       });
     }
+    setTimeout(() => {
+      setFollowingSkeleton(false);
+    }, 1000);
   };
 
   const handleFollowClick = async (receiverId) => {
@@ -78,11 +84,22 @@ const Following = ({ navigate, setCurrMenu }) => {
             >
               <Tostify />
               <div className="w-[] p-1 ">
-                <img
-                  src={user.profilePicture || "/blank.png"}
-                  alt=""
-                  className="min-w-[70px] border border-gray-400 border-opacity-40 max-w-[70px] h-[70px] rounded-full  "
-                />
+                {followingSkeleton ? (
+                  <Skeleton
+                    variant="circular"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={user.profilePicture || "/blank.png"}
+                    alt=""
+                    className="min-w-[70px] border border-gray-400 border-opacity-40 max-w-[70px] h-[70px] rounded-full  "
+                  />
+                )}
               </div>
               <div className=" flex-row ml-3 space-y-[-5px] lg:min-w-[200px]">
                 <p
@@ -94,21 +111,65 @@ const Following = ({ navigate, setCurrMenu }) => {
                   }}
                   className="text-[#000] hover:text-blue-500 hover:underline cursor-pointer"
                 >
-                  {" "}
-                  {user.name}
+                  {followingSkeleton ? (
+                    <Skeleton
+                      variant="text"
+                      style={{
+                        width: "150px",
+                        height: "15px",
+                        borderRadius: "10px",
+                        marginBottom: "5px",
+                      }}
+                    />
+                  ) : (
+                    <span>{user.name}</span>
+                  )}
                 </p>
-                <p className="text-[#959799]"> {user.city}</p>
-                <p className="text-[#959799]">{user.gender}</p>
+                {followingSkeleton ? (
+                  <Skeleton
+                    variant="text"
+                    style={{
+                      width: "70px",
+                      height: "15px",
+                      borderRadius: "10px",
+                      marginBottom: "5px",
+                    }}
+                  />
+                ) : (
+                  <>
+                    <p className="text-[#959799]"> {user.city}</p>
+                    <p className="text-[#959799]">{user.gender}</p>
+                  </>
+                )}
               </div>
               <div className="flex space-x-3 justify-end   p-2 lg:ml-[300px]">
                 <div className="">
-                  <button
-                    onClick={() => handleFollowClick(user._id)}
-                    className="text-[#71B7ED] p-2 border-2 w-[120px] hover:border-3 hover:border-[#AAD6FF] hover:text-[#AAD6FF] rounded-full border-[#71B7ED]"
-                  >
-                    {" "}
-                    {followStatus[user._id] ? "Unfollow" : "following"}
-                  </button>
+                  {followingSkeleton ? (
+                    <Skeleton
+                      variant="text"
+                      style={{
+                        width: "120px",
+                        height: "38px",
+                        borderRadius: "20px",
+                        marginBottom: "5px",
+                        backgroundColor: "#F4F2EE",
+                        border: "1px solid #C9C7C4",
+                        backgroundImage:
+                          "linear-gradient(90deg, #f4f2ee 0%, #f4f2ee 50%, #e6e6e6 50%, #e6e6e6 100%)",
+                        backgroundSize: "200% 100%",
+                        animation:
+                          "skeleton-gradient 1.5s ease-in-out infinite",
+                      }}
+                    />
+                  ) : (
+                    <button
+                      onClick={() => handleFollowClick(user._id)}
+                      className="text-[#71B7ED] p-2 border-2 w-[120px] hover:border-3 hover:border-[#AAD6FF] hover:text-[#AAD6FF] rounded-full border-[#71B7ED]"
+                    >
+                      {" "}
+                      {followStatus[user._id] ? "Unfollow" : "following"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

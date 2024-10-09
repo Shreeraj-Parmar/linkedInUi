@@ -11,6 +11,7 @@ import moment from "moment";
 import { toast } from "react-toastify";
 
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@mui/material";
 
 const Notifications = () => {
   const { isLogin, setCurrMenu } = useContext(AllContext);
@@ -36,7 +37,9 @@ const Notifications = () => {
         setHasMore(false); // If no more notifications are found, stop loading more
       }
     }
-    setLoading(false); // Stop loading
+    setTimeout(() => {
+      setLoading(false); // Stop loading
+    }, 2000);
   };
 
   useLayoutEffect(() => {
@@ -124,194 +127,238 @@ const Notifications = () => {
           <div className="p-2 border-b-2 border-gray-400 border-opacity-40 border-collapse">
             <p className=" text-xl p-1">All Notifications</p>
           </div>
-
-          <div className="notifications flex-row">
-            {notificationsList && notificationsList.length > 0 ? (
-              notificationsList.map((noti) => (
+          {loading && (
+            <div className="notifications flex-row">
+              {[1, 2, 3, 4, 5, 6].map((noti, index) => (
                 <div
-                  onClick={() => {
-                    handleClickNotification(
-                      noti._id,
-                      noti.sender && noti.sender._id,
-                      noti.type
-                    );
-                  }}
-                  key={noti._id}
-                  className={`notification cursor-pointer p-3 hover:bg-[#EBEBEB] flex justify-between items-center border-b-2 border-gray-400 border-collapse border-opacity-40 ${
-                    !noti.isClicked && "bg-[#D7E9FB]"
-                  }`}
+                  key={index}
+                  className="notification cursor-pointer p-3 hover:bg-[#EBEBEB] flex justify-between items-center border-b-2 border-gray-400 border-collapse border-opacity-40"
                 >
-                  <div
-                    onClick={() => {
-                      handleNotiBtnClick(noti.type, noti.sender._id);
+                  <Skeleton
+                    variant="rectangular"
+                    width={80}
+                    height={80}
+                    style={{
+                      borderRadius: "50%",
+                      border: "1px solid rgba(107, 114, 128, 0.4)",
                     }}
-                    className="max-w-[20%] border border-red-800"
-                  >
-                    {!noti.isClicked && (
-                      <div className=" min-h-[8px] min-w-[8px] max-h-[8px] max-w-[8px] rounded-full bg-blue-500"></div>
-                    )}
-                    <img
-                      src={
-                        (noti.sender &&
-                          noti.sender.profilePicture &&
-                          noti.sender.profilePicture) ||
-                        "/blank.png"
-                      }
-                      alt="user profile picture"
-                      className="max-w-[80px] w-[80px] max-h-[80px] h-[80px] border border-gray-400 border-opacity-40 rounded-full"
+                  />
+                  <div className=" lg:mr-[300px]">
+                    <Skeleton
+                      variant="text"
+                      style={{
+                        width: "200px",
+                        // lineHeight: "1.5",
+                        borderRadius: "8px",
+                        margin: "",
+                      }}
+                    />
+                    <Skeleton
+                      variant="text"
+                      style={{
+                        width: "100px",
+                        // lineHeight: "1.5",
+                        borderRadius: "8px",
+                        margin: "",
+                      }}
                     />
                   </div>
-                  <div className="lg:mr-[255px]">
-                    {noti.type === "follow" && (
-                      <p className="flex">
-                        You Have New Follower
-                        <p
-                          onClick={() => {
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    {noti.type === "like" && (
-                      <p className="flex">
-                        You Have like on your Post, liked by
-                        <p
-                          onClick={() => {
-                            console.log("usr trigerdx");
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    {noti.type === "message" && (
-                      <p className="flex">
-                        You Have New Message send by
-                        <p
-                          onClick={() => {
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    {noti.type === "comment" && (
-                      <p className="flex">
-                        You Have New Comment On your Post, Commented By
-                        <p
-                          onClick={() => {
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    {noti.type === "connection_request" && (
-                      <p className="flex">
-                        You Have New Connection Req From
-                        <p
-                          onClick={() => {
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    {noti.type === "connection_accepted" && (
-                      <p className="flex">
-                        Your connection req accepted by
-                        <p
-                          onClick={() => {
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    {noti.type === "profile_view" && (
-                      <p className="flex">
-                        Your Profile Viewed By
-                        <p
-                          onClick={() => {
-                            setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
-                            }, 300);
-                          }}
-                          className="hover:underline hover:text-blue-700 ml-1 font-semibold"
-                        >
-                          {noti.sender.name}
-                        </p>
-                      </p>
-                    )}
-                    <button
+
+                  <div className="noti-btns flex-row">
+                    <Skeleton variant="rectangular" width={100} height={40} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="notifications flex-row">
+            {notificationsList && !loading && notificationsList.length > 0
+              ? notificationsList.map((noti) => (
+                  <div
+                    onClick={() => {
+                      handleClickNotification(
+                        noti._id,
+                        noti.sender && noti.sender._id,
+                        noti.type
+                      );
+                    }}
+                    key={noti._id}
+                    className={`notification cursor-pointer p-3 hover:bg-[#EBEBEB] flex justify-between items-center border-b-2 border-gray-400 border-collapse border-opacity-40 ${
+                      !noti.isClicked && "bg-[#D7E9FB]"
+                    }`}
+                  >
+                    <div
                       onClick={() => {
                         handleNotiBtnClick(noti.type, noti.sender._id);
                       }}
-                      className="mt-2 pl-3 pr-3 text-[#0A66C2] p-1 border-2 border-[#0A66C2] rounded-full hover:text-[#004182] hover:border-[#004182]"
+                      className="max-w-[20%]"
                     >
-                      {noti.type === "follow" && "Follow Back"}
-                      {noti.type === "like" && "View Profile"}
-                      {noti.type === "message" && "Message"}
-                      {noti.type === "comment" && "View Profile"}
-                      {noti.type === "connection_request" && "Show Request"}
-                      {noti.type === "connection_accepted" && "Message"}
-                      {noti.type === "profile_view" && "View Profile"}
-                    </button>
+                      {!noti.isClicked && (
+                        <div className=" min-h-[8px] min-w-[8px] max-h-[8px] max-w-[8px] rounded-full bg-blue-500"></div>
+                      )}
+                      <img
+                        src={
+                          (noti.sender &&
+                            noti.sender.profilePicture &&
+                            noti.sender.profilePicture) ||
+                          "/blank.png"
+                        }
+                        alt="user profile picture"
+                        className="max-w-[80px] w-[80px] max-h-[80px] h-[80px] border border-gray-400 border-opacity-40 rounded-full"
+                      />
+                    </div>
+                    <div className="lg:mr-[255px]">
+                      {noti.type === "follow" && (
+                        <p className="flex">
+                          You Have New Follower
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "like" && (
+                        <p className="flex">
+                          You Have like on your Post, liked by
+                          <p
+                            onClick={() => {
+                              console.log("usr trigerdx");
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "message" && (
+                        <p className="flex">
+                          You Have New Message send by
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "comment" && (
+                        <p className="flex">
+                          You Have New Comment On your Post, Commented By
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "connection_request" && (
+                        <p className="flex">
+                          You Have New Connection Req From
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "connection_accepted" && (
+                        <p className="flex">
+                          Your connection req accepted by
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "profile_view" && (
+                        <p className="flex">
+                          Your Profile Viewed By
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      <button
+                        onClick={() => {
+                          handleNotiBtnClick(noti.type, noti.sender._id);
+                        }}
+                        className="mt-2 pl-3 pr-3 text-[#0A66C2] p-1 border-2 border-[#0A66C2] rounded-full hover:text-[#004182] hover:border-[#004182]"
+                      >
+                        {noti.type === "follow" && "Follow Back"}
+                        {noti.type === "like" && "View Profile"}
+                        {noti.type === "message" && "Message"}
+                        {noti.type === "comment" && "View Profile"}
+                        {noti.type === "connection_request" && "Show Request"}
+                        {noti.type === "connection_accepted" && "Message"}
+                        {noti.type === "profile_view" && "View Profile"}
+                      </button>
+                    </div>
+                    <div className="lg:mr-[px] flex-row">
+                      <p className="text-center relative right-5 text-[#8f8f8f]">
+                        {moment(noti.createdAt).fromNow()}
+                      </p>
+                      <DeleteIcon
+                        fontSize="large"
+                        className="cursor-pointer text-red-500 hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10"
+                        onClick={() => {
+                          handleDeleteNoti(noti._id);
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="lg:mr-[px] flex-row">
-                    <p className="text-center relative right-5 text-[#8f8f8f]">
-                      {moment(noti.createdAt).fromNow()}
-                    </p>
-                    <DeleteIcon
-                      fontSize="large"
-                      className="cursor-pointer text-red-500 hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10"
-                      onClick={() => {
-                        handleDeleteNoti(noti._id);
-                      }}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div>
-                <div className="p-2 flex justify-center items-center">
-                  <img
-                    src="/no-noti.jpg"
-                    className=" lg:min-w-[500px] lg:min-h-[500px] lg:max-w-[500px]
+                ))
+              : !loading && (
+                  <div>
+                    <div className="p-2 flex justify-center items-center">
+                      <img
+                        src="/no-noti.jpg"
+                        className=" lg:min-w-[500px] lg:min-h-[500px] lg:max-w-[500px]
 lg:max-h-[500px]"
-                    alt=""
-                  />
-                </div>
-                <p className=" text-center">No notifications found</p>
-              </div>
-            )}
+                        alt=""
+                      />
+                    </div>
+                    <p className=" text-center">No notifications found</p>
+                  </div>
+                )}
           </div>
-          {loading && <p>Loading more notifications...</p>}
+          {/* Loader here */}
         </div>
       </div>
     </div>

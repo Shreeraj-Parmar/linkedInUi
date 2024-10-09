@@ -93,6 +93,7 @@ const UserProfile = () => {
   const sendConnectionReq = async (id) => {
     let res = await sendConnect({ receiverId: id });
     if (res.status === 200) {
+      console.log("req send");
       setPendingConnection(true);
       setConnection(true);
     }

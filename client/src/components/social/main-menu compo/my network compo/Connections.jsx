@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const Connections = () => {
   const [connectionList, setConnectionList] = useState([]);
-  const { setCurrMenu } = useContext(AllContext);
+  const { setCurrMenu, isLogin } = useContext(AllContext);
   const navigate = useNavigate();
 
   const getAllConnectionsFunc = async () => {
@@ -16,6 +16,7 @@ const Connections = () => {
   };
 
   useLayoutEffect(() => {
+    if (!isLogin) return navigate("/login");
     if (window.location.pathname === "/my-network/connection") {
       setCurrMenu("network");
     }

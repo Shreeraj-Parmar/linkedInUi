@@ -2,7 +2,11 @@ import React, { useContext, useState, useEffect } from "react";
 
 import { AllContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import { getAllUnreadMsg, getAllUnreadNotiCount } from "../../services/api.js";
+import {
+  getAllUnreadMsg,
+  getAllUnreadNotiCount,
+  getConnectionReqCount,
+} from "../../services/api.js";
 //icons
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import HomeIcon from "@mui/icons-material/Home";
@@ -11,13 +15,15 @@ import ChatIcon from "@mui/icons-material/Chat";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Badge from "@mui/material/Badge";
+import LoginDialog from "./LoginDialog.jsx";
 
 const Navbar = () => {
   const {
     isLogin,
     setIsLogin,
-    file,
-    setFile,
+
+    setLoginDialog,
+    loginDialog,
     currMenu,
     setCurrMenu,
     messages,
@@ -26,6 +32,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [unreadMSGCount, setMSGUnreadCount] = useState(0);
   const [unreadNotiCount, setUnreadNotiCount] = useState(0);
+  const [connectionReqCount, setConnectionReqCount] = useState(0);
   const getAllUnreadMessagesFunc = async () => {
     let res = await getAllUnreadMsg();
     res.status === 200 && console.log(res.data);
@@ -37,9 +44,16 @@ const Navbar = () => {
     res.status === 200 && setUnreadNotiCount(res.data);
   };
 
+  const getAllUnreadConnectionReqCount = async () => {
+    let res = await getConnectionReqCount();
+    console.log("totlal unread noti connreq", res.data);
+    res.status === 200 && setConnectionReqCount(res.data.count);
+  };
+
   useEffect(() => {
     getAllUnreadMessagesFunc();
     getAllUnreadNotifications();
+    getAllUnreadConnectionReqCount();
   }, [messages]);
 
   return (
@@ -48,6 +62,7 @@ const Navbar = () => {
         lightMode && " bg-white"
       }`}
     >
+      <LoginDialog isLogin={isLogin} setIsLogin={setIsLogin} />
       <div
         className={` main-up h-[7vh]  text-white flex justify-center items-center  border-b-[1px] border-b-[rgb(186,186,186)]  w-[100%] ${
           lightMode && " text-black"
@@ -61,14 +76,14 @@ const Navbar = () => {
                 fontSize="large"
               />
             </div>
-            <h2 className="text-3xl text-center "></h2>
+            {/* <h2 className="text-3xl text-center "></h2> */}
           </div>
           <div className="menu-side flex space-x-1 mr-[170px]">
             <div
               onClick={() => {
                 setCurrMenu("home");
                 setTimeout(() => {
-                  navigate("/social");
+                  navigate("/");
                 }, 500);
               }}
               className={` ${
@@ -92,7 +107,7 @@ const Navbar = () => {
             <div
               onClick={() => {
                 if (!isLogin) {
-                  navigate("/login");
+                  setLoginDialog(true);
                   return;
                 } else {
                   setCurrMenu("network");
@@ -107,10 +122,26 @@ const Navbar = () => {
             >
               <div className=" flex justify-center items-center">
                 <button>
-                  <PeopleIcon
-                    fontSize="medium"
-                    className="text-[#6c6c6c] hover:text-[#000]"
-                  />
+                  {currMenu !== "network" ? (
+                    <Badge
+                      badgeContent={connectionReqCount}
+                      className={`${
+                        connectionReqCount > 0 && " w-[25px] h-[15px]"
+                      }`}
+                      // style={{ width: "25px", height: "15px" }}
+                      color="primary"
+                    >
+                      <PeopleIcon
+                        fontSize="medium"
+                        className="text-[#6c6c6c] hover:text-[#000]"
+                      />
+                    </Badge>
+                  ) : (
+                    <PeopleIcon
+                      fontSize="medium"
+                      className="text-[#6c6c6c] hover:text-[#000]"
+                    />
+                  )}
                 </button>
               </div>
               <div className=" flex justify-center mt-[-5px] items-center">
@@ -122,7 +153,7 @@ const Navbar = () => {
             <div
               onClick={() => {
                 if (!isLogin) {
-                  navigate("/login");
+                  setLoginDialog(true);
                   return;
                 } else {
                   setCurrMenu("message");
@@ -168,7 +199,7 @@ const Navbar = () => {
             <div
               onClick={() => {
                 if (!isLogin) {
-                  navigate("/login");
+                  setLoginDialog(true);
                   return;
                 } else {
                   setCurrMenu("notification");
@@ -211,36 +242,38 @@ const Navbar = () => {
                 </p>
               </div>
             </div>
-            <div
-              onClick={() => {
-                if (!isLogin) {
-                  navigate("/login");
-                  return;
-                } else {
-                  setCurrMenu("profile");
-                  setTimeout(() => {
-                    navigate("/profile");
-                  }, 500);
-                }
-              }}
-              className={` ${
-                currMenu === "profile" ? "curr-menu-active" : ""
-              } cursor-pointer main-menu-div  w-[100px]`}
-            >
-              <div className=" flex justify-center items-center">
-                <button>
-                  <AccountCircleIcon
-                    fontSize="medium"
-                    className="text-[#6c6c6c] hover:text-[#000]"
-                  />
-                </button>
+            {isLogin && (
+              <div
+                onClick={() => {
+                  if (!isLogin) {
+                    setLoginDialog(true);
+                    return;
+                  } else {
+                    setCurrMenu("profile");
+                    setTimeout(() => {
+                      navigate("/profile");
+                    }, 500);
+                  }
+                }}
+                className={` ${
+                  currMenu === "profile" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
+              >
+                <div className=" flex justify-center items-center">
+                  <button>
+                    <AccountCircleIcon
+                      fontSize="medium"
+                      className="text-[#6c6c6c] hover:text-[#000]"
+                    />
+                  </button>
+                </div>
+                <div className=" flex justify-center mt-[-5px] items-center">
+                  <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
+                    Me
+                  </p>
+                </div>
               </div>
-              <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
-                  Me
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

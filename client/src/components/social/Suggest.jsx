@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getUserDataAccSameCity } from "../../services/api.js";
 import { useNavigate } from "react-router-dom";
+import Skeleton from "@mui/material/Skeleton";
 
 const Suggest = ({
   setLoginDialog,
@@ -10,12 +11,17 @@ const Suggest = ({
   setCurrMenu,
 }) => {
   const [dataAccSameCity, setDataAccSameCity] = useState([]);
+  const [suggSkeleton, setSuggSkeleton] = useState(true);
   const navigate = useNavigate();
   useEffect(() => {
     const getData = async () => {
+      setSuggSkeleton(true);
       let res = await getUserDataAccSameCity();
       console.log(res.data.dataAccCity);
       setDataAccSameCity(res.data.dataAccCity);
+      setTimeout(() => {
+        setSuggSkeleton(false);
+      }, 2000);
     };
     getData();
   }, [isLogin]);
@@ -29,58 +35,91 @@ const Suggest = ({
     >
       <p className="font-semibold">Near by Your Location</p>
       <div className="overflow-y-scroll max-h-[90%] rounded-md mt-2">
-        {dataAccSameCity && dataAccSameCity[0] ? (
-          dataAccSameCity.map((data) => {
-            return (
+        {suggSkeleton &&
+          Array(7)
+            .fill()
+            .map((_, index) => (
               <div
-                key={data._id}
-                className={`rounded-md bg-[#293138] m-1 ${
-                  lightMode &&
-                  " bg-[#F4F2EE] border border-gray-50 border-opacity-40"
-                }`}
+                key={index}
+                className="suggested-wrapper w-[100%] flex items-center p-2 space-x-2"
               >
-                <div className="suggested-wrapper w-[100%] flex items-center p-2 space-x-2">
-                  <div className="sugg-profile-photo w-[30%]">
-                    <img
-                      src={data.profilePicture || "/blank.png"}
-                      alt="profile pic"
-                      className="w-[100%] rounded-full  h-[50px]"
-                    />
-                  </div>
-                  <div className="commet-des  heading-post  w-[80%]   flex-row space-y-[-5px]">
-                    <p
-                      onClick={() => {
-                        setCurrMenu("");
-                        setTimeout(() => {
-                          navigate(`/user/${data._id}`);
-                        }, 500);
-                      }}
-                      className="text-[12px] hover:underline hover:text-blue-500 cursor-pointer"
-                    >
-                      {data.name}
-                    </p>
-                    <p className=" text-[#959799] text-sm">
-                      {data.city.toLowerCase()}
-                    </p>
-                    <p className="text-[#959799] text-sm">{data.gender}</p>
-                  </div>
+                <div className="sugg-profile-photo w-[30%]">
+                  <Skeleton
+                    variant="rectangular"
+                    width="50px"
+                    height="50px"
+                    className="rounded-full"
+                  />
+                </div>
+                <div className="commet-des  heading-post  w-[80%]   flex-row ">
+                  <Skeleton
+                    variant="rectangular"
+                    width="80%"
+                    height="10px"
+                    className="rounded-md mb-1"
+                  />
+                  <Skeleton
+                    variant="rectangular"
+                    width="30%"
+                    height="10px"
+                    className="rounded-md mb-1"
+                  />
                 </div>
               </div>
-            );
-          })
-        ) : (
-          <div className="p-2">
-            <div>
-              <img src={"/login.jpg"} alt="" className=" shadow-sm" />
-            </div>
+            ))}
 
-            <p className=" text-center">
-              {isLogin
-                ? "No Any Users Near Your Loacation Please Follow More To Connect Together"
-                : "Please Login To See Users Whose Around You"}
-            </p>
-          </div>
-        )}
+        {dataAccSameCity && !suggSkeleton && dataAccSameCity[0]
+          ? dataAccSameCity.map((data) => {
+              return (
+                <div
+                  key={data._id}
+                  className={`rounded-md bg-[#293138] m-1 ${
+                    lightMode &&
+                    " bg-[#F4F2EE] border border-gray-50 border-opacity-40"
+                  }`}
+                >
+                  <div className="suggested-wrapper w-[100%] flex items-center p-2 space-x-2">
+                    <div className="sugg-profile-photo w-[30%]">
+                      <img
+                        src={data.profilePicture || "/blank.png"}
+                        alt="profile pic"
+                        className="w-[100%] rounded-full  h-[50px]"
+                      />
+                    </div>
+                    <div className="commet-des  heading-post  w-[80%]   flex-row space-y-[-5px]">
+                      <p
+                        onClick={() => {
+                          setCurrMenu("");
+                          setTimeout(() => {
+                            navigate(`/user/${data._id}`);
+                          }, 500);
+                        }}
+                        className="text-[12px] hover:underline hover:text-blue-500 cursor-pointer"
+                      >
+                        {data.name}
+                      </p>
+                      <p className=" text-[#959799] text-sm">
+                        {data.city.toLowerCase()}
+                      </p>
+                      <p className="text-[#959799] text-sm">{data.gender}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          : !suggSkeleton && (
+              <div className="p-2">
+                <div>
+                  <img src={"/login.jpg"} alt="" className=" shadow-sm" />
+                </div>
+
+                <p className=" text-center">
+                  {isLogin
+                    ? "No Any Users Near Your Loacation Please Follow More To Connect Together"
+                    : "Please Login To See Users Whose Around You"}
+                </p>
+              </div>
+            )}
       </div>
     </div>
   );

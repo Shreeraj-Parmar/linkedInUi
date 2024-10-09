@@ -71,7 +71,7 @@ export const sendRoutsAccToken = async (req, res) => {
       if (user.isAdmin) {
         res.status(200).json({ message: "You Are admin", route: "/lists" });
       } else {
-        res.status(200).json({ message: "You Are admin", route: "/social" });
+        res.status(200).json({ message: "You Are admin", route: "/" });
       }
     } else {
       res.status(204).json({ message: "user not exists!" });
