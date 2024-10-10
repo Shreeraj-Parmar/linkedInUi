@@ -8,7 +8,6 @@ import React, {
 import Navbar from "../social/Navbar";
 import SendIcon from "@mui/icons-material/Send";
 import { AllContext } from "../../context/UserContext";
-import { io } from "socket.io-client";
 import { toast } from "react-toastify";
 import Brightness1Icon from "@mui/icons-material/Brightness1";
 import Badge from "@mui/material/Badge";
@@ -25,6 +24,7 @@ import {
   markAsRead,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
+import SocketReConnect from "../socket-reconnect/SocketReConnect.jsx";
 
 const Message = () => {
   const {
@@ -32,75 +32,69 @@ const Message = () => {
     currConversationId,
     setCurrConversationId,
     setCurrMenu,
+    allOnlineUsers,
     currUserData,
     messages,
     setMessages,
+    setAllOnlineUsers,
   } = useContext(AllContext);
   const [receiverName, setReceiverName] = useState();
   const [receiverId, setReceiverId] = useState();
   const [conversations, setConversations] = useState([]);
-  const [onlineUsers, setOnlineUsers] = useState({});
 
   const [sendMsgText, setSendMsgText] = useState("");
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
+  const socket = window.socketClient;
+  // const onlineUsers = window.onlineUsers;
 
-  // socket.io
+  const handleOnlineUsers = (onlineUsersData) => {
+    setAllOnlineUsers(onlineUsersData);
+    console.log("this is onlineusers Data", onlineUsersData);
+  };
 
-  const socket = useRef(); // beacuse of rerendering issue we use useRef okkkk...
-  const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
-  useEffect(() => {
-    socket.current = io(socketLinkURL);
-
-    // online/offline ....
-    socket.current.on("user_status", ({ userId, online }) => {
-      console.log(`userid: ${userId} is ${online}`);
-      setOnlineUsers((prev) => ({
-        ...prev,
-        [userId]: online,
-      }));
-    });
-
+  const socketMessageFunction = async () => {
     // Join the conversation room
     if (currConversationId) {
-      socket.current.emit("join_conversation", currConversationId);
+      socket.emit("join_conversation", currConversationId);
     }
+    socket.on("all_online_users", handleOnlineUsers);
 
     // Listen for new messages
-    socket.current.on("receive_message", (message) => {
+    socket.on("receive_message", (message) => {
       console.log("this is receved msg from socketio", message);
       if (message.conversationId === currConversationId) {
         // Mark message as read if conversation is active
         markAsReadFunction(currConversationId, currUserData._id);
       }
       if (message.senderId !== currUserData._id) {
-        // Only add the message if it's not from the current user
-        setMessages((prevMessages) => [...prevMessages, message]);
+        let check = messages.find((msg) => msg._id === message._id);
+        if (!check) {
+          setMessages((prevMessages) => [...prevMessages, message]);
+        }
       }
       /// change it..
     });
 
     // Listen for the response to get all currently online users
-    socket.current.on("all_online_users", (onlineUsers) => {
-      setOnlineUsers(onlineUsers); // Set all currently online users in state
-    });
+  };
+
+  useEffect(() => {
+    if (window.socketClient) {
+      socketMessageFunction();
+    }
     return () => {
-      socket.current.disconnect(); // Disconnect when component unmounts
+      socket.off("receive_message");
+      socket.off("all_online_users");
+      socket.off("join_conversation");
     };
-  }, [currConversationId]);
+  }, []);
 
   useEffect(() => {
     if (currConversationId) {
       handleConversationSelect(currConversationId);
     }
   }, []);
-
-  // Register user on connection
-  useEffect(() => {
-    if (currUserData) {
-      socket.current.emit("register", currUserData._id); // Send user ID on connection
-    }
-  }, [currUserData]);
 
   const findReceiverData = async () => {
     let res = await getReceiverData({ convId: currConversationId });
@@ -172,12 +166,16 @@ const Message = () => {
             createdAt: new Date(),
           };
 
-          socket.current.emit("send_message", {
-            conversationId: currConversationId,
-            message,
-          });
+          // socket.emit("send_message", {
+          //   conversationId: currConversationId,
+          //   message,
+          // });
+
+          // ui update in message
+
+          setMessages((prevMessages) => [...prevMessages, message]);
           console.log(res.data);
-          fetchMessagesFunc(currConversationId);
+          // fetchMessagesFunc(currConversationId);
           setSendMsgText("");
         } else {
           toast.error(`Somthing Error To Send Message, please refresh page`, {
@@ -235,7 +233,7 @@ const Message = () => {
 
   useEffect(() => {
     findAllConversationsFunc();
-  }, [messages]);
+  }, []);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -243,13 +241,13 @@ const Message = () => {
     }
   }, [messages]);
 
-  useLayoutEffect(() => {
-    if (!isLogin) {
-      setTimeout(() => {
-        navigate("/social");
-      }, 1000);
-    }
-  }, []);
+  // useLayoutEffect(() => {
+  //   if (!isLogin) {
+  //     setTimeout(() => {
+  //       navigate("/");
+  //     }, 1000);
+  //   }
+  // }, []);
   const truncateMessage = (message, maxLength = 10) => {
     return message.length > maxLength
       ? `${message.substring(0, maxLength)}...`
@@ -257,14 +255,14 @@ const Message = () => {
   };
 
   return (
-    <div className="main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]">
+    <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <Tostify />
-      <div className="main-overview-wrapper max-w-[100vw]  overflow-x-hidden">
+      <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         <Navbar />
-        <div className="main-display border-2 border-gray-400 shadow-sm border-opacity-40 bg-white w-[80vw] max-h-[900vh] h-[90vh] m-auto mt-[55px] p-4  ">
-          <div className="flex   ">
-            <div className="conversations-wrapper w-[30%] border-2 border-gray-400 border-opacity-40 border-collapse">
-              <div className="conversations">
+        <div className='main-display border-2 border-gray-400 shadow-sm border-opacity-40 bg-white w-[80vw] max-h-[900vh] h-[90vh] m-auto mt-[55px] p-4  '>
+          <div className='flex   '>
+            <div className='conversations-wrapper w-[30%] border-2 border-gray-400 border-opacity-40 border-collapse'>
+              <div className='conversations'>
                 {conversations && conversations[0] ? (
                   conversations.map((conv) => {
                     const isSelected =
@@ -279,25 +277,25 @@ const Message = () => {
                           isSelected ? "bg-[#EDF3F8]" : ""
                         }`}
                       >
-                        <div className="w-[30%]">
+                        <div className='w-[30%]'>
                           <img
                             src={conv.receiverProfilePicture || "/blank.png"}
-                            alt=""
-                            className="min-w-[50px] w-[80px] h-[80px] min-h-[50px] border border-gray-400 border-opacity-40 rounded-full"
+                            alt=''
+                            className='min-w-[50px] w-[80px] h-[80px] min-h-[50px] border border-gray-400 border-opacity-40 rounded-full'
                           />
                         </div>
-                        <div className="w-[70%] ">
-                          <p className="text-black">{conv.receiverName}</p>
-                          <p className="text-[#ACACAC] text-sm flex  items-center">
+                        <div className='w-[70%] '>
+                          <p className='text-black'>{conv.receiverName}</p>
+                          <p className='text-[#ACACAC] text-sm flex  items-center'>
                             {truncateMessage(conv.lastMessage)}
-                            <p className=" text-right  flex ml-20 justify-end">
+                            <p className=' text-right  flex ml-20 justify-end'>
                               <Badge
                                 badgeContent={
                                   currUserData &&
                                   conv.unreadMessages[currUserData._id]
                                 }
-                                color="primary"
-                                className=""
+                                color='primary'
+                                className=''
                               ></Badge>
                             </p>
                           </p>
@@ -306,22 +304,22 @@ const Message = () => {
                     );
                   })
                 ) : (
-                  <div className="text-black p-2 font-semibold mt-9">
-                    <div className=" flex justify-center items-center">
-                      <img src="/nomsg.svg" alt="" className=" w-[90%]" />
+                  <div className='text-black p-2 font-semibold mt-9'>
+                    <div className=' flex justify-center items-center'>
+                      <img src='/nomsg.svg' alt='' className=' w-[90%]' />
                     </div>
-                    <p className=" text-center mt-5">No Any Conversations</p>
+                    <p className=' text-center mt-5'>No Any Conversations</p>
                   </div>
                 )}
               </div>
             </div>
-            <div className="chat-wrapper  w-[70%] max-h-[85vh] min-h-[85vh] p- border-collapse border-2 border-gray-400 border-opacity-40">
-              <div className="chat-heading min-h-[10%] p-2 border border-gray-400 border-opacity-40">
-                <div className="text-black ml-9">
+            <div className='chat-wrapper  w-[70%] max-h-[85vh] min-h-[85vh] p- border-collapse border-2 border-gray-400 border-opacity-40'>
+              <div className='chat-heading min-h-[10%] p-2 border border-gray-400 border-opacity-40'>
+                <div className='text-black ml-9'>
                   {currConversationId ? (
                     <>
                       <p
-                        className=" hover:underline cursor-pointer"
+                        className=' hover:underline cursor-pointer'
                         onClick={() => {
                           setCurrMenu("");
                           setTimeout(() => {
@@ -332,28 +330,29 @@ const Message = () => {
                         {receiverName}{" "}
                       </p>
                       <p>
-                        {onlineUsers[receiverId] ? (
-                          <p className=" text-green-700 text-sm flex items-center">
+                        {allOnlineUsers &&
+                        allOnlineUsers.userId === receiverId ? (
+                          <p className=' text-green-700 text-sm flex items-center'>
                             <Brightness1Icon
-                              className="text-green-700 text-xs"
-                              fontSize="6px"
+                              className='text-green-700 text-xs'
+                              fontSize='6px'
                             />
                             &nbsp;
-                            <span className=" text-sm"> Online</span>
+                            <span className=' text-sm'> Online</span>
                           </p>
                         ) : (
-                          <p className="  text-sm">Offline</p>
+                          <p className='  text-sm'>Offline</p>
                         )}
                       </p>
                     </>
                   ) : (
-                    <p className="p-2 text-black font-semibold">
+                    <p className='p-2 text-black font-semibold'>
                       Please Select Any Conversation
                     </p>
                   )}
                 </div>
               </div>
-              <div className="chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-y-scroll">
+              <div className='chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-y-scroll'>
                 {Array.isArray(messages) &&
                   messages.map((msg, index) => {
                     if (!msg || !msg.text) {
@@ -386,7 +385,7 @@ const Message = () => {
                           >
                             {msg && msg.text}
                           </p>
-                          <p className="text-gray-400">
+                          <p className='text-gray-400'>
                             {moment(msg && msg.createdAt).fromNow()}
                           </p>
                         </div>
@@ -397,40 +396,40 @@ const Message = () => {
                 {!currConversationId && (
                   <div>
                     <div>
-                      <div className=" max-h-[400px] flex justify-center items-center">
+                      <div className=' max-h-[400px] flex justify-center items-center'>
                         <img
-                          src="/work.png"
-                          alt=""
-                          className=" max-h-[400px] "
+                          src='/work.png'
+                          alt=''
+                          className=' max-h-[400px] '
                         />
                       </div>
-                      <p className=" font-semibold text-center">
+                      <p className=' font-semibold text-center'>
                         Please Select Conversation
                       </p>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="msg-ipnut min-h-[9%] p-2 border ">
-                <div className="flex items-center">
+              <div className='msg-ipnut min-h-[9%] p-2 border '>
+                <div className='flex items-center'>
                   <input
-                    type="text"
-                    name="msg"
+                    type='text'
+                    name='msg'
                     value={sendMsgText}
-                    id="inp-msg"
+                    id='inp-msg'
                     onKeyDown={handleKeyDown}
                     onChange={(e) => {
                       handleInputChange(e);
                     }}
-                    placeholder="Enter Message"
-                    className="inp-message p-2 placeholder:text-[#3c3737] rounded-md border border-gray-400 w-[95%]"
+                    placeholder='Enter Message'
+                    className='inp-message p-2 placeholder:text-[#3c3737] rounded-md border border-gray-400 w-[95%]'
                   />
                   <SendIcon
                     onClick={() => {
                       handleSendMsg();
                     }}
-                    className=" cursor-pointer text-[#444444] ml-2 "
-                    fontSize="large"
+                    className=' cursor-pointer text-[#444444] ml-2 '
+                    fontSize='large'
                   />
                 </div>
               </div>

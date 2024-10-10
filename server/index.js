@@ -27,48 +27,43 @@ const io = new Server(server, {
   },
 });
 
-let users = {}; // active users that shows online or offline
+let users = []; // active users that shows online or offline
 
 io.on("connection", (client) => {
   console.log("A User Connected: ", client.id);
 
   // online or offline
   client.on("register", (id) => {
-    users[id] = { socketId: client.id, online: true };
-    console.log("Registered user:", users); // Check if the user is registered
-    io.emit("user_status", { userId: id, online: true });
+    let newUser = {
+      socketId: client.id,
+      userId: id,
+    };
+
+    // Check if the user already exists based on userId
+    if (!users.some((user) => user.userId === id)) {
+      users.push(newUser);
+    }
+
+    console.log("All users are:", users);
   });
 
+  io.emit("all_online_users", users);
   // join a unique conversation room    // 1st join room
   client.on("join_conversation", (conversationId) => {
     client.join(conversationId); // join specific ID    // here room = conversationId
     console.log("user joined conversation :  ", conversationId);
   });
 
-  // Handle incoming messages from the client
-  client.on("send_message", (data) => {
-    const { conversationId, message } = data;
-    console.log("recieved msg is", message);
-
-    // Broadcast message to others in the conversation    // 2nd send msg in room
-    io.to(conversationId).emit("receive_message", message);
-  });
   // Send the list of currently online users to the new user
-  client.emit("all_online_users", users);
 
   // Listen for user disconnect
   client.on("disconnect", () => {
-    console.log("before remove.. users", users);
-    // if offfline ==> remove from users object
-    const userId = Object.keys(users).find(
-      (id) => users[id].socketId === client.id
-    );
-    console.log("this is from socket", userId);
-    if (userId) {
-      users[userId].online = false; // Set user status to offline
-      io.emit("user_status", { userId, online: false }); // Broadcast offline status
-      console.log("User disconnected:", userId);
-      console.log("after remove.. users", users);
+    let user = users.find((user) => user.socketId === client.id);
+    if (user) {
+      users = users.filter((user) => user.socketId !== client.id);
+      console.log("User Disconnected: ", client.id);
+      console.log("final users arr", users);
+      io.emit("all_online_users", users);
     }
   });
 });
@@ -79,3 +74,5 @@ ConnectDB(); // connect mongoDB
 server.listen(PORT, () => {
   console.log(`server & socket server running on port: ${PORT}`);
 });
+
+export { io };

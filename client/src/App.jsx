@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 // Context:
 import UserContext from "./context/UserContext";
-// import { SocketProvider } from "./context/SocketContext";
 //components:
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
@@ -21,6 +20,9 @@ import UserProfile from "./components/social/UserProfile";
 import Message from "./components/Message/Message";
 import CheckInternet from "./components/Internet/CheckInternet";
 import Notifications from "./components/Notifications/Notifications";
+
+import { io } from "socket.io-client";
+const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
 
 function App() {
   const UserRouter = createBrowserRouter([
@@ -75,13 +77,29 @@ function App() {
     },
   ]);
 
+  //socket io config
+  const socket = useRef();
+
+  useEffect(() => {
+    socket.current = io(socketLinkURL);
+    console.log("Socket URL:", socketLinkURL);
+
+    socket.current.on("connect", () => {
+      console.log("Socket connected with ID:", socket.current.id);
+    });
+
+    window.socketClient = socket.current;
+
+    return () => {
+      socket.current.disconnect();
+    };
+  }, []);
+
   return (
     <>
       <UserContext>
-        {/* <SocketProvider> */}
         <CheckInternet />
         <RouterProvider router={UserRouter} />
-        {/* </SocketProvider> */}
       </UserContext>
     </>
   );

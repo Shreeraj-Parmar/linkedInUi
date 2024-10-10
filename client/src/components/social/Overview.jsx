@@ -3,6 +3,7 @@ import {
   getPresignedURL,
   verifyToken,
   uploadFileAWS,
+  getUserData,
   saveProfileURL,
 } from "../../services/api";
 import { toast } from "react-toastify";
@@ -27,10 +28,13 @@ const Overview = () => {
     currUserData,
     lightMode,
     loginDialog,
+
+    setCurrUserData,
     setLoginDialog,
   } = useContext(AllContext);
   const navigate = useNavigate();
   const [profileSkeleton, setProfileSkeleton] = useState(false);
+  const socket = window.socketClient;
 
   const [imgUrl, setImgUrl] = useState(null);
 
@@ -39,15 +43,49 @@ const Overview = () => {
   //   setFile(e.target.files[0]);
   // };
 
-  useEffect(() => {
-    if (!isLogin) {
-      setTimeout(() => {
-        if (!isLogin) {
-          setLoginDialog(true);
-        }
-      }, 10000);
-    }
-  }, []);
+  /**
+   * This useEffect is used to send the user's ID to the server
+   * when the user data is available. This is used to keep track of
+   * the online users in the server.
+   */
+
+  // const getData = async () => {
+  //   let res = await getUserData();
+  //   console.log(res.data);
+  //   setCurrUserData(res.data.user);
+  //   return res.data.user;
+  // };
+
+  // useEffect(() => {
+  //   if (!currUserData) {
+  //     let data = getData();
+  //     console.log(
+  //       "before useeffect currData",
+  //       data || (currUserData && currUserData)
+  //     );
+  //     if (socket) {
+  //       socket.emit("register", data._id);
+  //     }
+  //   }
+
+  //   if (socket && currUserData) {
+  //     socket.emit("register", currUserData._id);
+  //   }
+
+  //   // return () => {
+  //   //   socket.off("all_online_users", handleOnlineUsers);
+  //   // };
+  // }, [socket && socket]);
+
+  // useEffect(() => {
+  //   if (!isLogin) {
+  //     setTimeout(() => {
+  //       if (!isLogin && !currUserData) {
+  //         setLoginDialog(true);
+  //       }
+  //     }, 10000);
+  //   }
+  // }, []);
 
   const verifyTokenForIslogin = async () => {
     let res = await verifyToken();
@@ -137,15 +175,15 @@ const Overview = () => {
         setLoginDialog={setLoginDialog}
         loginDialog={loginDialog}
       />
-      <div className="main-overview-wrapper max-w-[100vw]  overflow-x-hidden">
+      <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
 
-        <div className="main-display w-[80vw] h-[100vh] mt-10  m-auto p-2  ">
-          <div className="main-down h-[100%]">
-            <div className="main-down-wrapper w-[100%] flex space-x-4 p-3">
+        <div className='main-display w-[80vw] h-[100vh] mt-10  m-auto p-2  '>
+          <div className='main-down h-[100%]'>
+            <div className='main-down-wrapper w-[100%] flex space-x-4 p-3'>
               {/* profile section */}
-              <div className="profile w-[20%] ">
+              <div className='profile w-[20%] '>
                 <Profile
                   setLoginDialog={setLoginDialog}
                   loginDialog={loginDialog}
@@ -161,7 +199,7 @@ const Overview = () => {
                 />
               </div>
               {/* posts */}
-              <div className="posts w-[60%]  ">
+              <div className='posts w-[60%]  '>
                 <PostView
                   imgUrl={imgUrl}
                   setLoginDialog={setLoginDialog}
@@ -170,7 +208,7 @@ const Overview = () => {
                 />
               </div>
               {/* suggesion */}
-              <div className="suggested w-[20%] max-h-[100vh]">
+              <div className='suggested w-[20%] max-h-[100vh]'>
                 <Suggest
                   setLoginDialog={setLoginDialog}
                   loginDialog={loginDialog}

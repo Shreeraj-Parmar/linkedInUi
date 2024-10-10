@@ -117,25 +117,25 @@ const Notifications = () => {
   };
 
   return (
-    <div className="main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]">
-      <div className="main-overview-wrapper max-w-[100vw] overflow-x-hidden">
+    <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
+      <div className='main-overview-wrapper max-w-[100vw] overflow-x-hidden'>
         <Navbar />
         <div
           onScroll={handleScroll}
-          className="main-display border-2 border-gray-400 shadow-sm border-opacity-40 bg-white w-[50vw] max-h-[900vh] h-[90vh] m-auto mt-[55px] overflow-auto"
+          className='main-display border-2 border-gray-400 shadow-sm border-opacity-40 bg-white w-[50vw] max-h-[900vh] h-[90vh] m-auto mt-[55px] overflow-auto'
         >
-          <div className="p-2 border-b-2 border-gray-400 border-opacity-40 border-collapse">
-            <p className=" text-xl p-1">All Notifications</p>
+          <div className='p-2 border-b-2 border-gray-400 border-opacity-40 border-collapse'>
+            <p className=' text-xl p-1'>All Notifications</p>
           </div>
           {loadingSkeleton && (
-            <div className="notifications flex-row">
+            <div className='notifications flex-row'>
               {[1, 2, 3, 4, 5, 6].map((noti, index) => (
                 <div
                   key={index}
-                  className="notification cursor-pointer p-3 hover:bg-[#EBEBEB] flex justify-between items-center border-b-2 border-gray-400 border-collapse border-opacity-40"
+                  className='notification cursor-pointer p-3 hover:bg-[#EBEBEB] flex justify-between items-center border-b-2 border-gray-400 border-collapse border-opacity-40'
                 >
                   <Skeleton
-                    variant="rectangular"
+                    variant='rectangular'
                     width={80}
                     height={80}
                     style={{
@@ -143,9 +143,9 @@ const Notifications = () => {
                       border: "1px solid rgba(107, 114, 128, 0.4)",
                     }}
                   />
-                  <div className=" lg:mr-[300px]">
+                  <div className=' lg:mr-[300px]'>
                     <Skeleton
-                      variant="text"
+                      variant='text'
                       style={{
                         width: "200px",
                         // lineHeight: "1.5",
@@ -154,7 +154,7 @@ const Notifications = () => {
                       }}
                     />
                     <Skeleton
-                      variant="text"
+                      variant='text'
                       style={{
                         width: "100px",
                         // lineHeight: "1.5",
@@ -164,15 +164,15 @@ const Notifications = () => {
                     />
                   </div>
 
-                  <div className="noti-btns flex-row">
-                    <Skeleton variant="rectangular" width={100} height={40} />
+                  <div className='noti-btns flex-row'>
+                    <Skeleton variant='rectangular' width={100} height={40} />
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="notifications flex-row">
+          <div className='notifications flex-row'>
             {notificationsList &&
             !loadingSkeleton &&
             notificationsList.length > 0
@@ -194,10 +194,10 @@ const Notifications = () => {
                       onClick={() => {
                         handleNotiBtnClick(noti.type, noti.sender._id);
                       }}
-                      className="max-w-[20%]"
+                      className='max-w-[20%]'
                     >
                       {!noti.isClicked && (
-                        <div className=" min-h-[8px] min-w-[8px] max-h-[8px] max-w-[8px] rounded-full bg-blue-500"></div>
+                        <div className=' min-h-[8px] min-w-[8px] max-h-[8px] max-w-[8px] rounded-full bg-blue-500'></div>
                       )}
                       <img
                         src={
@@ -206,13 +206,13 @@ const Notifications = () => {
                             noti.sender.profilePicture) ||
                           "/blank.png"
                         }
-                        alt="user profile picture"
-                        className="max-w-[80px] w-[80px] max-h-[80px] h-[80px] border border-gray-400 border-opacity-40 rounded-full"
+                        alt='user profile picture'
+                        className='max-w-[80px] w-[80px] max-h-[80px] h-[80px] border border-gray-400 border-opacity-40 rounded-full'
                       />
                     </div>
-                    <div className=" lg:min-w-[500px]">
+                    <div className=' lg:min-w-[500px]'>
                       {noti.type === "follow" && (
-                        <p className="flex">
+                        <p className='flex'>
                           You Have New Follower
                           <p
                             onClick={() => {
@@ -220,14 +220,14 @@ const Notifications = () => {
                                 navigate(`/user/${noti.sender._id}`);
                               }, 300);
                             }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
                             {noti.sender.name}
                           </p>
                         </p>
                       )}
                       {noti.type === "like" && (
-                        <p className="flex">
+                        <p className='flex'>
                           You Have like on your Post, liked by
                           <p
                             onClick={() => {
@@ -236,14 +236,14 @@ const Notifications = () => {
                                 navigate(`/user/${noti.sender._id}`);
                               }, 300);
                             }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
                             {noti.sender.name}
                           </p>
                         </p>
                       )}
                       {noti.type === "message" && (
-                        <p className="flex">
+                        <p className='flex'>
                           You Have New Message send by
                           <p
                             onClick={() => {
@@ -251,7 +251,7 @@ const Notifications = () => {
                                 navigate(`/user/${noti.sender._id}`);
                               }, 300);
                             }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
                             {noti.sender.name}
                           </p>
@@ -264,16 +264,16 @@ const Notifications = () => {
                               navigate(`/user/${noti.sender._id}`);
                             }, 300);
                           }}
-                          className="flex"
+                          className='flex'
                         >
                           You Have New Comment On your Post, Commented By{" "}
-                          <span className="hover:underline hover:text-blue-700 ml-1 font-semibold">
+                          <span className='hover:underline hover:text-blue-700 ml-1 font-semibold'>
                             {noti.sender.name}
                           </span>
                         </p>
                       )}
                       {noti.type === "connection_request" && (
-                        <p className="flex">
+                        <p className='flex'>
                           You Have New Connection Req From
                           <p
                             onClick={() => {
@@ -281,14 +281,14 @@ const Notifications = () => {
                                 navigate(`/user/${noti.sender._id}`);
                               }, 300);
                             }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
                             {noti.sender.name}
                           </p>
                         </p>
                       )}
                       {noti.type === "connection_accepted" && (
-                        <p className="flex">
+                        <p className='flex'>
                           Your connection req accepted by
                           <p
                             onClick={() => {
@@ -296,14 +296,14 @@ const Notifications = () => {
                                 navigate(`/user/${noti.sender._id}`);
                               }, 300);
                             }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
                             {noti.sender.name}
                           </p>
                         </p>
                       )}
                       {noti.type === "profile_view" && (
-                        <p className="flex">
+                        <p className='flex'>
                           Your Profile Viewed By
                           <p
                             onClick={() => {
@@ -311,7 +311,7 @@ const Notifications = () => {
                                 navigate(`/user/${noti.sender._id}`);
                               }, 300);
                             }}
-                            className="hover:underline hover:text-blue-700 ml-1 font-semibold"
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
                             {noti.sender.name}
                           </p>
@@ -321,7 +321,7 @@ const Notifications = () => {
                         onClick={() => {
                           handleNotiBtnClick(noti.type, noti.sender._id);
                         }}
-                        className="mt-2 pl-3 pr-3 text-[#0A66C2] p-1 border-2 border-[#0A66C2] rounded-full hover:text-[#004182] hover:border-[#004182]"
+                        className='mt-2 pl-3 pr-3 text-[#0A66C2] p-1 border-2 border-[#0A66C2] rounded-full hover:text-[#004182] hover:border-[#004182]'
                       >
                         {noti.type === "follow" && "Follow Back"}
                         {noti.type === "like" && "View Profile"}
@@ -332,14 +332,14 @@ const Notifications = () => {
                         {noti.type === "profile_view" && "View Profile"}
                       </button>
                     </div>
-                    <div className="lg:min-w-[150px] flex-row">
-                      <p className="text-center  text-[#8f8f8f]">
+                    <div className='lg:min-w-[150px] flex-row'>
+                      <p className='text-center  text-[#8f8f8f]'>
                         {moment(noti.createdAt).fromNow()}
                       </p>
-                      <div className="flex justify-center items-center">
+                      <div className='flex justify-center items-center'>
                         <DeleteIcon
-                          fontSize="large"
-                          className="cursor-pointer text-[#7e7e7e] hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10"
+                          fontSize='large'
+                          className='cursor-pointer text-[#7e7e7e] hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10'
                           onClick={() => {
                             handleDeleteNoti(noti._id);
                           }}
@@ -350,15 +350,15 @@ const Notifications = () => {
                 ))
               : !loadingSkeleton && (
                   <div>
-                    <div className="p-2 flex justify-center items-center">
+                    <div className='p-2 flex justify-center items-center'>
                       <img
-                        src="/no-noti.jpg"
-                        className=" lg:min-w-[500px] lg:min-h-[500px] lg:max-w-[500px]
-lg:max-h-[500px]"
-                        alt=""
+                        src='/no-noti.jpg'
+                        className=' lg:min-w-[500px] lg:min-h-[500px] lg:max-w-[500px]
+lg:max-h-[500px]'
+                        alt=''
                       />
                     </div>
-                    <p className=" text-center">No notifications found</p>
+                    <p className=' text-center'>No notifications found</p>
                   </div>
                 )}
           </div>

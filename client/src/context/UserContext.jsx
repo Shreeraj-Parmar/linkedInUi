@@ -34,6 +34,7 @@ const UserContext = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [lightMode, setLightMode] = useState(true);
   const [loginDialog, setLoginDialog] = useState(false);
+  const [allOnlineUsers, setAllOnlineUsers] = useState({});
 
   // for loader
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,8 @@ const UserContext = ({ children }) => {
         defaultSignUpdata,
         allUserData,
         setAllUserData,
+        allOnlineUsers,
+        setAllOnlineUsers,
         currUserData,
         setCurrUserData,
         selectMenu,

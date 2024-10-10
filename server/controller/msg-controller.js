@@ -1,6 +1,7 @@
 import Message from "../model/message.js";
 import Conversation from "../model/conversation.js";
 import User from "../model/user.js";
+import { io } from "../index.js";
 
 export const saveMSGInDB = async (req, res) => {
   let { receiverId, conversationId, text } = req.body;
@@ -16,6 +17,18 @@ export const saveMSGInDB = async (req, res) => {
     const conver = await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: result._id,
     });
+
+    const message = {
+      senderId: req._id,
+      receiverId: receiverId,
+      text: text,
+      conversationId: conversationId,
+      _id: result._id,
+
+      createdAt: new Date(),
+    };
+
+    io.to(conversationId).emit("receive_message", message);
 
     // update unreade messsssssage
 
