@@ -21,8 +21,8 @@ import Message from "./components/Message/Message";
 import CheckInternet from "./components/Internet/CheckInternet";
 import Notifications from "./components/Notifications/Notifications";
 
-import { io } from "socket.io-client";
-const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
+// import { io } from "socket.io-client";
+// const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
 
 function App() {
   const UserRouter = createBrowserRouter([
@@ -78,22 +78,22 @@ function App() {
   ]);
 
   //socket io config
-  const socket = useRef();
+  // const socket = useRef();
 
-  useEffect(() => {
-    socket.current = io(socketLinkURL);
-    console.log("Socket URL:", socketLinkURL);
+  // useEffect(() => {
+  //   socket.current = io(socketLinkURL);
+  //   console.log("Socket URL:", socketLinkURL);
 
-    socket.current.on("connect", () => {
-      console.log("Socket connected with ID:", socket.current.id);
-    });
+  //   socket.current.on("connect", () => {
+  //     console.log("Socket connected with ID:", socket.current.id);
+  //   });
 
-    window.socketClient = socket.current;
+  //   window.socketClient = socket.current;
 
-    return () => {
-      socket.current.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     socket.current.disconnect();
+  //   };
+  // }, []);
 
   return (
     <>

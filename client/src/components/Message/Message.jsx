@@ -24,7 +24,6 @@ import {
   markAsRead,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
-import SocketReConnect from "../socket-reconnect/SocketReConnect.jsx";
 
 const Message = () => {
   const {
@@ -36,6 +35,7 @@ const Message = () => {
     currUserData,
     messages,
     setMessages,
+    socket,
     setAllOnlineUsers,
   } = useContext(AllContext);
   const [receiverName, setReceiverName] = useState();
@@ -47,7 +47,9 @@ const Message = () => {
   const [sendMsgText, setSendMsgText] = useState("");
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
-  const socket = window.socketClient;
+  console.log("before socate render hello");
+
+  console.log("after socate render is : ", socket);
   // const onlineUsers = window.onlineUsers;
 
   const handleOnlineUsers = (onlineUsersData) => {
@@ -56,11 +58,10 @@ const Message = () => {
   };
 
   const socketMessageFunction = async () => {
-    // Join the conversation room
-    if (currConversationId) {
-      socket.emit("join_conversation", currConversationId);
-    }
     socket.on("all_online_users", handleOnlineUsers);
+    // Join the conversation room
+
+    socket.emit("join_conversation", currConversationId && currConversationId);
 
     // Listen for new messages
     socket.on("receive_message", (message) => {
@@ -87,15 +88,17 @@ const Message = () => {
   };
 
   useEffect(() => {
-    if (window.socketClient) {
-      socketMessageFunction();
-    }
+    console.log("is login is :", isLogin);
+    socketMessageFunction();
+
     return () => {
-      socket.off("receive_message");
-      socket.off("all_online_users");
-      socket.off("join_conversation");
+      if (socket !== null) {
+        socket.off("receive_message");
+        socket.off("all_online_users");
+        socket.off("join_conversation");
+      }
     };
-  }, []);
+  }, [currConversationId, socket]);
 
   useEffect(() => {
     findAllConversationsFunc();
