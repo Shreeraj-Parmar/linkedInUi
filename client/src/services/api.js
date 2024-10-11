@@ -557,9 +557,10 @@ export const sendMsg = async (data) => {
 };
 
 // get all msg from conversations
-export const getMsgAccConvId = async (id) => {
+export const getMsgAccConvId = async (id, page = 1, limit = 20) => {
   try {
-    let res = await axios.get(`${API}/msg/${id}`, {
+    // Send page and limit as query parameters to the API
+    let res = await axios.get(`${API}/msg/${id}?page=${page}&limit=${limit}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -567,7 +568,7 @@ export const getMsgAccConvId = async (id) => {
     return res;
   } catch (error) {
     console.log(
-      `error while calling getMsgAccConvId & error is : ${error.message}`
+      `Error while calling getMsgAccConvId & error is: ${error.message}`
     );
   }
 };

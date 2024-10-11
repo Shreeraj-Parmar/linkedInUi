@@ -41,7 +41,9 @@ const Message = () => {
   const [receiverName, setReceiverName] = useState();
   const [receiverId, setReceiverId] = useState();
   const [conversations, setConversations] = useState([]);
-
+  const [page, setPage] = useState(1); // State to keep track of the current page
+  const [hasMore, setHasMore] = useState(true); // State to check if more messages are available
+  const limit = 15; // Number of messages to fetch per request
   const [sendMsgText, setSendMsgText] = useState("");
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
@@ -71,6 +73,11 @@ const Message = () => {
         let check = messages.find((msg) => msg._id === message._id);
         if (!check) {
           setMessages((prevMessages) => [...prevMessages, message]);
+          setTimeout(() => {
+            if (chatEndRef.current) {
+              chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 200);
         }
       }
       /// change it..
@@ -91,6 +98,7 @@ const Message = () => {
   }, []);
 
   useEffect(() => {
+    findAllConversationsFunc();
     if (currConversationId) {
       handleConversationSelect(currConversationId);
     }
@@ -116,20 +124,51 @@ const Message = () => {
     }
   };
 
-  const fetchMessagesFunc = async (id) => {
-    let res = await getMsgAccConvId(id);
+  const fetchMessagesFunc = async (id, page, limit) => {
+    let res = await getMsgAccConvId(id, page, limit); // Fetch messages with pagination
     if (res.status === 200) {
-      console.log("messages is", res.data);
-      setMessages(res.data);
+      console.log("Messages:", res.data);
+
+      // If messages are fetched, prepend them to the existing messages
+      setMessages((prevMessages) => [...res.data.reverse(), ...prevMessages]);
+
+      // Check if there are more messages to load
+      if (res.data.length < limit) {
+        setHasMore(false); // No more messages available
+      }
+    }
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop } = e.target; // Get the scroll position
+    if (scrollTop === 0 && hasMore) {
+      // If user scrolled to the top and more messages are available
+      setPage((prevPage) => prevPage + 1); // Increment page number
     }
   };
 
   const handleConversationSelect = (convId) => {
-    setCurrConversationId(convId);
-    markAsReadFunction(convId, currUserData._id);
-    fetchMessagesFunc(convId);
+    setCurrConversationId(convId); // Select conversation
+    setPage(1); // Reset to page 1 when selecting a new conversation
+    markAsReadFunction(convId, currUserData._id); // Mark conversation as read
+    setMessages([]); // Clear current messages when selecting a new conversation
   };
 
+  useEffect(() => {
+    if (currConversationId) {
+      // Only fetch if a conversation is selected
+      if (page === 1) {
+        // If page is 1, it means we are selecting a new conversation
+        fetchMessagesFunc(currConversationId, 1, limit);
+        setTimeout(() => {
+          chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }, 1000);
+      } else {
+        // If page > 1, it means we are paginating (scrolling up)
+        fetchMessagesFunc(currConversationId, page, limit);
+      }
+    }
+  }, [currConversationId, page]);
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault(); //
@@ -138,10 +177,6 @@ const Message = () => {
         handleSendMsg();
       }
     }
-  };
-
-  const handleInputChange = (e) => {
-    setSendMsgText(e.target.value);
   };
 
   const handleSendMsg = async () => {
@@ -175,6 +210,11 @@ const Message = () => {
 
           setMessages((prevMessages) => [...prevMessages, message]);
           console.log(res.data);
+          setTimeout(() => {
+            if (chatEndRef.current) {
+              chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 200);
           // fetchMessagesFunc(currConversationId);
           setSendMsgText("");
         } else {
@@ -230,16 +270,6 @@ const Message = () => {
       findReceiverData();
     }
   }, [currConversationId]);
-
-  useEffect(() => {
-    findAllConversationsFunc();
-  }, []);
-
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
 
   // useLayoutEffect(() => {
   //   if (!isLogin) {
@@ -352,13 +382,13 @@ const Message = () => {
                   )}
                 </div>
               </div>
-              <div className='chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-y-scroll'>
+              <div
+                onScroll={handleScroll}
+                className='chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-y-scroll'
+              >
                 {Array.isArray(messages) &&
                   messages.map((msg, index) => {
-                    if (!msg || !msg.text) {
-                      console.warn("Undefined message or text found:", msg);
-                      return null; // Skip undefined or invalid messages
-                    }
+                    // check if message shows on the right side or left side based on senderId and currUserData._id
                     const isCurrentUser =
                       currUserData &&
                       currUserData._id &&
@@ -419,7 +449,7 @@ const Message = () => {
                     id='inp-msg'
                     onKeyDown={handleKeyDown}
                     onChange={(e) => {
-                      handleInputChange(e);
+                      setSendMsgText(e.target.value);
                     }}
                     placeholder='Enter Message'
                     className='inp-message p-2 placeholder:text-[#3c3737] rounded-md border border-gray-400 w-[95%]'

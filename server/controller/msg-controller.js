@@ -51,7 +51,18 @@ export const saveMSGInDB = async (req, res) => {
 
 export const sendALlMsgAccConvId = async (req, res) => {
   try {
-    const messages = await Message.find({ conversationId: req.params.convId });
+    // Get page and limit from query parameters, with defaults
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 20; // Default limit to 20 if not provided
+
+    // Calculate how many documents to skip based on the page number
+    const skip = (page - 1) * limit;
+
+    // Find messages for the specific conversation and apply pagination
+    const messages = await Message.find({ conversationId: req.params.convId })
+      .sort({ createdAt: -1 }) // Sort by most recent messages first
+      .skip(skip) // Skip the documents for previous pages
+      .limit(limit); // Limit the number of documents returned
 
     return res.status(200).json(messages);
   } catch (error) {
