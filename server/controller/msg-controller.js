@@ -49,6 +49,7 @@ export const saveMSGInDB = async (req, res) => {
       conversationId: conversationId,
     };
     io.emit(`unread_messages_${receiverId}`, liveBadge);
+    io.emit(`unread_messages_nav_${receiverId}`, "add please");
 
     await conver.save();
 

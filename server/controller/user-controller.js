@@ -2,6 +2,7 @@ import User from "../model/user.js";
 import Notification from "../model/notification.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { io } from "../index.js";
 
 // SignUp
 export const saveNewUser = async (req, res) => {
@@ -512,6 +513,8 @@ export const sendConnectReq = async (req, res) => {
     // Save the updated data for both sender and receiver
     await sender.save();
     await receiver.save();
+
+    io.emit(`new_connection_request_${receiverId}`, "new request");
 
     res.status(200).json({ message: "Connectio nreq sends" });
   } catch (error) {

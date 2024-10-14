@@ -39,7 +39,9 @@ export const savePostDataIntoDB = async (req, res) => {
         { new: true } // Return the updated user document
       );
 
-      res.status(200).json({ message: "post saved successfully" });
+      res
+        .status(200)
+        .json({ message: "post saved successfully", postId: savedPost._id });
     } else {
       res.status(201).json({ message: "error while saving post" });
     }
@@ -90,11 +92,9 @@ export const updateLike = async (req, res) => {
   let { postId, likeStatus, whoLiked } = req.body;
   try {
     const post = await Post.findById(postId);
-    if (likeStatus) {
+    if (!post.likedBy.includes(whoLiked)) {
       // Add user to likes array if not already liked
-      if (!post.likedBy.includes(whoLiked)) {
-        post.likedBy.push(whoLiked);
-      }
+      post.likedBy.push(whoLiked);
     } else {
       // Remove user from likes array if user already liked the post
       post.likedBy = post.likedBy.filter((id) => id.toString() !== whoLiked);
@@ -102,9 +102,14 @@ export const updateLike = async (req, res) => {
     post.likeCount = post.likedBy.length;
 
     let finalRes = await post.save();
+    let FinalLikeStatus = finalRes.likedBy.includes(whoLiked);
     console.log(finalRes);
     if (finalRes) {
-      res.status(200).json({ success: true, message: "Like status updated" });
+      res.status(200).json({
+        success: true,
+        message: "Like status updated",
+        FinalLikeStatus: FinalLikeStatus,
+      });
     } else {
       res
         .status(201)

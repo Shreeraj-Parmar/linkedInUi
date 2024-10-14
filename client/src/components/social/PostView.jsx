@@ -41,7 +41,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [commentText, setCommentText] = useState("");
   const [commentsByPost, setCommentsByPost] = useState({});
   const commentInputRef = useRef();
-  const [commentCount, setCommentCount] = useState([]);
+  const [commentCount, setCommentCount] = useState({});
   const [followStatus, setFollowStatus] = useState({});
   const [postSkeleton, setPostSkeleton] = useState(true);
   const navigate = useNavigate();
@@ -53,11 +53,11 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
   const [loadingComments, setLoadingComments] = useState({}); // Loading state for
 
-  const getCommentCountFunction = async () => {
-    let res = await getCommentCount();
-    console.log(res.data.allCommentCount);
-    setCommentCount(res.data.allCommentCount);
-  };
+  // const getCommentCountFunction = async () => {
+  //   let res = await getCommentCount();
+  //   console.log(res.data.allCommentCount);
+  //   setCommentCount(res.data.allCommentCount);
+  // };
 
   useEffect(() => {
     setTimeout(() => {
@@ -142,6 +142,14 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       // Update all posts state with the newly fetched and sorted posts
       setAllPost((prevPosts) => [...prevPosts, ...res.data.allPosts]);
 
+      res.data.allPosts.map((post) => {
+        // Check if the current user has liked the post
+        setCommentCount((prevCount) => ({
+          ...prevCount,
+          [post._id]: post.comments.length,
+        }));
+      });
+
       // Check if there are more posts to load
       if (res.data.allPosts.length < limit) {
         setHasMore(false); // No more posts to load
@@ -159,7 +167,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
           ...prevLikes, // Spread the previous likes to keep them
           ...newLikes, // Add the new likes from the newly fetched posts
         }));
-        console.log("Likes initialized:", newLikes);
+        console.log("Likes initialized here please check it:", newLikes);
       } else {
         setLikes({}); // User is not logged in
       }
@@ -184,7 +192,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   useEffect(() => {
     if (hasMore) {
       postFunc(page, limit);
-      getCommentCountFunction();
+      // getCommentCountFunction();
     }
   }, [page]); // Add page as a dependency
 
@@ -203,15 +211,12 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       return;
     }
     // getData();
-    const currentLikeStatus = likeArr.includes(currUserData._id);
+    const currentLikeStatus =
+      likes[postId] || (currUserData && likeArr.includes(currUserData._id));
 
     console.log("currunt like status", currentLikeStatus);
 
     // Optimistically update UI before waiting for response
-    setLikes((prev) => ({
-      ...prev,
-      [postId]: !currentLikeStatus, // Toggle like status
-    }));
 
     console.log("curr id is", currUserData);
     let res = await toggleLikeOnPost({
@@ -221,15 +226,41 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     });
     if (res.status === 200) {
       console.log(res.data.message);
-      if (res.data.message === "Like status updated") {
-        await sendNotification({
-          recipient: userId,
-          sender: currUserData._id,
-          type: "like",
-          message: "You Have new Liked On your post",
-        });
+
+      if (res.data.FinalLikeStatus) {
+        setAllPost((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === postId
+              ? { ...post, likeCount: post.likeCount + 1 }
+              : post
+          )
+        );
+        setLikes((prev) => ({
+          ...prev,
+          [postId]: true, // Toggle like status
+        }));
+      } else {
+        setAllPost((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === postId
+              ? { ...post, likeCount: post.likeCount - 1 }
+              : post
+          )
+        );
+        setLikes((prev) => ({
+          ...prev,
+          [postId]: false, // Toggle like status
+        }));
       }
-      postFunc(page, limit); // Call postFunc after successful like update
+      if (res.data.message === "Like status updated") {
+        !currentLikeStatus &&
+          (await sendNotification({
+            recipient: userId,
+            sender: currUserData._id,
+            type: "like",
+            message: "You Have new Liked On your post",
+          }));
+      }
     } else {
       console.error("Error updating like status on server", res.data.message);
     }
@@ -247,7 +278,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
           [id]: [...res.data.commentsList], // Store comments under the respective post ID
         };
         newComments[id] = newComments[id].reverse();
-        console.log(newComments); // Log the new comments state
+        console.log("new comments is here", newComments); // Log the new comments state
         return newComments; // Return the updated state
       });
     } else {
@@ -282,10 +313,32 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       text: commentText,
     });
     if (res.status === 200) {
+      const newComment = {
+        text: commentText,
+        post: id,
+        user: {
+          _id: currUserData._id,
+          name: currUserData.name,
+          profilePicture: currUserData.profilePicture || imgUrl,
+          city: currUserData.city,
+        },
+        createdAt: new Date().toISOString(),
+      };
+
+      // Optimistically update the comments UI
+      setCommentsByPost((prev) => ({
+        ...prev,
+        [id]: [newComment, ...(prev[id] || [])], // Add the new comment at the start of the comments array
+      }));
       console.log(res.data.message);
       setCommentText("");
 
       if (res.data.message === "Comment Added")
+        setCommentCount((prevCount) => ({
+          ...prevCount,
+          [id]: prevCount[id] ? prevCount[id] + 1 : 1,
+        }));
+      if (currUserData._id !== userId)
         await sendNotification({
           recipient: userId,
           sender: currUserData._id,
@@ -304,9 +357,15 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   };
 
   return (
-    <div className="post-wrapper  w-[100%]   flex-row space-y-3">
+    <div className='post-wrapper  w-[100%]   flex-row space-y-3'>
       <Tostify />
-      <PostDialog postDialog={postDialog} setPostDialog={setPostDialog} />
+      <PostDialog
+        postDialog={postDialog}
+        setPostDialog={setPostDialog}
+        setAllPost={setAllPost}
+        currUserData={currUserData}
+        imgUrl={imgUrl}
+      />
       <div
         className={`write-post text-[#DBDBDC] bg-[#1B1F23] w-[100%] h-[10vh] rounded-md p-2 ${
           lightMode && " bg-white text-black"
@@ -315,11 +374,11 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         <div
           className={`write-post-wrapper  flex justify-center items-center `}
         >
-          <div className="write-post-left w-[10%]">
+          <div className='write-post-left w-[10%]'>
             <img
               src={imgUrl || "/blank.png"}
-              alt="your profile picture"
-              className="rounded-full  w-[80%] h-[55px]"
+              alt='your profile picture'
+              className='rounded-full  w-[80%] h-[55px]'
             />
           </div>
           <div
@@ -336,7 +395,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
               setPostDialog(true);
             }}
           >
-            <p className="write-post-btn">Start to Write Post</p>
+            <p className='write-post-btn'>Start to Write Post</p>
           </div>
         </div>
       </div>
@@ -348,94 +407,94 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
           lightMode && "  text-black"
         }`}
       >
-        <div className=" h-[100%]  p-2  flex-row space-y-3  ">
+        <div className=' h-[100%]  p-2  flex-row space-y-3  '>
           {/* Skeleton Of Posts */}
           {/* map post logic here */}
 
           {postSkeleton && (
-            <div className="flex justify-center">
+            <div className='flex justify-center'>
               <div
                 className={`post bg-[#1B1F23]   p-5  rounded-md w-[100%] h-fit space-y-2 ${
                   lightMode &&
                   " bg-white border-2 shadow-sm border-gray-400 border-opacity-40"
                 }`}
               >
-                <div className="post-des flex    w-[100%] space-x-2">
+                <div className='post-des flex    w-[100%] space-x-2'>
                   <Skeleton
-                    variant="circular"
+                    variant='circular'
                     width={55}
                     height={55}
-                    className="rounded-full"
+                    className='rounded-full'
                   />
-                  <div className="heading-post  lg:min-w-[200px] flex-row space-y-[-5px]">
+                  <div className='heading-post  lg:min-w-[200px] flex-row space-y-[-5px]'>
                     <Skeleton
-                      variant="text"
+                      variant='text'
                       width={150}
                       height={20}
-                      className=" rounded-md"
+                      className=' rounded-md'
                     />
                     <Skeleton
-                      variant="text"
+                      variant='text'
                       width={100}
                       height={15}
-                      className=" rounded-md mt-1"
+                      className=' rounded-md mt-1'
                     />
                     <Skeleton
-                      variant="text"
+                      variant='text'
                       width={150}
                       height={15}
-                      className=" rounded-md mt-1"
+                      className=' rounded-md mt-1'
                     />
                   </div>
                 </div>
-                <div className="post-text w-[100%]">
+                <div className='post-text w-[100%]'>
                   <div>
                     <Skeleton
-                      variant="rectangular"
-                      width="100%"
+                      variant='rectangular'
+                      width='100%'
                       height={100}
-                      className="rounded-md mt-2"
+                      className='rounded-md mt-2'
                     />
                   </div>
                 </div>
 
-                <div className="post-image w-[100%] mt-2 flex justify-center items-center">
+                <div className='post-image w-[100%] mt-2 flex justify-center items-center'>
                   <Skeleton
-                    variant="rectangular"
-                    width="95%"
+                    variant='rectangular'
+                    width='95%'
                     height={300}
-                    className="rounded-md mt-2"
+                    className='rounded-md mt-2'
                   />
                 </div>
 
-                <div className="flex justify-between">
+                <div className='flex justify-between'>
                   <Skeleton
-                    variant="text"
+                    variant='text'
                     width={50}
                     height={15}
-                    className=" rounded-md mt-1"
+                    className=' rounded-md mt-1'
                   />
                   <Skeleton
-                    variant="text"
+                    variant='text'
                     width={70}
                     height={15}
-                    className=" rounded-md mt-1"
+                    className=' rounded-md mt-1'
                   />
                 </div>
-                <div className="divider"></div>
+                <div className='divider'></div>
 
-                <div className="like-comment">
-                  <div className="like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2">
+                <div className='like-comment'>
+                  <div className='like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2'>
                     <div
                       className={`like flex space-x-1 cursor-pointer ${
                         lightMode && "hover:bg-[#F4F2EE] "
                       }  hover:bg-[#293138] p-2 rounded-md`}
                     >
                       <Skeleton
-                        variant="text"
+                        variant='text'
                         width={50}
                         height={15}
-                        className=" rounded-md mt-1"
+                        className=' rounded-md mt-1'
                       />
                     </div>
                     <div
@@ -444,10 +503,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                       }  cursor-pointer hover:bg-[#293138] p-2 rounded-md`}
                     >
                       <Skeleton
-                        variant="text"
+                        variant='text'
                         width={50}
                         height={15}
-                        className=" rounded-md mt-1"
+                        className=' rounded-md mt-1'
                       />
                     </div>
                   </div>
@@ -460,23 +519,23 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
             ? allPost.map((post) => {
                 // all posts
                 return (
-                  <div className="flex justify-center" key={post._id}>
+                  <div className='flex justify-center' key={post._id}>
                     <div
                       className={`post bg-[#1B1F23]   p-5  rounded-md w-[100%] h-fit space-y-2 ${
                         lightMode &&
                         " bg-white border-2 shadow-sm border-gray-400 border-opacity-40"
                       }`}
                     >
-                      <div className="post-des flex    w-[100%] space-x-2">
+                      <div className='post-des flex    w-[100%] space-x-2'>
                         <img
                           src={
                             (post.user && post.user.profilePicture) ||
                             "/blank.png"
                           }
-                          alt="who posted this post"
-                          className=" w-[9%] h-[55px] rounded-full"
+                          alt='who posted this post'
+                          className=' w-[9%] h-[55px] rounded-full'
                         />
-                        <div className="heading-post  lg:min-w-[200px] flex-row space-y-[-5px]">
+                        <div className='heading-post  lg:min-w-[200px] flex-row space-y-[-5px]'>
                           <p
                             onClick={() => {
                               setCurrMenu("");
@@ -498,7 +557,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           </p>
                         </div>
                         {currUserData && post.user._id !== currUserData._id ? (
-                          <div className="follow-btn p-2 relative lg:left-52">
+                          <div className='follow-btn p-2 relative lg:left-52'>
                             <button
                               onClick={() => {
                                 handleFollowClick(post.user && post.user._id);
@@ -515,7 +574,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           </div>
                         ) : (
                           !isLogin && (
-                            <div className="follow-btn p-2 relative lg:left-52">
+                            <div className='follow-btn p-2 relative lg:left-52'>
                               <button
                                 onClick={() => {
                                   setLoginDialog(true);
@@ -531,18 +590,18 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           )
                         )}
                       </div>
-                      <div className="post-text w-[100%]">
+                      <div className='post-text w-[100%]'>
                         <div>
-                          <pre className="w-[90%] text-wrap mt-2">
+                          <pre className='w-[90%] text-wrap mt-2'>
                             {post.text}
                           </pre>
                         </div>
                       </div>
                       {post.url && (
-                        <div className="post-image w-[100%] mt-2 flex justify-center items-center">
+                        <div className='post-image w-[100%] mt-2 flex justify-center items-center'>
                           <img
                             src={post.url || ""}
-                            alt="this is post image"
+                            alt='this is post image'
                             className={
                               "w-[95%] max-h-[800px] rounded-md h-auto"
                             }
@@ -550,21 +609,18 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                         </div>
                       )}
 
-                      <div className="flex justify-between">
+                      <div className='flex justify-between'>
                         <p className={"text-[#959799]"}>
                           {post.likeCount} likes
                         </p>
                         <p className={"text-[#959799]"}>
-                          {commentCount.find(
-                            (comment) => comment._id === post._id
-                          )?.comments.length ?? 0}{" "}
-                          comments
+                          {commentCount[post._id]} comments
                         </p>
                       </div>
-                      <div className="divider"></div>
+                      <div className='divider'></div>
 
-                      <div className="like-comment">
-                        <div className="like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2">
+                      <div className='like-comment'>
+                        <div className='like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2'>
                           <div
                             className={`like flex space-x-1 cursor-pointer ${
                               lightMode && "hover:bg-[#F4F2EE] "
@@ -573,13 +629,13 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               handleLike(post._id, post.user._id, post.likedBy);
                             }}
                           >
-                            {likes[post._id] ? (
-                              <FavoriteIcon className="text-red-500" />
+                            {likes && likes[post._id] ? (
+                              <FavoriteIcon className='text-red-500' />
                             ) : (
-                              <FavoriteBorderIcon className="" />
+                              <FavoriteBorderIcon className='' />
                             )}
 
-                            <button className="like">Like</button>
+                            <button className='like'>Like</button>
                           </div>
                           <div
                             className={`comment flex space-x-1 ${
@@ -591,7 +647,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                             }}
                           >
                             <InsertCommentIcon />
-                            <button className="comment">Comment</button>
+                            <button className='comment'>Comment</button>
                           </div>
                         </div>
                       </div>
@@ -603,20 +659,20 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               commentBoxOpen[post._id] ? "active" : ""
                             }`}
                           >
-                            <div className="flex  items-center space-x-2">
+                            <div className='flex  items-center space-x-2'>
                               <img
                                 src={imgUrl || "/blank.png"}
-                                className="rounded-full  w-[7%] h-[40px] border border-gray-400 border-opacity-40"
-                                alt="your profile picture"
+                                className='rounded-full  w-[7%] h-[40px] border border-gray-400 border-opacity-40'
+                                alt='your profile picture'
                               />
-                              <div className="w-[100%]">
+                              <div className='w-[100%]'>
                                 <input
-                                  type="text"
-                                  name="comment"
+                                  type='text'
+                                  name='comment'
                                   value={commentText} // imp for clearing the commentText
                                   ref={commentInputRef}
-                                  placeholder="Give Your Comment"
-                                  id="comment"
+                                  placeholder='Give Your Comment'
+                                  id='comment'
                                   className={`rounded-md p-2 bg-[#F4F2EE] border border-gray-400 border-opacity-40 w-[100%]`}
                                   onChange={(e) => {
                                     setCommentText(e.target.value);
@@ -625,7 +681,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                 />
                               </div>
                             </div>
-                            <div className="flex justify-end mt-2 ">
+                            <div className='flex justify-end mt-2 '>
                               <button
                                 className={` text-sm ${
                                   isDisabledPostBtn
@@ -642,42 +698,42 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                             </div>
                           </div>
                           {commentsByPost[post._id] && (
-                            <p className="mb-3 font-semibold ">All Comments</p>
+                            <p className='mb-3 font-semibold '>All Comments</p>
                           )}
-                          <div key={post._id} className="space-y-2">
+                          <div key={post._id} className='space-y-2'>
                             {commentsByPost[post._id] ? (
                               commentsByPost[post._id].map((comment) => {
                                 return (
                                   <>
                                     <div
                                       key={comment._id}
-                                      className="show-comments w-[100%]"
+                                      className='show-comments w-[100%]'
                                     >
-                                      <div className="flex space-x-2">
+                                      <div className='flex space-x-2'>
                                         <img
                                           src={
                                             comment.user &&
                                             comment.user.profilePicture
                                           }
-                                          alt="who commented"
-                                          className="rounded-full border border-gray-400 border-opacity-40  w-[7%] h-[40px]"
+                                          alt='who commented'
+                                          className='rounded-full border border-gray-400 border-opacity-40  w-[7%] h-[40px]'
                                         />
-                                        <div className="commet-des heading-post p-2 w-[100%] pl-3 rounded-md bg-[#F4F2EE] border border-gray-400 border-opacity-40 flex-row space-y-[-5px]">
-                                          <p className="hover:underline hover:text-blue-500 cursor-pointer">
+                                        <div className='commet-des heading-post p-2 w-[100%] pl-3 rounded-md bg-[#F4F2EE] border border-gray-400 border-opacity-40 flex-row space-y-[-5px]'>
+                                          <p className='hover:underline hover:text-blue-500 cursor-pointer'>
                                             {comment.user && comment.user.name}
                                           </p>
-                                          <p className=" text-[#959799] text-sm   ">
+                                          <p className=' text-[#959799] text-sm   '>
                                             {comment.user &&
                                               comment.user.city.toLowerCase()}
                                           </p>
-                                          <p className="text-[#959799] text-sm    ">
+                                          <p className='text-[#959799] text-sm    '>
                                             {comment.user &&
                                               moment(
                                                 comment.createdAt
                                               ).fromNow()}
                                           </p>
-                                          <div className="comment-text">
-                                            <p className="mt-2">
+                                          <div className='comment-text'>
+                                            <p className='mt-2'>
                                               {comment.user && comment.text}
                                             </p>
                                           </div>
@@ -698,7 +754,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                 );
               })
             : !postSkeleton && (
-                <div className="text-white font-bold">
+                <div className='text-white font-bold'>
                   No posts, pleasse relogin
                 </div>
               )}

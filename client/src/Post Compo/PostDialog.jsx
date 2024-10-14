@@ -29,7 +29,13 @@ const dialogStyle = {
   backgroundColor: "#F4F2EE",
 };
 
-const PostDialog = ({ setPostDialog, postDialog }) => {
+const PostDialog = ({
+  setPostDialog,
+  postDialog,
+  setAllPost,
+  imgUrl,
+  currUserData,
+}) => {
   const [previewUrl, setPreviewUrl] = useState(null); // for image preview
   const [postFile, setPostFile] = useState(null);
   const [postText, setPostText] = useState("");
@@ -51,7 +57,7 @@ const PostDialog = ({ setPostDialog, postDialog }) => {
   };
 
   const handlePostSubmit = async () => {
-    if (postText === "" || !postFile) {
+    if (postText === "" && !postFile) {
       toast.error(`Please Write Somthing Or Select Photo. !`, {
         position: "top-right",
         autoClose: 4000,
@@ -88,8 +94,29 @@ const PostDialog = ({ setPostDialog, postDialog }) => {
             text: postText,
             url: permanentUrlForPost,
           });
+
           if (res.status === 200) {
             console.log("post saved successfully");
+            let newPost = {
+              text: postText,
+              url: permanentUrlForPost,
+              _id: res.data.postId,
+              comments: [],
+              likeCount: 0,
+              likedBy: [],
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              user: {
+                _id: currUserData._id,
+                name: currUserData.name,
+                profilePicture: currUserData.profilePicture || imgUrl,
+                city: currUserData.city,
+              },
+            };
+            console.log("new post is here", newPost);
+            setAllPost((prev) => [newPost, ...prev]);
+            setPostText("");
+            setPostFile(null);
           }
         } else {
           toast.error(`Error While Uploading IMAGE . !`, {
@@ -105,18 +132,37 @@ const PostDialog = ({ setPostDialog, postDialog }) => {
           console.log("error while generating url");
         }
         setPostFile(null);
+        setPostText("");
       }
     } else {
       let res = await savePostData({
         text: postText,
       });
       if (res.status === 200) {
+        let newPost = {
+          text: postText,
+          _id: res.data.postId,
+          comments: [],
+          likeCount: 0,
+          likedBy: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          user: {
+            _id: currUserData._id,
+            name: currUserData.name,
+            profilePicture: currUserData.profilePicture || imgUrl,
+            city: currUserData.city,
+          },
+        };
+
+        setAllPost((prev) => [newPost, ...prev]);
         console.log("post saved successfully");
       } else {
         console.log("error while generating url");
       }
     }
     setPostDialog(false);
+    setPostText("");
   };
 
   return (
@@ -128,37 +174,38 @@ const PostDialog = ({ setPostDialog, postDialog }) => {
         },
       }}
     >
-      <div className="w-[100%] p-5 mt-[5%] h-[100%]">
+      <div className='w-[100%] p-5 mt-[5%] h-[100%]'>
         <Tostify />
-        <div className="p-4 ">
+        <div className='p-4 '>
           <div>
             <textarea
-              name="post"
+              name='post'
               onChange={(e) => {
                 setPostText(e.target.value);
               }}
               rows={6}
-              className=" text-xl text-black w-[100%] bg-white border-2 border-gray-400 border-opacity-80 rounded-md p-2"
-              placeholder="What Do You Want To Talk About?"
-              id="post"
+              value={postText}
+              className=' text-xl text-black w-[100%] bg-white border-2 border-gray-400 border-opacity-80 rounded-md p-2'
+              placeholder='What Do You Want To Talk About?'
+              id='post'
             ></textarea>
           </div>
 
           {postFile ? (
-            <img src={previewUrl} alt="image preview" className="w-[10%]" />
+            <img src={previewUrl} alt='image preview' className='w-[10%]' />
           ) : (
             <AddPhotoAlternateIcon
-              className=" cursor-pointer text-blue-400"
+              className=' cursor-pointer text-blue-400'
               onClick={() => {
                 handlePostFileClick();
               }}
             />
           )}
-          <div className="profile-file-form">
+          <div className='profile-file-form'>
             <input
-              type="file"
-              name=""
-              id=""
+              type='file'
+              name=''
+              id=''
               ref={postPhotoRef}
               onChange={(e) => {
                 handlePostFileChange(e);
@@ -166,9 +213,9 @@ const PostDialog = ({ setPostDialog, postDialog }) => {
             />
           </div>
         </div>
-        <div className="flex justify-end">
+        <div className='flex justify-end'>
           <button
-            className="bg-[#4eacff] text-black p-2 mr-3 rounded-md"
+            className='bg-[#4eacff] text-black p-2 mr-3 rounded-md'
             onClick={() => {
               handlePostSubmit();
             }}
@@ -179,8 +226,10 @@ const PostDialog = ({ setPostDialog, postDialog }) => {
       </div>
 
       <div
-        className="absolute top-[20px] right-[30px] text-2xl cursor-pointer"
+        className='absolute top-[20px] right-[30px] text-2xl cursor-pointer'
         onClick={() => {
+          setPostFile(null);
+          setPostText("");
           setPostDialog(false);
         }}
       >

@@ -21,11 +21,12 @@ const Navbar = () => {
   const {
     isLogin,
     setIsLogin,
-
+    socket,
     setLoginDialog,
     loginDialog,
     currMenu,
     setCurrMenu,
+    currUserData,
     messages,
     lightMode,
   } = useContext(AllContext);
@@ -56,6 +57,41 @@ const Navbar = () => {
     getAllUnreadConnectionReqCount();
   }, [messages]);
 
+  useEffect(() => {
+    socket &&
+      currUserData &&
+      socket.on(
+        `unread_messages_nav_${currUserData && currUserData._id}`,
+        () => {
+          setMSGUnreadCount((prev) => prev + 1);
+        }
+      );
+
+    socket &&
+      currUserData &&
+      socket.on(`new_notification_${currUserData && currUserData._id}`, () => {
+        setUnreadNotiCount((prev) => prev + 1);
+      });
+
+    socket &&
+      currUserData &&
+      socket.on(
+        `new_connection_request_${currUserData && currUserData._id}`,
+        () => {
+          setConnectionReqCount((prev) => prev + 1);
+        }
+      );
+    return () => {
+      if (socket) {
+        socket.off(`new_notification_${currUserData && currUserData._id}`);
+        socket.off(`unread_messages_nav_${currUserData && currUserData._id}`);
+        socket.off(
+          `new_connection_request_${currUserData && currUserData._id}`
+        );
+      }
+    };
+  }, [socket, currUserData && currUserData._id]);
+
   return (
     <div
       className={`flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ${
@@ -68,17 +104,17 @@ const Navbar = () => {
           lightMode && " text-black"
         }`}
       >
-        <div className="up-header-wrapper flex justify-between w-[80%]">
-          <div className="logo-side flex justify-center ml-5 items-center">
-            <div className="flex justify-center items-center">
+        <div className='up-header-wrapper flex justify-between w-[80%]'>
+          <div className='logo-side flex justify-center ml-5 items-center'>
+            <div className='flex justify-center items-center'>
               <LinkedInIcon
                 className={` cursor-pointer ${lightMode && " text-blue-600"}`}
-                fontSize="large"
+                fontSize='large'
               />
             </div>
             {/* <h2 className="text-3xl text-center "></h2> */}
           </div>
-          <div className="menu-side flex space-x-1 mr-[170px]">
+          <div className='menu-side flex space-x-1 mr-[170px]'>
             <div
               onClick={() => {
                 setCurrMenu("home");
@@ -90,23 +126,23 @@ const Navbar = () => {
                 currMenu === "home" ? "curr-menu-active" : ""
               } cursor-pointer main-menu-div  w-[100px]`}
             >
-              <div className=" flex justify-center items-center">
+              <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu === "home" ? (
                     <HomeIcon
-                      fontSize="medium"
-                      className="text-[#6c6c6c] hover:text-[#e9e9e9]"
+                      fontSize='medium'
+                      className='text-[#6c6c6c] hover:text-[#e9e9e9]'
                     />
                   ) : (
                     <HomeIcon
-                      fontSize="small"
-                      className="text-[#6c6c6c] hover:text-[#e9e9e9]"
+                      fontSize='small'
+                      className='text-[#6c6c6c] hover:text-[#e9e9e9]'
                     />
                   )}
                 </button>
               </div>
-              <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#abacad] hover:text-[#e9e9e9]">
+              <div className=' flex justify-center mt-[-5px] items-center'>
+                <p className=' text-[12px] text-[#abacad] hover:text-[#e9e9e9]'>
                   Home
                 </p>
               </div>
@@ -127,7 +163,7 @@ const Navbar = () => {
                 currMenu === "network" ? "curr-menu-active" : ""
               } cursor-pointer main-menu-div  w-[100px]`}
             >
-              <div className=" flex justify-center items-center">
+              <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu !== "network" ? (
                     <Badge
@@ -136,23 +172,23 @@ const Navbar = () => {
                         connectionReqCount > 0 && " w-[25px] h-[15px]"
                       }`}
                       // style={{ width: "25px", height: "15px" }}
-                      color="primary"
+                      color='primary'
                     >
                       <PeopleIcon
-                        fontSize="small"
-                        className="text-[#6c6c6c] hover:text-[#000]"
+                        fontSize='small'
+                        className='text-[#6c6c6c] hover:text-[#000]'
                       />
                     </Badge>
                   ) : (
                     <PeopleIcon
-                      fontSize="medium"
-                      className="text-[#6c6c6c] hover:text-[#000]"
+                      fontSize='medium'
+                      className='text-[#6c6c6c] hover:text-[#000]'
                     />
                   )}
                 </button>
               </div>
-              <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
+              <div className=' flex justify-center mt-[-5px] items-center'>
+                <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                   My Network
                 </p>
               </div>
@@ -173,7 +209,7 @@ const Navbar = () => {
                 currMenu === "message" ? "curr-menu-active" : ""
               } cursor-pointer main-menu-div  w-[100px]`}
             >
-              <div className=" flex justify-center items-center">
+              <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu !== "message" ? (
                     <Badge
@@ -182,23 +218,23 @@ const Navbar = () => {
                         unreadMSGCount > 0 && " w-[25px] h-[15px]"
                       }`}
                       // style={{ width: "25px", height: "15px" }}
-                      color="primary"
+                      color='primary'
                     >
                       <ChatIcon
-                        fontSize="small"
-                        className="text-[#6c6c6c] hover:text-[#000]"
+                        fontSize='small'
+                        className='text-[#6c6c6c] hover:text-[#000]'
                       />
                     </Badge>
                   ) : (
                     <ChatIcon
-                      fontSize="medium"
-                      className="text-[#6c6c6c] hover:text-[#000]"
+                      fontSize='medium'
+                      className='text-[#6c6c6c] hover:text-[#000]'
                     />
                   )}
                 </button>
               </div>
-              <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
+              <div className=' flex justify-center mt-[-5px] items-center'>
+                <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                   Messaging
                 </p>
               </div>
@@ -219,7 +255,7 @@ const Navbar = () => {
                 currMenu === "notification" ? "curr-menu-active" : ""
               } cursor-pointer main-menu-div  w-[100px]`}
             >
-              <div className=" flex justify-center items-center">
+              <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu !== "notification" ? (
                     <Badge
@@ -228,23 +264,23 @@ const Navbar = () => {
                         unreadNotiCount > 0 && " w-[25px] h-[15px]"
                       }`}
                       // style={{ width: "25px", height: "15px" }}
-                      color="primary"
+                      color='primary'
                     >
                       <NotificationsActiveIcon
-                        fontSize="small"
-                        className="text-[#6c6c6c] hover:text-[#000]"
+                        fontSize='small'
+                        className='text-[#6c6c6c] hover:text-[#000]'
                       />
                     </Badge>
                   ) : (
                     <NotificationsActiveIcon
-                      fontSize="medium"
-                      className="text-[#6c6c6c] hover:text-[#000]"
+                      fontSize='medium'
+                      className='text-[#6c6c6c] hover:text-[#000]'
                     />
                   )}
                 </button>
               </div>
-              <div className=" flex justify-center mt-[-5px] items-center">
-                <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
+              <div className=' flex justify-center mt-[-5px] items-center'>
+                <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                   Notifications
                 </p>
               </div>
@@ -266,23 +302,23 @@ const Navbar = () => {
                   currMenu === "profile" ? "curr-menu-active" : ""
                 } cursor-pointer main-menu-div  w-[100px]`}
               >
-                <div className=" flex justify-center items-center">
+                <div className=' flex justify-center items-center'>
                   <button>
                     {currMenu !== "profile" ? (
                       <AccountCircleIcon
-                        fontSize="small"
-                        className="text-[#6c6c6c] hover:text-[#000]"
+                        fontSize='small'
+                        className='text-[#6c6c6c] hover:text-[#000]'
                       />
                     ) : (
                       <AccountCircleIcon
-                        fontSize="medium"
-                        className="text-[#6c6c6c] hover:text-[#000]"
+                        fontSize='medium'
+                        className='text-[#6c6c6c] hover:text-[#000]'
                       />
                     )}
                   </button>
                 </div>
-                <div className=" flex justify-center mt-[-5px] items-center">
-                  <p className=" text-[12px] text-[#6c6c6c] hover:text-[#000]">
+                <div className=' flex justify-center mt-[-5px] items-center'>
+                  <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                     Me
                   </p>
                 </div>

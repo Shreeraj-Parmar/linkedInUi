@@ -2,6 +2,7 @@ import Notification from "../model/notification.js";
 import User from "../model/user.js";
 import Post from "../model/post.js";
 import Comment from "../model/comment.js";
+import { io } from "../index.js";
 
 // save new notifiaction
 export const saveNewNotification = async (req, res) => {
@@ -9,6 +10,7 @@ export const saveNewNotification = async (req, res) => {
   try {
     let newNoti = new Notification(req.body);
     await newNoti.save();
+    io.emit(`new_notification_${req.body.recipient}`, "new noti here");
     res.status(204);
   } catch (error) {
     console.log(

@@ -37,6 +37,7 @@ const UserProfile = () => {
   const [pendinConnection, setPendingConnection] = useState(false);
 
   const createNoti = async () => {
+    if (currUserData && currUserData.following.includes(userId)) return;
     await sendNotification({
       recipient: userId,
       sender: currUserData._id,
@@ -44,10 +45,6 @@ const UserProfile = () => {
       message: "you have new view on your Profile",
     });
   };
-
-  useEffect(() => {
-    if (isLogin) createNoti();
-  }, []);
 
   const getUserDataFunc = async () => {
     console.log("use trigger");
@@ -165,8 +162,8 @@ const UserProfile = () => {
   };
 
   useLayoutEffect(() => {
-    console.log("sadasdasd");
     getUserDataFunc();
+    if (isLogin) createNoti();
   }, []);
 
   // check if login or not ,
@@ -176,50 +173,50 @@ const UserProfile = () => {
   //   }, []);
 
   return (
-    <div className="main-overview w-[100vw] bg-[#F4F2EE] h-auto">
+    <div className='main-overview w-[100vw] bg-[#F4F2EE] h-auto'>
       <LoginDialog
         isLogin={isLogin}
         setIsLogin={setIsLogin}
         setLoginDialog={setLoginDialog}
         loginDialog={loginDialog}
       />
-      <div className="main-overview-wrapper   max-w-[100vw]  overflow-x-hidden">
+      <div className='main-overview-wrapper   max-w-[100vw]  overflow-x-hidden'>
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
         <Tostify />
 
-        <div className="main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  ">
-          <div className="main-down mt-[60px] w-[95%]  min-h-[70%]">
-            <div className="profile-wrapper-all bg-[#fff] border-2 shadow-sm border-gray-400 border-opacity-40 w-[65%] p-5 pl-10 rounded-md flex-row space-y-3  ">
-              <div className="profil-pic">
+        <div className='main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  '>
+          <div className='main-down mt-[60px] w-[95%]  min-h-[70%]'>
+            <div className='profile-wrapper-all bg-[#fff] border-2 shadow-sm border-gray-400 border-opacity-40 w-[65%] p-5 pl-10 rounded-md flex-row space-y-3  '>
+              <div className='profil-pic'>
                 <img
                   src={
                     userData && userData.profilePicture
                       ? userData.profilePicture
                       : "/blank.png"
                   }
-                  className="min-w-[150px] border-2 
- border-gray-400 shadow-sm border-opacity-40 min-h-[150px]  rounded-full max-w-[150px] max-h-[150px] "
-                  alt="profil pic"
+                  className='min-w-[150px] border-2 
+ border-gray-400 shadow-sm border-opacity-40 min-h-[150px]  rounded-full max-w-[150px] max-h-[150px] '
+                  alt='profil pic'
                 />
               </div>
-              <div className="profil-details">
-                <p className="text-[#000] text-2xl font-semibold hover:bg-[#c2c2c2] w-fit cursor-pointer rounded-md">
+              <div className='profil-details'>
+                <p className='text-[#000] text-2xl font-semibold hover:bg-[#c2c2c2] w-fit cursor-pointer rounded-md'>
                   {userData ? userData.name : "Name"}
                 </p>
-                <p className="text-[#686868] text-sm">
+                <p className='text-[#686868] text-sm'>
                   {`${userData ? userData.city : ""}, ${
                     userData ? userData.state : ""
                   }, ${userData ? userData.country : ""}`}
                 </p>
-                <p className="text-[#686868] text-sm">
+                <p className='text-[#686868] text-sm'>
                   {userData ? userData.followers.length : ""} followers
                 </p>
               </div>
               {currUserData &&
                 userData &&
                 currUserData._id !== userData._id && (
-                  <div className="follow-btns flex space-x-2">
+                  <div className='follow-btns flex space-x-2'>
                     <button
                       onClick={async () => {
                         if (isLogin) {
@@ -230,7 +227,7 @@ const UserProfile = () => {
                           // setLoginDialog(true);
                         }
                       }}
-                      className="p-2 w-[100px]  rounded-full  bg-[#0A66C2] text-[#fff] hover:bg-[#004182] hover:text-[] "
+                      className='p-2 w-[100px]  rounded-full  bg-[#0A66C2] text-[#fff] hover:bg-[#004182] hover:text-[] '
                     >
                       {follow ? "UnFollow" : "Follow"}
                     </button>
@@ -238,7 +235,7 @@ const UserProfile = () => {
                       onClick={() => {
                         setConversationFunction({ receiverId: userData._id });
                       }}
-                      className="p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] "
+                      className='p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] '
                     >
                       Messege
                     </button>
@@ -248,14 +245,14 @@ const UserProfile = () => {
                           sendConnectionReq(userData._id);
                           getUserDataFunc();
                         }}
-                        className="p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]"
+                        className='p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]'
                       >
                         Connect
                       </button>
                     )}
 
                     {pendinConnection && (
-                      <button className="p-2 w-[100px] rounded-full border-2 border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]">
+                      <button className='p-2 w-[100px] rounded-full border-2 border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]'>
                         pending
                       </button>
                     )}
@@ -263,30 +260,30 @@ const UserProfile = () => {
                 )}
             </div>
             <div
-              className="profile-wrapper-all bg-[#fff] border-2 
- border-gray-400 border-opacity-40 mt-3 w-[65%] p-3 pl-10 rounded-md flex-row space-y-3  "
+              className='profile-wrapper-all bg-[#fff] border-2 
+ border-gray-400 border-opacity-40 mt-3 w-[65%] p-3 pl-10 rounded-md flex-row space-y-3  '
             >
-              <p className="text-[#000] text-xl font-semibold">Education</p>
+              <p className='text-[#000] text-xl font-semibold'>Education</p>
               {userData && userData.education[0] ? (
                 userData.education.map((edu) => {
                   return (
                     <div
                       key={userData._id}
-                      className="profile-edu bg-[#F4F2EE] p-2 pl-3 rounded-md w-[80%] flex  items-center"
+                      className='profile-edu bg-[#F4F2EE] p-2 pl-3 rounded-md w-[80%] flex  items-center'
                     >
                       <div>
-                        <p className="text-[#000]">{edu.degree}</p>
+                        <p className='text-[#000]'>{edu.degree}</p>
 
-                        <p className="text-[#686868] -mb-1 text-sm">
+                        <p className='text-[#686868] -mb-1 text-sm'>
                           {edu.university}
                         </p>
-                        <p className="text-[#686868] -mb-1 text-sm">{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
+                        <p className='text-[#686868] -mb-1 text-sm'>{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <p className="text-[#000]">No Any Education Here</p>
+                <p className='text-[#000]'>No Any Education Here</p>
               )}
             </div>
           </div>
