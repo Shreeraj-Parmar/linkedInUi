@@ -1,7 +1,7 @@
 import Message from "../model/message.js";
 import Conversation from "../model/conversation.js";
 import User from "../model/user.js";
-import { io } from "../index.js";
+import { io, socketClient } from "../index.js";
 
 export const saveMSGInDB = async (req, res) => {
   let { receiverId, conversationId, text } = req.body;
@@ -40,6 +40,15 @@ export const saveMSGInDB = async (req, res) => {
     } else {
       conver.unreadMessages.set(receiverId, 1);
     }
+
+    // live update badge notification
+
+    let liveBadge = {
+      receiverId: receiverId,
+      count: conver.unreadMessages.get(receiverId),
+      conversationId: conversationId,
+    };
+    io.emit(`unread_messages_${receiverId}`, liveBadge);
 
     await conver.save();
 

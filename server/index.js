@@ -28,9 +28,12 @@ const io = new Server(server, {
 });
 
 let users = []; // active users that shows online or offline
+let socketClient;
 
 io.on("connection", (client) => {
   console.log("A User Connected: ", client.id);
+
+  socketClient = client;
 
   // online or offline
   client.on("register", (id) => {
@@ -84,4 +87,4 @@ server.listen(PORT, () => {
   console.log(`server & socket server running on port: ${PORT}`);
 });
 
-export { io };
+export { io, socketClient };

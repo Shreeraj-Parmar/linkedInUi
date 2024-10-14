@@ -37,6 +37,8 @@ const Message = () => {
     setMessages,
     socket,
     setAllOnlineUsers,
+    unreadMSG,
+    setUnreadMSG,
   } = useContext(AllContext);
   const [receiverName, setReceiverName] = useState();
   const [receiverId, setReceiverId] = useState();
@@ -55,6 +57,10 @@ const Message = () => {
     console.log("this is onlineusers Data okwwwwwwwwwwy", onlineUsersData);
   };
 
+  useEffect(() => {
+    console.log("this is unread arr of object inside useEffect", unreadMSG);
+  }, [unreadMSG]);
+
   const socketMessageFunction = async () => {
     socket.on("online_users", handleOnlineUsers);
     // Join the conversation room
@@ -63,6 +69,25 @@ const Message = () => {
     }
 
     socket.emit("join_conversation", currConversationId && currConversationId);
+
+    socket.on(`unread_messages_${currUserData._id}`, (data) => {
+      console.log("unread triggerd and data is", data);
+      if (currConversationId !== data.conversationId) {
+        setUnreadMSG((prevUnreadMSG) => {
+          // Get the unreadMessages object for the specific conversationId
+          const conversationUnread = prevUnreadMSG[data.conversationId] || {};
+
+          return {
+            ...prevUnreadMSG,
+            // Update the unread count for the current user in the specific conversation
+            [data.conversationId]: {
+              ...conversationUnread,
+              [currUserData._id]: data.count, // Update the count for currUserData._id
+            },
+          };
+        });
+      }
+    });
 
     // Listen for new messages
     socket.on("receive_message", (message) => {
@@ -134,6 +159,15 @@ const Message = () => {
     let res = await getAllConversations();
     if (res.status === 200) {
       console.log("all conv", res.data);
+
+      let unread = res.data.map((conv) => {
+        return {
+          [conv.conversationId]: conv.unreadMessages,
+        };
+      });
+
+      console.log("unread messages is", unread);
+      setUnreadMSG(unread);
       setConversations(res.data);
       setLastMsg((prevLastMsg) => ({
         ...prevLastMsg,
@@ -173,6 +207,13 @@ const Message = () => {
 
   const handleConversationSelect = (convId) => {
     setCurrConversationId(convId); // Select conversation
+    setUnreadMSG((prevUnreadMSG) => ({
+      ...prevUnreadMSG,
+      [convId]: {
+        ...prevUnreadMSG[convId],
+        [currUserData._id]: 0, // Set unread count for the current user to 0
+      },
+    }));
     setPage(1); // Reset to page 1 when selecting a new conversation
     markAsReadFunction(convId, currUserData._id); // Mark conversation as read
     setMessages([]); // Clear current messages when selecting a new conversation
@@ -319,14 +360,23 @@ const Message = () => {
                             )}
 
                             <p className=' text-right  flex ml-20 justify-end'>
-                              <Badge
-                                badgeContent={
-                                  currUserData &&
-                                  conv.unreadMessages[currUserData._id]
-                                }
-                                color='primary'
-                                className=''
-                              ></Badge>
+                              {!isSelected && (
+                                <Badge
+                                  badgeContent={
+                                    currUserData &&
+                                    unreadMSG &&
+                                    unreadMSG[conv.conversationId]
+                                      ? unreadMSG[conv.conversationId][
+                                          currUserData._id
+                                        ]
+                                      : currUserData &&
+                                        currUserData._id &&
+                                        conv.unreadMessages[currUserData._id]
+                                  }
+                                  color='primary'
+                                  className=''
+                                ></Badge>
+                              )}
                             </p>
                           </p>
                         </div>

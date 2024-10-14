@@ -37,6 +37,8 @@ const UserContext = ({ children }) => {
   const [currConversationId, setCurrConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [unreadMSG, setUnreadMSG] = useState({});
+
   const [lightMode, setLightMode] = useState(true);
 
   const [loginDialog, setLoginDialog] = useState(false);
@@ -121,6 +123,8 @@ const UserContext = ({ children }) => {
         setLoading,
         lightMode,
         setLightMode,
+        unreadMSG,
+        setUnreadMSG,
       }}
     >
       {children}
