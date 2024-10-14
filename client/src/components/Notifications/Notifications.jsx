@@ -39,6 +39,10 @@ const Notifications = () => {
   };
 
   useLayoutEffect(() => {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/login";
+      return;
+    }
     setLoadingSkeleton(true);
     setTimeout(() => {
       setLoadingSkeleton(false); // Stop loading

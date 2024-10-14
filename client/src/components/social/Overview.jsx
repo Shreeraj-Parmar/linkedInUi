@@ -5,6 +5,7 @@ import {
   uploadFileAWS,
   getUserData,
   saveProfileURL,
+  refresIt,
 } from "../../services/api";
 import { toast } from "react-toastify";
 import Profile from "./Profile";
@@ -22,84 +23,73 @@ const Overview = () => {
     isLogin,
     setIsLogin,
     file,
+    setAllOnlineUsers,
 
     currMenu,
     setCurrMenu,
     currUserData,
     lightMode,
     loginDialog,
-
+    socket,
     setCurrUserData,
     setLoginDialog,
   } = useContext(AllContext);
   const navigate = useNavigate();
   const [profileSkeleton, setProfileSkeleton] = useState(false);
-  const socket = window.socketClient;
 
   const [imgUrl, setImgUrl] = useState(null);
 
-  //file functions here
-  // const handleFileChange = (e) => {
-  //   setFile(e.target.files[0]);
-  // };
+  const handleOnlineUsers = (onlineUsersData) => {
+    setAllOnlineUsers(onlineUsersData);
+    console.log("this is onlineusers Data okwwwwwwwwwwy", onlineUsersData);
+  };
 
-  /**
-   * This useEffect is used to send the user's ID to the server
-   * when the user data is available. This is used to keep track of
-   * the online users in the server.
-   */
-
-  // const getData = async () => {
-  //   let res = await getUserData();
-  //   console.log(res.data);
-  //   setCurrUserData(res.data.user);
-  //   return res.data.user;
-  // };
-
-  // useEffect(() => {
-  //   if (!currUserData) {
-  //     let data = getData();
-  //     console.log(
-  //       "before useeffect currData",
-  //       data || (currUserData && currUserData)
-  //     );
-  //     if (socket) {
-  //       socket.emit("register", data._id);
-  //     }
-  //   }
-
-  //   if (socket && currUserData) {
-  //     socket.emit("register", currUserData._id);
-  //   }
-
-  //   // return () => {
-  //   //   socket.off("all_online_users", handleOnlineUsers);
-  //   // };
-  // }, [socket && socket]);
-
-  // useEffect(() => {
-  //   if (!isLogin) {
-  //     setTimeout(() => {
-  //       if (!isLogin && !currUserData) {
-  //         setLoginDialog(true);
-  //       }
-  //     }, 10000);
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (socket && currUserData) {
+      socket.emit("register", currUserData._id);
+      socket.on("online_users", handleOnlineUsers);
+    }
+  }, [socket, currUserData && currUserData]);
 
   const verifyTokenForIslogin = async () => {
-    let res = await verifyToken();
-    if (res.status === 200) {
-      console.log("TOken is valid");
-      setIsLogin(true);
-    } else if (res.status === 204) {
-      console.log("TOken is invalid ! please relogin");
-      // window.location.href = "/login";
+    try {
+      let res = await verifyToken();
+      if (res.status === 200) {
+        console.log("TOken is valid");
+        setIsLogin(true);
+      } else if (res.status === 204) {
+        console.log("TOken is invalid ! please relogin");
+        setIsLogin(false);
+      }
+    } catch (err) {
+      console.error(err);
       setIsLogin(false);
     }
   };
+  const refreshMyToken = async () => {
+    // TODO: add a try catch block in case the refresh token is invalid
+    try {
+      let res = await refresIt({
+        refreshToken: localStorage.getItem("refreshToken"),
+      });
+      // console.log(res);
+      localStorage.removeItem("token");
+      localStorage.setItem("token", res.data.accessToken);
+    } catch (err) {
+      console.error(err);
+      // If the refresh token is invalid, log the user out
+      setIsLogin(false);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+    }
+  };
+
   useLayoutEffect(() => {
+    const refreshInterval = setInterval(() => {
+      refreshMyToken();
+    }, 6 * 60 * 1000); // 1 minutes
     verifyTokenForIslogin();
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const handleSubmitFile = async (e, isFile) => {

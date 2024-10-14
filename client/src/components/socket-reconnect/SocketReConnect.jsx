@@ -17,7 +17,7 @@ const SocketReConnect = () => {
         console.log("Socket Re-connected with ID:", socket.current.id);
       });
 
-      socket.current.on("all_online_users", (onlineUsers) => {
+      socket.current.on("online_users", (onlineUsers) => {
         setOnlineUsers(onlineUsers); // Set all currently online users in state
         window.onlineUsers = onlineUsers;
       });

@@ -42,16 +42,25 @@ io.on("connection", (client) => {
     // Check if the user already exists based on userId
     if (!users.some((user) => user.userId === id)) {
       users.push(newUser);
+      io.emit("online_users", users);
     }
 
     console.log("All users are:", users);
   });
 
-  io.emit("all_online_users", users);
+  io.emit("online_users", users);
   // join a unique conversation room    // 1st join room
   client.on("join_conversation", (conversationId) => {
     client.join(conversationId); // join specific ID    // here room = conversationId
     console.log("user joined conversation :  ", conversationId);
+  });
+
+  client.on("remove_user", (id) => {
+    let user = users.find((user) => user.userId === id);
+    if (user) {
+      users = users.filter((user) => user.userId !== id);
+      io.emit("online_users", users);
+    }
   });
 
   // Send the list of currently online users to the new user
@@ -63,7 +72,7 @@ io.on("connection", (client) => {
       users = users.filter((user) => user.socketId !== client.id);
       console.log("User Disconnected: ", client.id);
       console.log("final users arr", users);
-      io.emit("all_online_users", users);
+      io.emit("online_users", users);
     }
   });
 });

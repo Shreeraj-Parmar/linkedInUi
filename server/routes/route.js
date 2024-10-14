@@ -17,6 +17,7 @@ import {
   updateConnectionInDB,
   sendConnectReq,
   UpdateConnectReqRead,
+  generateRefresh,
   sendConnectReqCount,
 } from "../controller/user-controller.js";
 import {
@@ -119,5 +120,8 @@ router.delete("/notification", jwtMiddle, deleteFromDBNoti);
 router.put("/notification", jwtMiddle, updateNotiClickOn);
 router.get("/notification/count", jwtMiddle, sendNotiCount);
 router.get("/notifications", jwtMiddle, sendAllNotifications);
+
+// refresh token
+router.post("/refresh-verify", generateRefresh);
 
 export default router;

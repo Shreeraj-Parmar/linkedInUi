@@ -737,3 +737,16 @@ export const markAsReadConn = async () => {
     return null; // Return null or handle the error as needed
   }
 };
+
+// refresh token
+export const refresIt = async (dat) => {
+  try {
+    let response = await axios.post(`${API}/refresh-verify`, dat);
+    return response;
+  } catch (error) {
+    console.error(
+      "error while calling refresIt forntend api & message is : ",
+      error.message
+    );
+  }
+};

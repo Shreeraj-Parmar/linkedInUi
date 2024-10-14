@@ -38,6 +38,7 @@ const UserContext = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [lightMode, setLightMode] = useState(true);
+
   const [loginDialog, setLoginDialog] = useState(false);
 
   const [allOnlineUsers, setAllOnlineUsers] = useState({});
@@ -62,6 +63,7 @@ const UserContext = ({ children }) => {
       setIsLogin(false);
     }
   };
+
   useEffect(() => {
     console.log("useEffect is nunning now Socket URL:", socketLinkURL);
     let socketOn = io(socketLinkURL);
@@ -76,7 +78,7 @@ const UserContext = ({ children }) => {
     getData();
     return () => {
       socketOn.off("receive_message");
-      socketOn.off("all_online_users");
+      socketOn.off("online_users");
       socketOn.off("join_conversation");
       socketOn.disconnect();
     };

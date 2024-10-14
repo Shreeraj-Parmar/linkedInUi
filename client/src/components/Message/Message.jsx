@@ -45,21 +45,22 @@ const Message = () => {
   const [hasMore, setHasMore] = useState(true); // State to check if more messages are available
   const limit = 15; // Number of messages to fetch per request
   const [sendMsgText, setSendMsgText] = useState("");
+  const [lastMsg, setLastMsg] = useState({});
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
-  console.log("before socate render hello");
-
-  console.log("after socate render is : ", socket);
-  // const onlineUsers = window.onlineUsers;
+  console.log("receevier id is", receiverId);
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
-    console.log("this is onlineusers Data", onlineUsersData);
+    console.log("this is onlineusers Data okwwwwwwwwwwy", onlineUsersData);
   };
 
   const socketMessageFunction = async () => {
-    socket.on("all_online_users", handleOnlineUsers);
+    socket.on("online_users", handleOnlineUsers);
     // Join the conversation room
+    if (currUserData) {
+      socket.emit("register", currUserData._id);
+    }
 
     socket.emit("join_conversation", currConversationId && currConversationId);
 
@@ -69,11 +70,17 @@ const Message = () => {
       if (message.conversationId === currConversationId) {
         // Mark message as read if conversation is active
         markAsReadFunction(currConversationId, currUserData._id);
+        setLastMsg((prevLastMsg) => ({
+          ...prevLastMsg,
+          [currConversationId]: message.text,
+        }));
+        console.log("this is last msg", lastMsg);
       }
       if (message.senderId !== currUserData._id) {
         let check = messages.find((msg) => msg._id === message._id);
         if (!check) {
           setMessages((prevMessages) => [...prevMessages, message]);
+          // setLastMsg(message.text);
           setTimeout(() => {
             if (chatEndRef.current) {
               chatEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -94,13 +101,17 @@ const Message = () => {
     return () => {
       if (socket !== null) {
         socket.off("receive_message");
-        socket.off("all_online_users");
+        socket.off("online_users");
         socket.off("join_conversation");
       }
     };
   }, [currConversationId, socket]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/login";
+      return;
+    }
     findAllConversationsFunc();
     if (currConversationId) {
       handleConversationSelect(currConversationId);
@@ -124,6 +135,14 @@ const Message = () => {
     if (res.status === 200) {
       console.log("all conv", res.data);
       setConversations(res.data);
+      setLastMsg((prevLastMsg) => ({
+        ...prevLastMsg,
+        ...res.data.reduce((acc, conv) => {
+          acc[conv.conversationId] = conv.lastMessage;
+          return acc;
+        }, {}),
+      }));
+      console.log("this is last msg  beforeee", lastMsg);
     }
   };
 
@@ -144,9 +163,11 @@ const Message = () => {
 
   const handleScroll = (e) => {
     const { scrollTop } = e.target; // Get the scroll position
+    // console.log("scrol top is ", scrollTop);
     if (scrollTop === 0 && hasMore) {
       // If user scrolled to the top and more messages are available
       setPage((prevPage) => prevPage + 1); // Increment page number
+      // e.target.scrollTop === scrollTop + 173;
     }
   };
 
@@ -165,7 +186,7 @@ const Message = () => {
         fetchMessagesFunc(currConversationId, 1, limit);
         setTimeout(() => {
           chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }, 1000);
+        }, 600);
       } else {
         // If page > 1, it means we are paginating (scrolling up)
         fetchMessagesFunc(currConversationId, page, limit);
@@ -204,11 +225,6 @@ const Message = () => {
             createdAt: new Date(),
           };
 
-          // socket.emit("send_message", {
-          //   conversationId: currConversationId,
-          //   message,
-          // });
-
           // ui update in message
 
           setMessages((prevMessages) => [...prevMessages, message]);
@@ -218,8 +234,6 @@ const Message = () => {
               chatEndRef.current.scrollIntoView({ behavior: "smooth" });
             }
           }, 200);
-          // fetchMessagesFunc(currConversationId);
-          setSendMsgText("");
         } else {
           toast.error(`Somthing Error To Send Message, please refresh page`, {
             position: "top-right",
@@ -243,22 +257,9 @@ const Message = () => {
           progress: undefined,
           theme: "light",
         });
-        setSendMsgText("");
       }
-    } else if (resChek.status === 201) {
-      console.log("you not .. enable to msg first connect please");
-      toast.error(`${resChek.data}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      return;
     }
+    setSendMsgText("");
   };
 
   const markAsReadFunction = async (convId, userId) => {
@@ -274,14 +275,7 @@ const Message = () => {
     }
   }, [currConversationId]);
 
-  // useLayoutEffect(() => {
-  //   if (!isLogin) {
-  //     setTimeout(() => {
-  //       navigate("/");
-  //     }, 1000);
-  //   }
-  // }, []);
-  const truncateMessage = (message, maxLength = 10) => {
+  const truncateMessage = (message, maxLength = 15) => {
     return message.length > maxLength
       ? `${message.substring(0, maxLength)}...`
       : message;
@@ -320,7 +314,10 @@ const Message = () => {
                         <div className='w-[70%] '>
                           <p className='text-black'>{conv.receiverName}</p>
                           <p className='text-[#ACACAC] text-sm flex  items-center'>
-                            {truncateMessage(conv.lastMessage)}
+                            {truncateMessage(
+                              (lastMsg && lastMsg[conv.conversationId]) || ""
+                            )}
+
                             <p className=' text-right  flex ml-20 justify-end'>
                               <Badge
                                 badgeContent={
@@ -363,8 +360,10 @@ const Message = () => {
                         {receiverName}{" "}
                       </p>
                       <p>
-                        {allOnlineUsers &&
-                        allOnlineUsers.userId === receiverId ? (
+                        {Array.isArray(allOnlineUsers) &&
+                        allOnlineUsers.some(
+                          (user) => user.userId === receiverId
+                        ) ? (
                           <p className=' text-green-700 text-sm flex items-center'>
                             <Brightness1Icon
                               className='text-green-700 text-xs'
@@ -387,7 +386,7 @@ const Message = () => {
               </div>
               <div
                 onScroll={handleScroll}
-                className='chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-y-scroll'
+                className='chats p-2 pl-10 pr-10 border min-h-[80%] max-h-[80%] overflow-auto flex-row'
               >
                 {Array.isArray(messages) &&
                   messages.map((msg, index) => {

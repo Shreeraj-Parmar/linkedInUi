@@ -107,11 +107,11 @@ export const markAsReadUpdate = async (req, res) => {
 
 // send all unread msg for show in navbar
 export const sendAllUnreadMSG = async (req, res) => {
-  console.log(`Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    
-   s`);
+  // console.log(`Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+  //  s`);
   try {
-    const userId = req._id; // Assuming req._id holds the user ID
+    const userId = req._id;
 
     // Query to find all conversations where the user is a member and has unread messages
     const allUnreadConversations = await Conversation.aggregate([
@@ -135,7 +135,7 @@ export const sendAllUnreadMSG = async (req, res) => {
         ? allUnreadConversations[0].totalUnread
         : 0;
 
-    console.log(`User hello ${userId} has ${unreadCount} unread messages.`);
+    // console.log(`User hello ${userId} has ${unreadCount} unread messages.`);
 
     return res.status(200).json(unreadCount);
   } catch (error) {
@@ -149,7 +149,7 @@ export const sendAllUnreadMSG = async (req, res) => {
 // check if user for sending message to other user available or not via chaking connections
 
 export const availableForSendingMsgOrNot = async (req, res) => {
-  console.log("recever id body is", req.body.receiverId);
+  // console.log("recever id body is", req.body.receiverId);
   try {
     const sender = await User.findById(req._id).select("connections");
     const receiver = await User.findById(req.body.receiverId).select(

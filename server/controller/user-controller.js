@@ -65,7 +65,7 @@ export const checkLogin = async (req, res) => {
       { user: req.body.email },
       process.env.JWT_SECRET,
       {
-        expiresIn: "20m", // time
+        expiresIn: "10m", // time
       }
     );
     const refreshToken = jwt.sign(
@@ -575,5 +575,44 @@ export const UpdateConnectReqRead = async (req, res) => {
       `Error while calling UpdateConnectReqRead API: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// refresh token
+export const generateRefresh = async (req, res) => {
+  console.log("hitted");
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res
+      .status(403)
+      .json({ message: "Refresh token not found, login again" });
+  }
+
+  try {
+    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    // console.log("payload is now", payload);
+
+    let user = await User.findOne({ email: payload.user });
+    // console.log(user);
+
+    if (!user || user.refreshToken !== refreshToken) {
+      console.log("salvana");
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const accessToken = jwt.sign(
+      { user: payload.user },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "10m", // time
+      }
+    );
+    // console.log("new access token is :", newAccessToken);
+    return res.status(200).json({ accessToken: accessToken });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Server error");
   }
 };

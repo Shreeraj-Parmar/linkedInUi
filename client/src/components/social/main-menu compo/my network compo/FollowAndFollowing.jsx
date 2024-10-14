@@ -12,25 +12,29 @@ const Connections = () => {
   const { setCurrMenu } = useContext(AllContext);
 
   useLayoutEffect(() => {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/login";
+      return;
+    }
     if (window.location.pathname === "/my-network/follow") {
       setCurrMenu("network");
     }
   }, []);
 
   return (
-    <div className="main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]">
-      <div className="main-overview-wrapper max-w-[100vw]  overflow-x-hidden">
+    <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
+      <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         <Navbar />
-        <div className="main-display w-[80vw] min-h-[100vh] h-auto   m-auto mt-[55px] p-4  ">
-          <div className="main-down p-1  flex space-x-3 min-h-[100%]">
-            <div className="w-[65%] min-h-[50vh] h-auto rounded-md bg-[#fff] border-2 shadow-sm p-2 border-grey-400 border-opacity-40">
-              <div className="p-2">
-                <p className="text-black font-semibold">My Network</p>
+        <div className='main-display w-[80vw] min-h-[100vh] h-auto   m-auto mt-[55px] p-4  '>
+          <div className='main-down p-1  flex space-x-3 min-h-[100%]'>
+            <div className='w-[65%] min-h-[50vh] h-auto rounded-md bg-[#fff] border-2 shadow-sm p-2 border-grey-400 border-opacity-40'>
+              <div className='p-2'>
+                <p className='text-black font-semibold'>My Network</p>
               </div>
-              <div className="divider"></div>
+              <div className='divider'></div>
               {/* btn logic */}
-              <div className="">
-                <div className="flex  space-x-3">
+              <div className=''>
+                <div className='flex  space-x-3'>
                   <div
                     onClick={() => {
                       setF3Click("following");
@@ -56,9 +60,9 @@ const Connections = () => {
                     followers
                   </div>
                 </div>
-                <div className="divider"></div>
+                <div className='divider'></div>
               </div>
-              <div className="">
+              <div className=''>
                 {/* logic of follow & following swapping components */}
 
                 {f2Click === "following" && (

@@ -64,6 +64,10 @@ const MyNetwork = () => {
   };
 
   useLayoutEffect(() => {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/login";
+      return;
+    }
     markAsReadConnectionReqFunction();
     if (window.location.pathname === "/my-network") {
       setCurrMenu("network");
@@ -73,18 +77,18 @@ const MyNetwork = () => {
   }, []);
 
   return (
-    <div className="main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]">
-      <div className="main-overview-wrapper max-w-[100vw] overflow-x-hidden">
+    <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
+      <div className='main-overview-wrapper max-w-[100vw] overflow-x-hidden'>
         <Navbar />
         <Tostify />
-        <div className="main-display w-[80vw] min-h-[100vh] h-[90vh] m-auto mt-[55px] p-4">
-          <div className="main-down p-1 flex space-x-6 min-h-[100%]">
-            <div className="w-1/4 h-[35vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40">
+        <div className='main-display w-[80vw] min-h-[100vh] h-[90vh] m-auto mt-[55px] p-4'>
+          <div className='main-down p-1 flex space-x-6 min-h-[100%]'>
+            <div className='w-1/4 h-[35vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40'>
               <div>
-                <div className="p-3">
-                  <p className="text-black font-semibold">Manage My Network</p>
+                <div className='p-3'>
+                  <p className='text-black font-semibold'>Manage My Network</p>
                 </div>
-                <div className="divider"></div>
+                <div className='divider'></div>
                 <div>
                   <div
                     onClick={() => {
@@ -92,16 +96,16 @@ const MyNetwork = () => {
                         navigate("/my-network/connection");
                       }, 500);
                     }}
-                    className="network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]"
+                    className='network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]'
                   >
-                    <div className="flex space-x-5">
+                    <div className='flex space-x-5'>
                       <PeopleAltIcon
-                        fontSize="medium"
-                        className="text-[#444444] ml-2"
+                        fontSize='medium'
+                        className='text-[#444444] ml-2'
                       />
-                      <p className="text-[#444444]">Connections</p>
+                      <p className='text-[#444444]'>Connections</p>
                     </div>
-                    <div className="text-[#444444]">{connectionCount}</div>
+                    <div className='text-[#444444]'>{connectionCount}</div>
                   </div>
                   <div
                     onClick={() => {
@@ -109,43 +113,43 @@ const MyNetwork = () => {
                         navigate("/my-network/follow");
                       }, 500);
                     }}
-                    className="network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]"
+                    className='network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]'
                   >
-                    <div className="flex space-x-5">
+                    <div className='flex space-x-5'>
                       <BoyIcon
-                        fontSize="medium"
-                        className="text-[#444444] ml-2"
+                        fontSize='medium'
+                        className='text-[#444444] ml-2'
                       />
-                      <p className="text-[#444444]">Following & Followers</p>
+                      <p className='text-[#444444]'>Following & Followers</p>
                     </div>
-                    <div className="text-[#444444]"></div>
+                    <div className='text-[#444444]'></div>
                   </div>
-                  <div className="network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]">
-                    <div className="flex space-x-5">
+                  <div className='network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]'>
+                    <div className='flex space-x-5'>
                       <PeopleAltIcon
-                        fontSize="medium"
-                        className="text-[#444444] ml-2"
+                        fontSize='medium'
+                        className='text-[#444444] ml-2'
                       />
-                      <p className="text-[#444444]">Groups</p>
+                      <p className='text-[#444444]'>Groups</p>
                     </div>
-                    <div className="text-[#444444]">2</div>
+                    <div className='text-[#444444]'>2</div>
                   </div>
-                  <div className="network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]">
-                    <div className="flex space-x-5">
+                  <div className='network-btn flex justify-between cursor-pointer w-[100%] p-3 hover:bg-[#F3F3F3]'>
+                    <div className='flex space-x-5'>
                       <PageviewIcon
-                        fontSize="medium"
-                        className="text-[#444444] ml-2"
+                        fontSize='medium'
+                        className='text-[#444444] ml-2'
                       />
-                      <p className="text-[#444444]">Pages</p>
+                      <p className='text-[#444444]'>Pages</p>
                     </div>
-                    <div className="text-[#444444]">7</div>
+                    <div className='text-[#444444]'>7</div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="w-[70%] h-[50vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40 p-2">
+            <div className='w-[70%] h-[50vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40 p-2'>
               <div>
-                <p className="text-black font-semibold ml-2">
+                <p className='text-black font-semibold ml-2'>
                   {connectionReq.length > 0
                     ? "Pending Invitations"
                     : "No Pending Invitations"}
@@ -153,14 +157,14 @@ const MyNetwork = () => {
               </div>
               {connectionReq.length === 0 && (
                 <>
-                  <div className="flex justify-center items-center">
+                  <div className='flex justify-center items-center'>
                     <img
-                      src="/no-data.jpg"
-                      alt=" "
-                      className="h-[250px] w-[250px]"
+                      src='/no-data.jpg'
+                      alt=' '
+                      className='h-[250px] w-[250px]'
                     />
                   </div>
-                  <p className="text-[#444444] text-center">
+                  <p className='text-[#444444] text-center'>
                     No Pending Invitations
                   </p>
                 </>
@@ -170,21 +174,21 @@ const MyNetwork = () => {
                 return (
                   <div
                     key={user && user._id && user._id}
-                    className="flex justify-center mt-2 items-center"
+                    className='flex justify-center mt-2 items-center'
                   >
-                    <div className="bg-[#F4F2EE] border-2 border-gray-400 border-opacity-40 flex items-center max-w-[100%] w-[90%] p-2 min-h-[10%] rounded-md">
-                      <div className="p-1">
+                    <div className='bg-[#F4F2EE] border-2 border-gray-400 border-opacity-40 flex items-center max-w-[100%] w-[90%] p-2 min-h-[10%] rounded-md'>
+                      <div className='p-1'>
                         <img
                           src={
                             user && user.profilePicture
                               ? user.profilePicture
                               : "/blank.png"
                           }
-                          alt=""
-                          className="min-w-[70px] border border-grey-400 border-opacity-40 h-[70px] rounded-full"
+                          alt=''
+                          className='min-w-[70px] border border-grey-400 border-opacity-40 h-[70px] rounded-full'
                         />
                       </div>
-                      <div className="flex-row ml-3 lg:min-w-[200px] space-y-[-3px]">
+                      <div className='flex-row ml-3 lg:min-w-[200px] space-y-[-3px]'>
                         <p
                           onClick={() => {
                             setCurrMenu("");
@@ -192,18 +196,18 @@ const MyNetwork = () => {
                               navigate(`/user/${user && user._id && user._id}`);
                             }, 500);
                           }}
-                          className="text-[#000] hover:text-blue-500 hover:underline cursor-pointer"
+                          className='text-[#000] hover:text-blue-500 hover:underline cursor-pointer'
                         >
                           {user && user.name ? user.name : "Anonymous"}
                         </p>
-                        <p className="text-[#959799]">
+                        <p className='text-[#959799]'>
                           {user && user.city ? user.city : "Unknown"}
                         </p>
-                        <p className="text-[#959799]">
+                        <p className='text-[#959799]'>
                           {user && user.gender ? user.gender : "Unknown"}
                         </p>
                       </div>
-                      <div className="flex space-x-3 justify-end p-2 lg:ml-[200px]">
+                      <div className='flex space-x-3 justify-end p-2 lg:ml-[200px]'>
                         <button
                           onClick={() => {
                             handleConnectionReq({
@@ -211,7 +215,7 @@ const MyNetwork = () => {
                               reqStatus: true,
                             });
                           }}
-                          className="text-[#45c73c] p-2 border-2 w-[100px] hover:border-3 hover:border-[#4fff23] hover:text-[#72ff4f] rounded-full border-[#45c73c]"
+                          className='text-[#45c73c] p-2 border-2 w-[100px] hover:border-3 hover:border-[#4fff23] hover:text-[#72ff4f] rounded-full border-[#45c73c]'
                         >
                           Accept
                         </button>
@@ -222,7 +226,7 @@ const MyNetwork = () => {
                               reqStatus: false,
                             });
                           }}
-                          className="text-[#ff573d] p-2 border-2 w-[100px] hover:border-3 hover:border-[#ff8d8d] hover:text-[#ff8d8d] rounded-full border-[#ff573d]"
+                          className='text-[#ff573d] p-2 border-2 w-[100px] hover:border-3 hover:border-[#ff8d8d] hover:text-[#ff8d8d] rounded-full border-[#ff573d]'
                         >
                           Reject
                         </button>
