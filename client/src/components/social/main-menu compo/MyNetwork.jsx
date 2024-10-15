@@ -64,10 +64,6 @@ const MyNetwork = () => {
   };
 
   useLayoutEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
-      return;
-    }
     markAsReadConnectionReqFunction();
     if (window.location.pathname === "/my-network") {
       setCurrMenu("network");

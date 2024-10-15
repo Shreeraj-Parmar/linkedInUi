@@ -12,10 +12,6 @@ const ViewProfile = () => {
   const [addEduDialog, setAddEduDialog] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
-      return;
-    }
     if (window.location.pathname === "/profile") {
       setCurrMenu("profile");
     }

@@ -137,10 +137,6 @@ const Message = () => {
     if (window.location.pathname === "/message") {
       setCurrMenu("message");
     }
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
-      return; // ......
-    }
     findAllConversationsFunc();
     if (currConversationId) {
       handleConversationSelect(currConversationId);

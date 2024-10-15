@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 // Context:
 import UserContext from "./context/UserContext";
@@ -80,20 +80,21 @@ function App() {
   //socket io config
   // const socket = useRef();
 
-  // useEffect(() => {
-  //   socket.current = io(socketLinkURL);
-  //   console.log("Socket URL:", socketLinkURL);
-
-  //   socket.current.on("connect", () => {
-  //     console.log("Socket connected with ID:", socket.current.id);
-  //   });
-
-  //   window.socketClient = socket.current;
-
-  //   return () => {
-  //     socket.current.disconnect();
-  //   };
-  // }, []);
+  useLayoutEffect(() => {
+    let windowPath = window.location.pathname;
+    if (
+      windowPath === "/login" ||
+      windowPath === "/signup" ||
+      windowPath === "/" ||
+      windowPath === "/exe" ||
+      windowPath === "/user/:userId"
+    ) {
+      return;
+    } else {
+      if (!localStorage.getItem("token")) window.location.href = "/login";
+      return;
+    }
+  }, []);
 
   return (
     <>

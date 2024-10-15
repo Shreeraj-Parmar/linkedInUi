@@ -50,10 +50,6 @@ const Connections = () => {
   };
 
   useLayoutEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
-      return;
-    }
     if (window.location.pathname === "/my-network/connection") {
       setCurrMenu("network");
     }

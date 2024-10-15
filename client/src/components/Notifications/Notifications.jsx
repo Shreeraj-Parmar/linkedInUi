@@ -39,10 +39,6 @@ const Notifications = () => {
   };
 
   useLayoutEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
-      return;
-    }
     if (window.location.pathname === "/notification") {
       setCurrMenu("notification");
     }

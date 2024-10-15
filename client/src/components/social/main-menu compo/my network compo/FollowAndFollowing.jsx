@@ -12,10 +12,6 @@ const Connections = () => {
   const { setCurrMenu } = useContext(AllContext);
 
   useLayoutEffect(() => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/login";
-      return;
-    }
     if (window.location.pathname === "/my-network/follow") {
       setCurrMenu("network");
     }
