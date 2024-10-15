@@ -53,7 +53,7 @@ const UserProfile = () => {
     if (res.status === 200) {
       setUserData(res.data.user);
       console.log(isLogin);
-      if (isLogin) {
+      if (isLogin && currUserData) {
         console.log(currUserData._id);
 
         // follow
@@ -76,8 +76,8 @@ const UserProfile = () => {
         if (
           res.data.user &&
           res.data.user.connectionRequests.length !== 0 &&
-          res.data.user.connectionRequests.map(
-            (req) => req.user._id === currUserData._id
+          res.data.user.connectionRequests.some(
+            (req) => req.user.toString() === currUserData._id.toString()
           )
         ) {
           setPendingConnection(true);
@@ -98,12 +98,29 @@ const UserProfile = () => {
     }
   };
 
+  useEffect(() => {
+    console.log(
+      `setFollow is ${follow}, setConnection is ${connection} & setPendingConnection is ${pendinConnection}`
+    );
+  }, [follow, connection, pendinConnection]);
+
   const sendConnectionReq = async (id) => {
     let res = await sendConnect({ receiverId: id });
     if (res.status === 200) {
       console.log("req send");
       setPendingConnection(true);
       setConnection(true);
+    } else if (res.status === 201) {
+      toast.error(`${res.data.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
     console.log(res.data);
   };
@@ -163,14 +180,8 @@ const UserProfile = () => {
 
   useLayoutEffect(() => {
     getUserDataFunc();
-    if (isLogin) createNoti();
-  }, []);
-
-  // check if login or not ,
-
-  //   useEffect(() => {
-  //     if (!localStorage.getItem("token")) navigate("/login");
-  //   }, []);
+    // if (isLogin) createNoti();
+  }, [isLogin]);
 
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] h-auto'>
@@ -216,7 +227,7 @@ const UserProfile = () => {
               {currUserData &&
                 userData &&
                 currUserData._id !== userData._id && (
-                  <div className='follow-btns flex space-x-2'>
+                  <div className='follow-s flex space-x-2'>
                     <button
                       onClick={async () => {
                         if (isLogin) {

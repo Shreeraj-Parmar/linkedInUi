@@ -483,7 +483,6 @@ export const updateConnectionInDB = async (req, res) => {
 
 // send connection req
 export const sendConnectReq = async (req, res) => {
-  // console.log(req.body);
   let { receiverId } = req.body;
 
   try {
@@ -499,28 +498,38 @@ export const sendConnectReq = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!receiver.connectionRequests.some((req) => req.user === sender._id)) {
-      receiver.connectionRequests.push({ user: sender._id, isRead: false });
-    }
-    if (!receiver.followers.includes(sender._id)) {
-      receiver.followers.push(sender._id);
-    }
-
-    if (!sender.following.includes(receiverId)) {
-      sender.following.push(receiverId);
-    }
-
-    // Save the updated data for both sender and receiver
-    await sender.save();
-    await receiver.save();
-
-    io.emit(`new_connection_request_${receiverId}`, "new request");
-
-    res.status(200).json({ message: "Connectio nreq sends" });
-  } catch (error) {
-    console.log(
-      `Error while calling sendConnectReq API & error is ${error.message}`
+    // Check if connection request already exists
+    const existingRequest = receiver.connectionRequests.some(
+      (req) => req.user.toString() === sender._id.toString()
     );
+
+    if (!existingRequest) {
+      // Add connection request
+      receiver.connectionRequests.push({ user: sender._id, isRead: false });
+
+      // Add sender to receiver's followers if not already following
+      if (!receiver.followers.includes(sender._id)) {
+        receiver.followers.push(sender._id);
+      }
+
+      // Add receiver to sender's following if not already followed
+      if (!sender.following.includes(receiverId)) {
+        sender.following.push(receiverId);
+      }
+
+      // Save the updated data for both sender and receiver
+      await sender.save();
+      await receiver.save();
+
+      // Emit socket event for new connection request
+      io.emit(`new_connection_request_${receiverId}`, "new request");
+
+      res.status(200).json({ message: "Connection request sent" });
+    } else {
+      res.status(201).json({ message: "Connection request already exists" });
+    }
+  } catch (error) {
+    console.log(`Error while calling sendConnectReq API: ${error.message}`);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

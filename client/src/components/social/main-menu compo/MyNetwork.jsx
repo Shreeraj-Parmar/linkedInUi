@@ -81,10 +81,10 @@ const MyNetwork = () => {
           <div className='main-down p-1 flex space-x-6 min-h-[100%]'>
             <div className='w-1/4 h-[35vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40'>
               <div>
-                <div className='p-3'>
+                <div className='p-3 border-b-2 border-gray-400 border-opacity-40 '>
                   <p className='text-black font-semibold'>Manage My Network</p>
                 </div>
-                <div className='divider'></div>
+
                 <div>
                   <div
                     onClick={() => {
@@ -143,8 +143,12 @@ const MyNetwork = () => {
                 </div>
               </div>
             </div>
-            <div className='w-[70%] h-[50vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40 p-2'>
-              <div>
+            <div
+              className={
+                'w-[65%] ${connectionReq.length > 0 ? " h-[35vh]  min-h-fit" : "h-[10vh]"}  rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40 '
+              }
+            >
+              <div className=' p-3 border-b-2 border-gray-400 border-opacity-40 '>
                 <p className='text-black font-semibold ml-2'>
                   {connectionReq.length > 0
                     ? "Pending Invitations"
@@ -170,9 +174,9 @@ const MyNetwork = () => {
                 return (
                   <div
                     key={user && user._id && user._id}
-                    className='flex justify-center mt-2 items-center'
+                    className='flex justify-center w-[100%]  items-center'
                   >
-                    <div className='bg-[#F4F2EE] border-2 border-gray-400 border-opacity-40 flex items-center max-w-[100%] w-[90%] p-2 min-h-[10%] rounded-md'>
+                    <div className='bg-[#fff] hover:bg-[#F3F3F3] border-b-2 border-gray-400 border-opacity-40 flex items-center max-w-[100%] w-[100%] pl-2 '>
                       <div className='p-1'>
                         <img
                           src={
