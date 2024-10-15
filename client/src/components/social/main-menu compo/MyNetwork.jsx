@@ -6,19 +6,22 @@ import {
   getAllConnectionReq,
   updateConnectionReq,
   markAsReadConn,
+  sendNotification,
 } from "../../../services/api.js";
 
 // icons
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+
 import { toast } from "react-toastify";
 import BoyIcon from "@mui/icons-material/Boy";
 import PageviewIcon from "@mui/icons-material/Pageview";
 import { useNavigate } from "react-router-dom";
 import Tostify from "../../Tostify.jsx";
+import MoreConnection from "./my network compo/MoreConnection.jsx";
 
 const MyNetwork = () => {
   const navigate = useNavigate();
-  const { setCurrMenu } = useContext(AllContext);
+  const { setCurrMenu, currUserData } = useContext(AllContext);
   const [connectionCount, setConnectionCount] = useState(null);
   const [connectionReq, setConnectionReq] = useState([]);
 
@@ -34,6 +37,33 @@ const MyNetwork = () => {
     let res = await updateConnectionReq(data);
     if (res.status === 200) {
       console.log(res.data.message);
+      let newConnectionReq = connectionReq.filter(
+        (item) => item.user._id !== data.receiverId
+      );
+      setConnectionReq(newConnectionReq);
+      console.log("new connection req", newConnectionReq);
+
+      currUserData &&
+        (await sendNotification({
+          recipient: data.receiverId,
+          sender: currUserData._id,
+          type: "connection_accepted",
+          message: "your connection request has been accepted",
+        }));
+    } else if (res.status === 201) {
+      let newConnectionReq = connectionReq.filter(
+        (item) => item.user._id !== data.receiverId
+      );
+      setConnectionReq(newConnectionReq);
+      console.log("new connection req", newConnectionReq);
+
+      currUserData &&
+        (await sendNotification({
+          recipient: data.receiverId,
+          sender: currUserData._id,
+          type: "connection_request",
+          message: "your connection request has been rejected",
+        }));
     } else {
       toast.error("Error while sending connection request. Please try again!", {
         position: "top-right",
@@ -78,11 +108,11 @@ const MyNetwork = () => {
         <Navbar />
         <Tostify />
         <div className='main-display w-[80vw] min-h-[100vh] h-[90vh] m-auto mt-[55px] p-4'>
-          <div className='main-down p-1 flex space-x-6 min-h-[100%]'>
+          <div className='main-down p-1 flex justify-center  space-x-6 min-h-fit'>
             <div className='w-1/4 h-[35vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40'>
               <div>
                 <div className='p-3 border-b-2 border-gray-400 border-opacity-40 '>
-                  <p className='text-black font-semibold'>Manage My Network</p>
+                  <p className='text-black font-semibold '>Manage my network</p>
                 </div>
 
                 <div>
@@ -144,31 +174,26 @@ const MyNetwork = () => {
               </div>
             </div>
             <div
-              className={
-                'w-[65%] ${connectionReq.length > 0 ? " h-[35vh]  min-h-fit" : "h-[10vh]"}  rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40 '
-              }
+              className={`w-[65%] ${
+                connectionReq.length > 0 ? " h-auto  min-h-[35vh]" : "h-[7.5vh]"
+              }  rounded-md bg-white border-2 ${
+                connectionReq.length > 2 ? "border-b-0" : ""
+              }  border-collapse border-gray-400 border-opacity-40 `}
             >
-              <div className=' p-3 border-b-2 border-gray-400 border-opacity-40 '>
-                <p className='text-black font-semibold ml-2'>
+              <div
+                className={`  p-3   ${
+                  connectionReq.length > 0
+                    ? "border-b-2 border-gray-400 border-opacity-40"
+                    : ""
+                } `}
+              >
+                <p className='text-black text-md ml-2'>
                   {connectionReq.length > 0
                     ? "Pending Invitations"
-                    : "No Pending Invitations"}
+                    : "No pending invitations"}
                 </p>
               </div>
-              {connectionReq.length === 0 && (
-                <>
-                  <div className='flex justify-center items-center'>
-                    <img
-                      src='/no-data.jpg'
-                      alt=' '
-                      className='h-[250px] w-[250px]'
-                    />
-                  </div>
-                  <p className='text-[#444444] text-center'>
-                    No Pending Invitations
-                  </p>
-                </>
-              )}
+
               {connectionReq.map((request) => {
                 const user = request.user; // Access the user object from the request
                 return (
@@ -236,7 +261,11 @@ const MyNetwork = () => {
                 );
               })}
             </div>
+            {/* here more user connection */}
           </div>
+          {currUserData && (
+            <MoreConnection connectionReqLength={connectionReq.length} />
+          )}
         </div>
       </div>
     </div>

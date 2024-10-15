@@ -750,3 +750,21 @@ export const refresIt = async (dat) => {
     );
   }
 };
+
+// feach to more connect with users
+export const fatchAllUsersWhichNotConnected = async (page, limit) => {
+  try {
+    let res = await axios.get(`${API}/users/more`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      params: { limit, page }, // Use `page` instead of `skip`
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling fatchAllUsersWhichNotConnected: ${error.message}`
+    );
+    return null; // Return null or handle the error as needed
+  }
+};

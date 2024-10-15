@@ -108,6 +108,12 @@ const UserProfile = () => {
     let res = await sendConnect({ receiverId: id });
     if (res.status === 200) {
       console.log("req send");
+      await sendNotification({
+        recipient: userId,
+        sender: currUserData._id,
+        type: "connection_request",
+        message: "you have new Connection Request From",
+      });
       setPendingConnection(true);
       setConnection(true);
     } else if (res.status === 201) {

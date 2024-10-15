@@ -19,6 +19,7 @@ import {
   UpdateConnectReqRead,
   generateRefresh,
   sendConnectReqCount,
+  sendAllUsersWhichNotConnected,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -68,6 +69,7 @@ router.post("/user/url-check", jwtMiddle, checkURL);
 router.post("/user/login", checkLogin);
 router.get("/user", jwtMiddle, sendUserData);
 router.get("/users", sendAllData);
+router.get("/users/more", jwtMiddle, sendAllUsersWhichNotConnected);
 router.post("/user/edu", jwtMiddle, saveEDUDetails);
 router.post("/aws/generate", jwtMiddle, sendPreSignedURL);
 router.post("/aws/post/generate", jwtMiddle, sendPreSignedURLFORPOST);

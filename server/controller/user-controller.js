@@ -472,7 +472,11 @@ export const updateConnectionInDB = async (req, res) => {
     await sender.save();
     await receiver.save();
 
-    res.status(200).json({ message: "Changes done" });
+    if (reqStatus) {
+      res.status(200).json({ message: "Accepted" });
+    } else {
+      res.status(201).json({ message: "Rejected" });
+    }
   } catch (error) {
     console.log(
       `Error while calling updateConnectionInDB API & error is ${error.message}`
@@ -626,5 +630,41 @@ export const generateRefresh = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     return res.status(500).send("Server error");
+  }
+};
+
+// send all users which is not connected each other
+
+export const sendAllUsersWhichNotConnected = async (req, res) => {
+  const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10 if not provided
+  const userId = req._id; // Get the user ID from the request
+
+  try {
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    // Calculate the number of users to skip
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Fetch users with pagination, who do not have req._id in connectionRequests or connect array
+    let allUsers = await User.find({
+      $and: [
+        { _id: { $ne: userId } }, // Exclude the current user
+        { connectionRequests: { $ne: userId } }, // Exclude if userId is in connectionRequests
+        { connect: { $ne: userId } }, // Exclude if userId is in connect array
+      ],
+    })
+      .select("name city _id profilePicture") // Select only the fields name, city, and _id
+      .sort({ createdAt: -1 }) // Sort by creation date, latest first
+      .skip(skip) // Skip the users according to pagination
+      .limit(limitNumber); // Limit the number of users fetched
+
+    res.status(200).json({ allUsers });
+  } catch (error) {
+    console.log(
+      `Error while calling sendAllUsersWhichNotConnected API & error is: ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
