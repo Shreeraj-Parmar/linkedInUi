@@ -85,6 +85,9 @@ const Overview = () => {
   };
 
   useLayoutEffect(() => {
+    if (window.location.pathname === "/") {
+      setCurrMenu("home");
+    }
     const refreshInterval = setInterval(() => {
       refreshMyToken();
     }, 6 * 60 * 1000); // 1 minutes

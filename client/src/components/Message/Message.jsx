@@ -57,6 +57,7 @@ const Message = () => {
     console.log("this is onlineusers Data okwwwwwwwwwwy", onlineUsersData);
   };
 
+  // this is for debugging.......
   useEffect(() => {
     console.log("this is unread arr of object inside useEffect", unreadMSG);
   }, [unreadMSG]);
@@ -133,9 +134,12 @@ const Message = () => {
   }, [currConversationId, socket]);
 
   useLayoutEffect(() => {
+    if (window.location.pathname === "/message") {
+      setCurrMenu("message");
+    }
     if (!localStorage.getItem("token")) {
       window.location.href = "/login";
-      return;
+      return; // ......
     }
     findAllConversationsFunc();
     if (currConversationId) {

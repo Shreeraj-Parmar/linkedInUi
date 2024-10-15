@@ -43,17 +43,13 @@ const Notifications = () => {
       window.location.href = "/login";
       return;
     }
+    if (window.location.pathname === "/notification") {
+      setCurrMenu("notification");
+    }
     setLoadingSkeleton(true);
     setTimeout(() => {
       setLoadingSkeleton(false); // Stop loading
     }, 1000);
-    if (!isLogin) {
-      navigate("/login");
-    } else {
-      if (window.location.pathname === "/notification") {
-        setCurrMenu("notification");
-      }
-    }
   }, []);
 
   // Initial data load (on component mount)
