@@ -689,23 +689,6 @@ export const updateNotiClick = async (data) => {
   }
 };
 
-// delete notification by id
-
-export const deleteNoti = async (data) => {
-  try {
-    let res = await axios.delete(`${API}/notification`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      data: data, // Pass data as part of the config
-    });
-    return res;
-  } catch (error) {
-    console.log(`Error while calling deleteNoti: ${error.message}`);
-    return null; // Return null or handle the error as needed
-  }
-};
-
 // get all connectionReq count of user
 export const getConnectionReqCount = async () => {
   try {

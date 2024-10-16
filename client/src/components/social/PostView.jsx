@@ -557,7 +557,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           </p>
                         </div>
                         {currUserData && post.user._id !== currUserData._id ? (
-                          <div className='follow-btn p-2 relative lg:left-52'>
+                          <div className='follow-btn p-2 relative lg:left-64'>
                             <button
                               onClick={() => {
                                 handleFollowClick(post.user && post.user._id);
@@ -614,7 +614,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           {post.likeCount} likes
                         </p>
                         <p className={"text-[#959799]"}>
-                          {commentCount[post._id]} comments
+                          {commentCount[post._id]
+                            ? commentCount[post._id]
+                            : "0"}{" "}
+                          comments
                         </p>
                       </div>
                       <div className='divider'></div>

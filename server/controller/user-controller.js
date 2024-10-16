@@ -680,7 +680,7 @@ export const withdrawReq = async (req, res) => {
       },
       { new: true }
     );
-    console.log("updated user is", updatUser);
+    // console.log("updated user is", updatUser);
     res
       .status(200)
       .json({ message: "Connection request withdrawn successfully" });

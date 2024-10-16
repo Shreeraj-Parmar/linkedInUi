@@ -17,6 +17,7 @@ const notificationSchema = mongoose.Schema(
       enum: [
         "connection_request", // New connection request
         "connection_accepted", // Connection accepted
+        "connection_rejected", // Connection rejected
         "like", // Like on a post or comment
         "comment", // Comment on a post
         "mention", // Mention in a post or comment

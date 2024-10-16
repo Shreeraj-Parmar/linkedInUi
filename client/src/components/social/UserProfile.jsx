@@ -15,6 +15,9 @@ import { AllContext } from "../../context/UserContext.jsx";
 import Navbar from "./Navbar.jsx";
 import { toast } from "react-toastify";
 import Tostify from "../Tostify.jsx";
+import TelegramIcon from "@mui/icons-material/Telegram";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 
 const UserProfile = () => {
   const {
@@ -35,16 +38,6 @@ const UserProfile = () => {
   const [follow, setFollow] = useState(false);
   const [connection, setConnection] = useState(false);
   const [pendinConnection, setPendingConnection] = useState(false);
-
-  const createNoti = async () => {
-    if (currUserData && currUserData.following.includes(userId)) return;
-    await sendNotification({
-      recipient: userId,
-      sender: currUserData._id,
-      type: "profile_view",
-      message: "you have new view on your Profile",
-    });
-  };
 
   const getUserDataFunc = async () => {
     console.log("use trigger");
@@ -107,15 +100,16 @@ const UserProfile = () => {
   const sendConnectionReq = async (id) => {
     let res = await sendConnect({ receiverId: id });
     if (res.status === 200) {
+      setPendingConnection((prev) => true); // Guaranteed to use the latest state
+      setConnection((prev) => true); // Guaranteed to use the latest state
       console.log("req send");
+      if (currUserData && currUserData.following.includes(userId)) return;
       await sendNotification({
         recipient: userId,
         sender: currUserData._id,
         type: "connection_request",
         message: "you have new Connection Request From",
       });
-      setPendingConnection(true);
-      setConnection(true);
     } else if (res.status === 201) {
       toast.error(`${res.data.message}`, {
         position: "top-right",
@@ -244,7 +238,7 @@ const UserProfile = () => {
                           // setLoginDialog(true);
                         }
                       }}
-                      className='p-2 w-[100px]  rounded-full  bg-[#0A66C2] text-[#fff] hover:bg-[#004182] hover:text-[] '
+                      className='p-1 w-[100px]  rounded-full  bg-[#0A66C2] text-[#fff] hover:bg-[#004182] hover:text-[] '
                     >
                       {follow ? "UnFollow" : "Follow"}
                     </button>
@@ -252,9 +246,10 @@ const UserProfile = () => {
                       onClick={() => {
                         setConversationFunction({ receiverId: userData._id });
                       }}
-                      className='p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] '
+                      className='p-1 w-[110px] flex space-x-1 rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] '
                     >
-                      Messege
+                      <TelegramIcon />
+                      <span>Messege</span>
                     </button>
                     {!connection && !pendinConnection && (
                       <button
@@ -262,15 +257,17 @@ const UserProfile = () => {
                           sendConnectionReq(userData._id);
                           getUserDataFunc();
                         }}
-                        className='p-2 w-[100px] rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]'
+                        className='p-1 w-[110px] space-x-1 flex justify-center rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]'
                       >
-                        Connect
+                        <PersonAddAltIcon />
+                        <span>Connect</span>
                       </button>
                     )}
 
                     {pendinConnection && (
-                      <button className='p-2 w-[100px] rounded-full border-2 border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182]'>
-                        pending
+                      <button className='p-1 w-[110px] space-x-1 flex justify-center rounded-full border-2 border-[#444444] bg-[] text-[#444444] hover:border-[#1b1b1b] hover:text-[#1b1b1b]'>
+                        <AccessTimeIcon />
+                        <span>Pending</span>
                       </button>
                     )}
                   </div>

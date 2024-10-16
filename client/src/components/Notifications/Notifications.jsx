@@ -4,9 +4,10 @@ import { AllContext } from "../../context/UserContext";
 import {
   fatchAllNotifications,
   updateNotiClick,
-  deleteNoti,
+  setConversation,
+  getMsgAccConvId,
+  markAsRead,
 } from "../../services/api.js"; // Adjust API function
-import DeleteIcon from "@mui/icons-material/Delete";
 import moment from "moment";
 import { toast } from "react-toastify";
 
@@ -14,7 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@mui/material";
 
 const Notifications = () => {
-  const { isLogin, setCurrMenu } = useContext(AllContext);
+  const { isLogin, setCurrMenu, setCurrConversationId, setMessages } =
+    useContext(AllContext);
   const [notificationsList, setNotificationLists] = useState([]);
   const [page, setPage] = useState(1); // For pagination
   const [loadingSkeleton, setLoadingSkeleton] = useState(true); // For loading state
@@ -82,28 +84,36 @@ const Notifications = () => {
       setTimeout(() => {
         navigate(`/user/${senderId}`);
       }, 300);
-    }
-  };
+    } else if (type === "connection_request") {
+      setTimeout(() => {
+        navigate(`/my-network`);
+      }, 300);
+    } else if (type === "connection_accepted") {
+      let res = await setConversation({ receiverId: senderId });
+      if (res.status === 200) {
+        console.log(res.data);
+        setCurrConversationId(res.data.id);
 
-  const handleDeleteNoti = async (notiId) => {
-    console.log("dleerter triffffffffer");
-    let res = await deleteNoti({ notiId });
-    if (res.status === 200) {
-      console.log("noti deleted");
-      let newNotiList = notificationsList.filter((noti) => noti._id !== notiId);
-      console.log(newNotiList);
-      setNotificationLists(newNotiList);
-    } else {
-      toast.error(`somthing error while delete notification`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+        let convId = res.data.id;
+
+        let res2 = await getMsgAccConvId(res.data.id);
+        if (res2.status === 200) {
+          console.log("messages is", res2.data);
+          setMessages(res2.data);
+        }
+
+        console.log("conversation id selected", convId);
+        let res3 = await markAsRead({ convId, senderId });
+        if (res3.status === 200) {
+          console.log("message seen by user");
+        }
+
+        console.log("connection set");
+
+        setTimeout(() => {
+          navigate("/message");
+        }, 500);
+      }
     }
   };
 
@@ -253,6 +263,36 @@ const Notifications = () => {
                           </p>
                         </p>
                       )}
+                      {noti.type === "connection_rejected" && (
+                        <p className='flex'>
+                          Your request for connection has been rejected by
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
+                      {noti.type === "connection_accepted" && (
+                        <p className='flex'>
+                          Your request for connection has been accepted by
+                          <p
+                            onClick={() => {
+                              setTimeout(() => {
+                                navigate(`/user/${noti.sender._id}`);
+                              }, 300);
+                            }}
+                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
+                          >
+                            {noti.sender.name}
+                          </p>
+                        </p>
+                      )}
                       {noti.type === "comment" && (
                         <p
                           onClick={() => {
@@ -324,23 +364,16 @@ const Notifications = () => {
                         {noti.type === "message" && "Message"}
                         {noti.type === "comment" && "View Profile"}
                         {noti.type === "connection_request" && "Show Request"}
-                        {noti.type === "connection_accepted" && "Message"}
                         {noti.type === "profile_view" && "View Profile"}
+                        {noti.type === "connection_rejected" && "View Profile"}
+
+                        {noti.type === "connection_accepted" && "Message"}
                       </button>
                     </div>
                     <div className='lg:min-w-[150px] flex-row'>
                       <p className='text-center  text-[#8f8f8f]'>
                         {moment(noti.createdAt).fromNow()}
                       </p>
-                      <div className='flex justify-center items-center'>
-                        <DeleteIcon
-                          fontSize='large'
-                          className='cursor-pointer text-[#7e7e7e] hover:text-red-600 hover:bg-[#595959] hover:rounded-full hover:bg-opacity-10'
-                          onClick={() => {
-                            handleDeleteNoti(noti._id);
-                          }}
-                        />
-                      </div>
                     </div>
                   </div>
                 ))

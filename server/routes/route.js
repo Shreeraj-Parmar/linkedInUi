@@ -62,7 +62,6 @@ import {
   sendAllNotifications,
   sendNotiCount,
   updateNotiClickOn,
-  deleteFromDBNoti,
 } from "../controller/notification-controller.js";
 
 router.post("/user/signup", saveNewUser);
@@ -120,7 +119,6 @@ router.post("/msg/verify", jwtMiddle, availableForSendingMsgOrNot);
 
 // notification
 router.post("/notification", jwtMiddle, saveNewNotification);
-router.delete("/notification", jwtMiddle, deleteFromDBNoti);
 router.put("/notification", jwtMiddle, updateNotiClickOn);
 router.get("/notification/count", jwtMiddle, sendNotiCount);
 router.get("/notifications", jwtMiddle, sendAllNotifications);

@@ -60,8 +60,9 @@ const MyNetwork = () => {
       currUserData &&
         (await sendNotification({
           recipient: data.receiverId,
+
           sender: currUserData._id,
-          type: "connection_request",
+          type: "connection_rejected",
           message: "your connection request has been rejected",
         }));
     } else {
