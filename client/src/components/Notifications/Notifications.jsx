@@ -248,21 +248,7 @@ const Notifications = () => {
                           </p>
                         </p>
                       )}
-                      {noti.type === "message" && (
-                        <p className='flex'>
-                          You Have New Message send by
-                          <p
-                            onClick={() => {
-                              setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
-                              }, 300);
-                            }}
-                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
-                          >
-                            {noti.sender.name}
-                          </p>
-                        </p>
-                      )}
+
                       {noti.type === "connection_rejected" && (
                         <p className='flex'>
                           Your request for connection has been rejected by
@@ -278,21 +264,7 @@ const Notifications = () => {
                           </p>
                         </p>
                       )}
-                      {noti.type === "connection_accepted" && (
-                        <p className='flex'>
-                          Your request for connection has been accepted by
-                          <p
-                            onClick={() => {
-                              setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
-                              }, 300);
-                            }}
-                            className='hover:underline hover:text-blue-700 ml-1 font-semibold'
-                          >
-                            {noti.sender.name}
-                          </p>
-                        </p>
-                      )}
+
                       {noti.type === "comment" && (
                         <p
                           onClick={() => {
@@ -361,7 +333,7 @@ const Notifications = () => {
                       >
                         {noti.type === "follow" && "Follow Back"}
                         {noti.type === "like" && "View Profile"}
-                        {noti.type === "message" && "Message"}
+
                         {noti.type === "comment" && "View Profile"}
                         {noti.type === "connection_request" && "Show Request"}
                         {noti.type === "profile_view" && "View Profile"}

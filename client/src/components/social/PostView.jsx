@@ -53,11 +53,8 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
   const [loadingComments, setLoadingComments] = useState({}); // Loading state for
 
-  // const getCommentCountFunction = async () => {
-  //   let res = await getCommentCount();
-  //   console.log(res.data.allCommentCount);
-  //   setCommentCount(res.data.allCommentCount);
-  // };
+  // readmore feature in post
+  const [readMore, setReadMore] = useState({});
 
   useEffect(() => {
     setTimeout(() => {
@@ -141,6 +138,13 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
 
       // Update all posts state with the newly fetched and sorted posts
       setAllPost((prevPosts) => [...prevPosts, ...res.data.allPosts]);
+      let readMoreForAllPost = res.data.allPosts.map((post) => ({
+        [post._id]: false,
+      }));
+      setReadMore((prevReadMore) => ({
+        ...prevReadMore,
+        ...readMoreForAllPost,
+      }));
 
       res.data.allPosts.map((post) => {
         // Check if the current user has liked the post
@@ -356,6 +360,19 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
     console.log("after comment text : ", commentText);
   };
 
+  // Helper function to detect URLs and convert them into clickable links
+  const linkifyContent = (content) => {
+    const urlPattern =
+      /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+
+    // Replace URLs in the content with clickable <a> elements
+    const linkifiedContent = content.replace(urlPattern, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:blue; text-decoration:underline">${url}</a>`;
+    });
+
+    return linkifiedContent;
+  };
+
   return (
     <div className='post-wrapper  w-[100%]   flex-row space-y-3'>
       <Tostify />
@@ -517,7 +534,11 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
 
           {allPost && !postSkeleton && allPost.length > 0
             ? allPost.map((post) => {
-                // all posts
+                const truncatedContent =
+                  post.text.length > 100
+                    ? post.text.substring(0, 100) + "..."
+                    : post.text;
+
                 return (
                   <div className='flex justify-center' key={post._id}>
                     <div
@@ -591,10 +612,31 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                         )}
                       </div>
                       <div className='post-text w-[100%]'>
-                        <div>
-                          <pre className='w-[90%] text-wrap mt-2'>
-                            {post.text}
-                          </pre>
+                        <div className=''>
+                          <pre
+                            dangerouslySetInnerHTML={{
+                              __html: readMore[post._id]
+                                ? linkifyContent(post.text)
+                                : linkifyContent(truncatedContent),
+                            }}
+                            className='w-[90%] text-wrap mt-2 inline'
+                          ></pre>{" "}
+                          &nbsp;
+                          {post.text.length > 100 && (
+                            <button
+                              className='text-blue-500'
+                              onClick={() => {
+                                setReadMore((prev) => ({
+                                  ...prev,
+                                  [post._id]: !prev[post._id],
+                                }));
+                              }}
+                            >
+                              {readMore && readMore[post._id]
+                                ? "Show Less"
+                                : "more..."}
+                            </button>
+                          )}
                         </div>
                       </div>
                       {post.url && (
@@ -736,9 +778,14 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                               ).fromNow()}
                                           </p>
                                           <div className='comment-text'>
-                                            <p className='mt-2'>
-                                              {comment.user && comment.text}
-                                            </p>
+                                            <p
+                                              dangerouslySetInnerHTML={{
+                                                __html: linkifyContent(
+                                                  comment.user && comment.text
+                                                ),
+                                              }}
+                                              className='mt-2'
+                                            ></p>
                                           </div>
                                         </div>
                                       </div>
