@@ -36,28 +36,29 @@ const PostDialog = ({
   imgUrl,
   currUserData,
 }) => {
-  const [previewUrl, setPreviewUrl] = useState(null); // for image preview
-  const [postFile, setPostFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState([]); // for image preview
+  const [postFile, setPostFile] = useState([]);
   const [postText, setPostText] = useState("");
-  const [generatedfileName, setGeneratedFileName] = useState(null);
-  const [generatedURL, setGeneratedURL] = useState(null);
+  const [generatedfileName, setGeneratedFileName] = useState([]);
+  const [generatedURL, setGeneratedURL] = useState([]);
   const postPhotoRef = useRef();
 
   const handlePostFileClick = () => {
     postPhotoRef.current.click();
+    console.log("clicked", previewUrl);
+    console.log("postFile", postFile);
   };
 
   const handlePostFileChange = (e) => {
-    const file = e.target.files[0];
-    setPostFile(file);
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setPreviewUrl(preview);
-    }
+    const files = Array.from(e.target.files); // Convert FileList to an array
+
+    setPostFile((prevFiles) => [...prevFiles, ...files]); // Append new files to the existing array
+    const previews = files.map((file) => URL.createObjectURL(file)); // Generate previews for all new files
+    setPreviewUrl((prevUrls) => [...prevUrls, ...previews]);
   };
 
   const handlePostSubmit = async () => {
-    if (postText === "" && !postFile) {
+    if (postText === "" && postFile.length === 0) {
       toast.error(`Please Write Somthing Or Select Photo. !`, {
         position: "top-right",
         autoClose: 4000,
@@ -68,70 +69,82 @@ const PostDialog = ({
         progress: undefined,
         theme: "light",
       });
+      return;
     }
-    if (postFile) {
-      let res = await getURLForPOST({ fileType: postFile.type });
-      if (res.status === 200) {
-        setGeneratedFileName(res.data.fileName);
-        console.log(res.data.url);
-        const nameOfFile = res.data.fileName;
-        // upload in aws
 
-        let resOfAWS = await uploadFileAWS({
-          uploadURL: res.data.url,
-          postFile,
-          fileType: postFile.type,
-        });
-        if (resOfAWS.status === 200) {
-          console.log("uploaded");
-          const bukket = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
-          const region = import.meta.env.VITE_AWS_REGION;
-          const permanentUrlForPost = `https://${bukket}.s3.${region}.amazonaws.com/PostPicture/${nameOfFile}`;
-          console.log(permanentUrlForPost);
+    let uploadedUrls = []; // Array to store uploaded file URLs
 
-          // save post in db
-          let res = await savePostData({
-            text: postText,
-            url: permanentUrlForPost,
+    if (postFile.length > 0) {
+      for (const file of postFile) {
+        let res = await getURLForPOST({ fileType: file.type });
+        if (res.status === 200) {
+          const nameOfFile = res.data.fileName;
+
+          let resOfAWS = await uploadFileAWS({
+            uploadURL: res.data.url,
+            postFile: file,
+            fileType: file.type,
           });
 
-          if (res.status === 200) {
-            console.log("post saved successfully");
-            let newPost = {
-              text: postText,
+          if (resOfAWS.status === 200) {
+            const bucket = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
+            const region = import.meta.env.VITE_AWS_REGION;
+            const permanentUrlForPost = `https://${bucket}.s3.${region}.amazonaws.com/PostPicture/${nameOfFile}`;
+            uploadedUrls.push({
               url: permanentUrlForPost,
-              _id: res.data.postId,
-              comments: [],
-              likeCount: 0,
-              likedBy: [],
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-              user: {
-                _id: currUserData._id,
-                name: currUserData.name,
-                profilePicture: currUserData.profilePicture || imgUrl,
-                city: currUserData.city,
-              },
-            };
-            console.log("new post is here", newPost);
-            setAllPost((prev) => [newPost, ...prev]);
-            setPostText("");
-            setPostFile(null);
+              fileType: file.type,
+            }); // Store the uploaded URL
+          } else {
+            toast.error("Error while uploading image!");
           }
-        } else {
-          toast.error(`Error While Uploading IMAGE . !`, {
-            position: "top-right",
-            autoClose: 4000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-          console.log("error while generating url");
         }
+      }
+
+      console.log("total uploaded urls", uploadedUrls);
+
+      // save post in db
+      let res = await savePostData({
+        text: postText,
+        mediaUrls: uploadedUrls,
+      });
+
+      if (res.status === 200) {
+        console.log("post saved successfully");
+        // let newPost = {
+        //   text: postText,
+        //   url: permanentUrlForPost,
+        //   _id: res.data.postId,
+        //   comments: [],
+        //   likeCount: 0,
+        //   likedBy: [],
+        //   createdAt: Date.now(),
+        //   updatedAt: Date.now(),
+        //   user: {
+        //     _id: currUserData._id,
+        //     name: currUserData.name,
+        //     profilePicture: currUserData.profilePicture || imgUrl,
+        //     city: currUserData.city,
+        //   },
+        // };
+        // console.log("new post is here", newPost);
+        // setAllPost((prev) => [newPost, ...prev]);
+        setPostText("");
         setPostFile(null);
+      } else {
+        toast.error(`Error While Uploading IMAGE . !`, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        console.log("error while generating url");
+
+        setPostFile([]);
+        setPreviewUrl([]);
         setPostText("");
       }
     } else {
@@ -162,6 +175,8 @@ const PostDialog = ({
       }
     }
     setPostDialog(false);
+    setPostFile([]);
+    setPreviewUrl([]);
     setPostText("");
   };
 
@@ -191,19 +206,24 @@ const PostDialog = ({
             ></textarea>
           </div>
 
-          {postFile ? (
-            <img src={previewUrl} alt='image preview' className='w-[10%]' />
-          ) : (
-            <AddPhotoAlternateIcon
-              className=' cursor-pointer text-blue-400'
-              onClick={() => {
-                handlePostFileClick();
-              }}
-            />
+          {postFile && (
+            <div className='previews'>
+              {previewUrl.map((url, index) => (
+                <img key={index} src={url} alt='preview' className='w-[10%]' />
+              ))}
+            </div>
           )}
+          <AddPhotoAlternateIcon
+            className=' cursor-pointer text-blue-400'
+            onClick={() => {
+              handlePostFileClick();
+            }}
+          />
+
           <div className='profile-file-form'>
             <input
               type='file'
+              multiple // Enable multiple file selection
               name=''
               id=''
               ref={postPhotoRef}
@@ -228,7 +248,8 @@ const PostDialog = ({
       <div
         className='absolute top-[20px] right-[30px] text-2xl cursor-pointer'
         onClick={() => {
-          setPostFile(null);
+          setPostFile([]);
+          setPreviewUrl([]);
           setPostText("");
           setPostDialog(false);
         }}

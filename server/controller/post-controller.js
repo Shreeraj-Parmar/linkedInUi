@@ -4,27 +4,20 @@ import Comment from "../model/comment.js";
 
 // save post into DB
 export const savePostDataIntoDB = async (req, res) => {
-  // console.log("this is req body /n", req.body.url);
+  console.log("this is media urls", req.body.mediaUrls);
 
   try {
-    // Find the user based on the provided email
-    let findUser = await User.findOne({ email: req.user });
-    console.log("user id is this", findUser._id);
+    // Create a new post without including the _id for mediaUrls
+    const mediaUrls = req.body.mediaUrls.map(({ url, fileType }) => ({
+      url,
+      fileType,
+    }));
 
-    // Check if the URL is provided
-    let newPost;
-    if (req.body.url) {
-      newPost = new Post({
-        user: findUser._id,
-        text: req.body.text,
-        url: req.body.url, // Save URL to the database
-      });
-    } else {
-      newPost = new Post({
-        user: findUser._id,
-        text: req.body.text,
-      });
-    }
+    let newPost = new Post({
+      user: req._id,
+      text: req.body.text,
+      mediaUrls: mediaUrls || [], // Use the new structure without _id
+    });
 
     // Save the post to the database
     let savedPost = await newPost.save();
@@ -32,11 +25,10 @@ export const savePostDataIntoDB = async (req, res) => {
 
     // If post is saved successfully, update the user's posts array
     if (savedPost) {
-      // Update the user's posts array
       await User.findByIdAndUpdate(
-        findUser._id,
-        { $push: { posts: savedPost._id } }, // Push the new post ID into the posts array
-        { new: true } // Return the updated user document
+        req._id,
+        { $push: { posts: savedPost._id } },
+        { new: true }
       );
 
       res
