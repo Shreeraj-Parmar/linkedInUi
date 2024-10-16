@@ -207,9 +207,37 @@ const PostDialog = ({
           </div>
 
           {postFile && (
-            <div className='previews'>
+            <div className='previews flex gap-2  justify-start p-2 items-center flex-wrap'>
               {previewUrl.map((url, index) => (
-                <img key={index} src={url} alt='preview' className='w-[10%]' />
+                <div
+                  key={index}
+                  className='relative border-2 border-gray-400 border-opacity-40 rounded-md'
+                >
+                  {postFile[index].type.startsWith("video/") ? (
+                    <video
+                      src={url}
+                      controls
+                      className='w-[120px] h-[120px] rounded-md'
+                    />
+                  ) : (
+                    <img
+                      src={url}
+                      alt='preview'
+                      className='w-[120px] h-[120px] rounded-md'
+                    />
+                  )}
+                  <CloseIcon
+                    onClick={() => {
+                      let updatedFiles = postFile.filter((_, i) => i !== index);
+                      setPostFile(updatedFiles);
+                      setPreviewUrl((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                    }}
+                    fontSize='small'
+                    className='absolute top-[-9px]  right-[-8px] hover:text-[#e74c3c] text-[#ffffff] bg-[#4f4f4f] rounded-full cursor-pointer'
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -235,7 +263,7 @@ const PostDialog = ({
         </div>
         <div className='flex justify-end'>
           <button
-            className='bg-[#4eacff] text-black p-2 mr-3 rounded-md'
+            className='bg-[#4eacff] text-black p-2 mr-3 mb-3 hover:bg-[#2c618f] rounded-md'
             onClick={() => {
               handlePostSubmit();
             }}
