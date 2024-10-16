@@ -644,18 +644,18 @@ export const sendAllUsersWhichNotConnected = async (req, res) => {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
 
-    // Calculate the number of users to skip
+    // Calculate the number of users to skip for pagination
     const skip = (pageNumber - 1) * limitNumber;
 
-    // Fetch users with pagination, who do not have req._id in connectionRequests or connect array
+    // Fetch users who are not connected and haven't sent a connection request to the current user
     let allUsers = await User.find({
       $and: [
         { _id: { $ne: userId } }, // Exclude the current user
-        { connectionRequests: { $ne: userId } }, // Exclude if userId is in connectionRequests
-        { connect: { $ne: userId } }, // Exclude if userId is in connect array
+        { connections: { $ne: userId } }, // Exclude if userId is in connections array
+        { "connectionRequests.user": { $ne: userId } }, // Exclude if userId is in connectionRequests array
       ],
     })
-      .select("name city _id profilePicture") // Select only the fields name, city, and _id
+      .select("name city _id profilePicture") // Select only the fields name, city, _id, and profilePicture
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the users according to pagination
       .limit(limitNumber); // Limit the number of users fetched
@@ -664,6 +664,29 @@ export const sendAllUsersWhichNotConnected = async (req, res) => {
   } catch (error) {
     console.log(
       `Error while calling sendAllUsersWhichNotConnected API & error is: ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// widhdraw connection req
+
+export const withdrawReq = async (req, res) => {
+  try {
+    let updatUser = await User.findByIdAndUpdate(
+      req.body.userId,
+      {
+        $pull: { connectionRequests: { user: req._id } },
+      },
+      { new: true }
+    );
+    console.log("updated user is", updatUser);
+    res
+      .status(200)
+      .json({ message: "Connection request withdrawn successfully" });
+  } catch (error) {
+    console.log(
+      `Error while calling withdrawReq API & error is: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { fatchAllUsersWhichNotConnected } from "../../../../services/api.js";
+import {
+  fatchAllUsersWhichNotConnected,
+  sendConnect,
+  sendNotification,
+} from "../../../../services/api.js";
 import ConnectionWithdrawDialog from "./ConnectionWithdrawDialog";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Tostify from "../../../Tostify.jsx";
 
-const MoreConnection = ({ connectionReqLength }) => {
+const MoreConnection = ({ connectionReqLength, user_id }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [allUsers, setAllUsers] = useState([]);
   const [userConnectBtns, setUserConnectBtns] = useState({});
+  const [currId, setCurrId] = useState(null);
   const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
   const limit = 12;
 
@@ -39,10 +46,33 @@ const MoreConnection = ({ connectionReqLength }) => {
   };
 
   const handleBtnClick = async (data) => {
-    setUserConnectBtns((prevUserConnectBtns) => ({
-      ...prevUserConnectBtns,
-      [data]: true,
-    }));
+    console.log("data is id is", data);
+    let res = await sendConnect({ receiverId: data });
+    if (res.status === 200) {
+      console.log("req send");
+      setUserConnectBtns((prevUserConnectBtns) => ({
+        ...prevUserConnectBtns,
+        [data]: true,
+      }));
+      await sendNotification({
+        recipient: data,
+        sender: user_id,
+        type: "connection_request",
+        message: "you have new Connection Request From",
+      });
+    } else if (res.status === 201) {
+      toast.error(`${res.data.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+    console.log(res.data);
   };
 
   const handleScroll = (e) => {
@@ -61,7 +91,11 @@ const MoreConnection = ({ connectionReqLength }) => {
       <ConnectionWithdrawDialog
         setIsWithdrawDialogOpen={setIsWithdrawDialogOpen}
         isWithdrawDialogOpen={isWithdrawDialogOpen}
+        currId={currId}
+        setCurrId={setCurrId}
+        setUserConnectBtns={setUserConnectBtns}
       />
+      <Tostify />
       <div
         onScroll={handleScroll}
         className='border-2 border-opacity-40 border-gray-400 overflow-auto bg-[#fff] rounded-md  min-h-[80vh] max-h-[80vh]  max-w-[64.5%]'
@@ -104,6 +138,7 @@ const MoreConnection = ({ connectionReqLength }) => {
                       <button
                         onClick={() => {
                           setIsWithdrawDialogOpen(true);
+                          setCurrId(user._id);
                         }}
                         className='p-1 border-2 border-[#444444] text-[#444444] hover:border-[#1a1a1a] hover:text-[#1a1a1a] rounded-full min-w-[85%] hover:bg-[#F3F3F3] flex justify-center items-center space-x-1'
                       >

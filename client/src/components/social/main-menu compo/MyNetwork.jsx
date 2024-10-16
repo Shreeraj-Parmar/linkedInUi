@@ -264,7 +264,10 @@ const MyNetwork = () => {
             {/* here more user connection */}
           </div>
           {currUserData && (
-            <MoreConnection connectionReqLength={connectionReq.length} />
+            <MoreConnection
+              connectionReqLength={connectionReq.length}
+              user_id={currUserData._id}
+            />
           )}
         </div>
       </div>

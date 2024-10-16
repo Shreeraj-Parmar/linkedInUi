@@ -768,3 +768,18 @@ export const fatchAllUsersWhichNotConnected = async (page, limit) => {
     return null; // Return null or handle the error as needed
   }
 };
+
+// withdraw request
+export const withdrawConnectionReq = async (data) => {
+  try {
+    let res = await axios.put(`${API}/connection/withdraw`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling withdrawConnectionReq: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};

@@ -20,6 +20,7 @@ import {
   generateRefresh,
   sendConnectReqCount,
   sendAllUsersWhichNotConnected,
+  withdrawReq,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -100,6 +101,7 @@ router.get("/connection", jwtMiddle, sendAllConnectionReq);
 router.post("/connection/req", jwtMiddle, sendConnectReq);
 router.get("/connection-req/count", jwtMiddle, sendConnectReqCount);
 router.get("/connection-req", jwtMiddle, UpdateConnectReqRead);
+router.put("/connection/withdraw", jwtMiddle, withdrawReq);
 
 router.put("/connection", jwtMiddle, updateConnectionInDB);
 
