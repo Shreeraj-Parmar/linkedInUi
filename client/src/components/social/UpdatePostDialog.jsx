@@ -251,20 +251,26 @@ const UpdatePostDialog = ({
                   )}
                   <CloseIcon
                     onClick={() => {
-                      let availablefile = postFile.find(
-                        (obj) => obj.find((file) => file.url) === pre.url
-                      );
-                      let updatedFiles = postFile.filter(
-                        (_, i) => i !== postFile[index]
-                      );
+                      //   let availablefile = postFile.find(
+                      //     (obj) => obj.find((file) => file.url) === pre.url
+                      //   );
+                      //   if (availablefile) {
+                      //     let updatedFiles = postFile.filter(
+                      //       (obj) => obj !== availablefile
+                      //     );
 
-                      setPostFile(updatedFiles);
+                      //     setPostFile(updatedFiles);
+                      //   }
                       setPreviewUrl((prev) =>
                         prev.filter((_, i) => i !== index)
                       );
                       setUploadedUrls((prev) =>
                         prev.filter((obj) => obj.url !== pre.url)
                       );
+                      const updatedFiles = postFile.filter(
+                        (file) => URL.createObjectURL(file) !== pre.url
+                      );
+                      setPostFile(updatedFiles);
                     }}
                     fontSize='small'
                     className='absolute top-[-9px]  right-[-8px] hover:text-[#e74c3c] text-[#ffffff] bg-[#4f4f4f] rounded-full cursor-pointer'
