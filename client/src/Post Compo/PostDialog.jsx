@@ -217,13 +217,13 @@ const PostDialog = ({
                     <video
                       src={url}
                       controls
-                      className='w-[120px] h-[120px] rounded-md'
+                      className='w-[118px] h-[120px] rounded-md'
                     />
                   ) : (
                     <img
                       src={url}
                       alt='preview'
-                      className='w-[120px] h-[120px] rounded-md'
+                      className='w-[118px] h-[120px] rounded-md'
                     />
                   )}
                   <CloseIcon

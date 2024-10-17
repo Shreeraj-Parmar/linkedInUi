@@ -57,10 +57,10 @@ const Suggest = ({
         " bg-white border-2 border-gray-400 border-opacity-40 text-black"
       }`}
     >
-      <p className="font-semibold">Near by Your Location</p>
+      <p className='font-semibold'>Near by Your Location</p>
       <div
         onScroll={handleScroll}
-        className="overflow-auto max-h-[90%] rounded-md mt-2"
+        className='overflow-auto max-h-[90%] rounded-md mt-2'
       >
         {suggSkeleton &&
           Array(7)
@@ -68,28 +68,28 @@ const Suggest = ({
             .map((_, index) => (
               <div
                 key={index}
-                className="suggested-wrapper w-[100%] flex items-center p-2 space-x-2"
+                className='suggested-wrapper w-[100%] flex items-center p-2 space-x-2'
               >
-                <div className="sugg-profile-photo w-[30%]">
+                <div className='sugg-profile-photo w-[30%]'>
                   <Skeleton
-                    variant="rectangular"
-                    width="50px"
-                    height="50px"
-                    className="rounded-full"
+                    variant='rectangular'
+                    width='50px'
+                    height='50px'
+                    className='rounded-full'
                   />
                 </div>
-                <div className="commet-des  heading-post  w-[80%]   flex-row ">
+                <div className='commet-des  heading-post  w-[80%]   flex-row '>
                   <Skeleton
-                    variant="rectangular"
-                    width="80%"
-                    height="10px"
-                    className="rounded-md mb-1"
+                    variant='rectangular'
+                    width='80%'
+                    height='10px'
+                    className='rounded-md mb-1'
                   />
                   <Skeleton
-                    variant="rectangular"
-                    width="30%"
-                    height="10px"
-                    className="rounded-md mb-1"
+                    variant='rectangular'
+                    width='30%'
+                    height='10px'
+                    className='rounded-md mb-1'
                   />
                 </div>
               </div>
@@ -100,20 +100,20 @@ const Suggest = ({
               return (
                 <div
                   key={data._id ? data._id : `${data._id}_${index}`}
-                  className={`rounded-md bg-[#293138] m-1 ${
+                  className={`rounded-md bg-[#293138] m-2 ${
                     lightMode &&
                     " bg-[#F4F2EE] border border-gray-50 border-opacity-40"
                   }`}
                 >
-                  <div className="suggested-wrapper w-[100%] flex items-center p-2 space-x-2">
-                    <div className="sugg-profile-photo w-[30%]">
+                  <div className='suggested-wrapper w-[100%] flex items-center p-2 space-x-3'>
+                    <div className='sugg-profile-photo w-[30%]'>
                       <img
                         src={data.profilePicture || "/blank.png"}
-                        alt="profile pic"
-                        className="w-[100%] rounded-full  h-[50px]"
+                        alt='profile pic'
+                        className='rounded-full border border-gray-400 border-opacity-40 min-w-[55px] max-w-[55px] min-h-[55px] max-h-[55px]'
                       />
                     </div>
-                    <div className="commet-des  heading-post  w-[80%]   flex-row space-y-[-5px]">
+                    <div className='commet-des  heading-post  w-[80%]   flex-row space-y-[-5px]'>
                       <p
                         onClick={() => {
                           setCurrMenu("");
@@ -121,26 +121,26 @@ const Suggest = ({
                             navigate(`/user/${data._id}`);
                           }, 500);
                         }}
-                        className="text-[12px] hover:underline hover:text-blue-500 cursor-pointer"
+                        className='text-[12px] hover:underline hover:text-blue-500 cursor-pointer'
                       >
                         {data.name}
                       </p>
-                      <p className=" text-[#959799] text-sm">
+                      <p className=' text-[#959799] text-sm'>
                         {data.city.toLowerCase()}
                       </p>
-                      <p className="text-[#959799] text-sm">{data.gender}</p>
+                      <p className='text-[#959799] text-sm'>{data.gender}</p>
                     </div>
                   </div>
                 </div>
               );
             })
           : !suggSkeleton && (
-              <div className="p-2">
+              <div className='p-2'>
                 <div>
-                  <img src={"/login.jpg"} alt="" className=" shadow-sm" />
+                  <img src={"/login.jpg"} alt='' className=' shadow-sm' />
                 </div>
 
-                <p className=" text-center">
+                <p className=' text-center'>
                   {isLogin
                     ? "No Any Users Near Your Loacation Please Follow More To Connect Together"
                     : "Please Login To See Users Whose Around You"}

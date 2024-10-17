@@ -29,6 +29,10 @@ import {
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import Tostify from "../Tostify.jsx";
+import Slider from "react-slick";
+import { Card, CardMedia, Box } from "@mui/material";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const { setCurrUserData, currUserData, setCurrMenu, lightMode } =
@@ -48,6 +52,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [page, setPage] = useState(1); // For pagination
   const [hasMore, setHasMore] = useState(true); // For checking if there are more notifications to load
   const limit = 3; // Number of notifications to load at a time
+  const videoRef = useRef(null);
 
   // loading state:
   const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
@@ -56,10 +61,75 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   // readmore feature in post
   const [readMore, setReadMore] = useState({});
 
+  const CustomPrevArrow = (props) => {
+    const { onClick } = props;
+    return (
+      <div
+        className='slick-arrow slick-prev'
+        onClick={onClick}
+        style={{ zIndex: 1 }}
+      >
+        &#10094; {/* Left arrow icon */}
+      </div>
+    );
+  };
+
+  const CustomNextArrow = (props) => {
+    const { onClick } = props;
+    return (
+      <div
+        className='slick-arrow slick-next'
+        onClick={onClick}
+        style={{ zIndex: 1 }}
+      >
+        &#10095; {/* Right arrow icon */}
+      </div>
+    );
+  };
+
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    prevArrow: <CustomPrevArrow />, // Custom previous arrow
+    nextArrow: <CustomNextArrow />, // Custom next arrow
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setPostSkeleton(false);
     }, 2000);
+    const videoElement = videoRef.current;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // When the video is in view, play it
+            videoElement.play();
+          } else {
+            // When the video goes out of view, pause it
+            videoElement.pause();
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Trigger when 50% of the video is in view
+      }
+    );
+
+    if (videoElement) {
+      observer.observe(videoElement);
+    }
+
+    // Cleanup observer when component unmounts
+    return () => {
+      if (videoElement) {
+        observer.unobserve(videoElement);
+      }
+    };
   }, []);
 
   const checkFollowStatus = async () => {
@@ -374,7 +444,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   };
 
   return (
-    <div className='post-wrapper  w-[100%]   flex-row space-y-3'>
+    <div className='post-wrapper  w-[100%]   flex-row space-y-'>
       <Tostify />
       <PostDialog
         postDialog={postDialog}
@@ -383,44 +453,45 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         currUserData={currUserData}
         imgUrl={imgUrl}
       />
-      <div
-        className={`write-post text-[#DBDBDC] bg-[#1B1F23] w-[100%] h-[10vh] rounded-md p-2 ${
-          lightMode && " bg-white text-black"
-        }  ${lightMode && " border-2 border-gray-400 border-opacity-40"}  `}
-      >
+      <div className=' flex justify-center items-center'>
         <div
-          className={`write-post-wrapper  flex justify-center items-center `}
+          className={`write-post text-[#DBDBDC] bg-[#1B1F23] w-[97%]  max-h-[10vh] h-[10vh] rounded-md p-4 pl-6 pr-6 ${
+            lightMode && " bg-white text-black"
+          }  ${lightMode && " border-2 border-gray-400 border-opacity-40"}  `}
         >
-          <div className='write-post-left w-[10%]'>
-            <img
-              src={imgUrl || "/blank.png"}
-              alt='your profile picture'
-              className='rounded-full  w-[80%] h-[55px]'
-            />
-          </div>
           <div
-            className={`write-post-right w-[90%] p-5 h-[50px] border border-[#DBDBDC] rounded-full flex justify-start items-center hover:bg-[#DBDBDC] hover:bg-opacity-10 cursor-pointer ${
-              lightMode &&
-              " border border-black border-opacity-50 shadow-sm hover:bg-[#cecece]"
-            }`}
-            onClick={() => {
-              if (!isLogin) {
-                setLoginDialog(true);
-                return;
-              }
-
-              setPostDialog(true);
-            }}
+            className={`write-post-wrapper h-[100%]  flex justify-center items-center `}
           >
-            <p className='write-post-btn'>Start to Write Post</p>
+            <div className='write-post-left w-[10%]'>
+              <img
+                src={imgUrl || "/blank.png"}
+                alt='your profile picture'
+                className='rounded-full border border-gray-400 border-opacity-40 min-w-[55px] max-w-[55px] min-h-[55px] max-h-[55px]'
+              />
+            </div>
+            <div
+              className={`write-post-right w-[90%] p-5 h-[50px] border border-[#DBDBDC] rounded-full flex justify-start items-center hover:bg-[#DBDBDC] hover:bg-opacity-10 cursor-pointer ${
+                lightMode &&
+                " border border-black border-opacity-50 shadow-sm hover:bg-[#cecece]"
+              }`}
+              onClick={() => {
+                if (!isLogin) {
+                  setLoginDialog(true);
+                  return;
+                }
+
+                setPostDialog(true);
+              }}
+            >
+              <p className='write-post-btn'>Start to Write Post</p>
+            </div>
           </div>
         </div>
       </div>
       {/* Show All Posts */}
-
       <div
         onScroll={handleScrollPost}
-        className={`posts text-[#DBDBDC]  overflow-auto max-h-[100vh]  w-[100%]   p-1 rounded-md ${
+        className={`posts text-[#DBDBDC]  overflow-auto max-h-[100vh]  w-[100%] mt-1  p-1 rounded-md ${
           lightMode && "  text-black"
         }`}
       >
@@ -578,7 +649,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           </p>
                         </div>
                         {currUserData && post.user._id !== currUserData._id ? (
-                          <div className='follow-btn p-2 relative lg:left-64'>
+                          <div className='follow-btn p-2 relative lg:left-[280px]'>
                             <button
                               onClick={() => {
                                 handleFollowClick(post.user && post.user._id);
@@ -595,7 +666,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           </div>
                         ) : (
                           !isLogin && (
-                            <div className='follow-btn p-2 relative lg:left-52'>
+                            <div className='follow-btn p-2 relative lg:left-[280px]'>
                               <button
                                 onClick={() => {
                                   setLoginDialog(true);
@@ -650,6 +721,190 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           />
                         </div>
                       )}
+
+                      {post.mediaUrls &&
+                        post.mediaUrls.length > 0 &&
+                        post.mediaUrls.length === 1 && (
+                          <div className='post-image w-[100%] mt-2 flex justify-center items-center'>
+                            {post.mediaUrls[0].fileType.startsWith("video/") ? (
+                              <video
+                                src={post.mediaUrls[0].url || ""}
+                                alt='this is post video'
+                                className='w-[95%] max-h-[800px] rounded-md h-auto'
+                                controls // You can add controls for the video
+                                muted // Optional: Start video muted to prevent unwanted audio
+                                preload='metadata' // Load only metadata at first
+                                ref={videoRef}
+                              />
+                            ) : (
+                              <img
+                                src={post.mediaUrls[0].url || ""}
+                                alt='this is post image'
+                                className='w-[95%] max-h-[800px] rounded-md h-auto'
+                              />
+                            )}
+                          </div>
+                        )}
+
+                      {post.mediaUrls &&
+                        post.mediaUrls.length > 0 &&
+                        post.mediaUrls.length === 2 && (
+                          <div className='post-image w-[100%] mt-2 flex gap-3 justify-center items-center'>
+                            {post.mediaUrls.map((mediaUrl, index) =>
+                              mediaUrl.fileType.startsWith("video/") ? (
+                                <video
+                                  key={index}
+                                  src={mediaUrl.url || ""}
+                                  ref={videoRef}
+                                  alt='this is post video'
+                                  className='w-[50%] max-h-[300px] min-h-[300px]  rounded-md h-auto border border-gray-400 border-opacity-30'
+                                  controls // You can add controls for the video
+                                  muted // Optional: Start video muted to prevent unwanted audio
+                                  preload='metadata' // Load only metadata at first
+                                />
+                              ) : (
+                                <img
+                                  key={index}
+                                  src={mediaUrl.url || ""}
+                                  alt='this is post image'
+                                  className='w-[50%] max-h-[300px]  min-h-[300px] rounded-md h-auto border border-gray-400 border-opacity-30'
+                                />
+                              )
+                            )}
+                          </div>
+                        )}
+
+                      {post.mediaUrls &&
+                        post.mediaUrls.length > 0 &&
+                        post.mediaUrls.length === 3 && (
+                          <div className='post-image w-full mt-2 flex space-x-1'>
+                            <div className=' flex flex-col  space-y-1  rounded-md min-w-[300px]'>
+                              {post.mediaUrls
+                                .slice(0, 2)
+                                .map((mediaUrl, index) =>
+                                  mediaUrl.fileType.startsWith("video/") ? (
+                                    <video
+                                      key={index}
+                                      src={mediaUrl.url || ""}
+                                      ref={videoRef}
+                                      alt='this is post video'
+                                      className='w-[300px] max-h-[250px] border border-gray-400 border-opacity-40 min-h-[250px] rounded-md '
+                                      controls
+                                      muted
+                                      preload='metadata'
+                                    />
+                                  ) : (
+                                    <img
+                                      key={index}
+                                      src={mediaUrl.url || ""}
+                                      alt='this is post image'
+                                      className='w-[300px] max-h-[250px] border border-gray-400 border-opacity-40 min-h-[250px] rounded-md '
+                                    />
+                                  )
+                                )}
+                            </div>
+                            <div className='  rounded-md'>
+                              {post.mediaUrls
+                                .slice(2, 3)
+                                .map((mediaUrl, index) =>
+                                  mediaUrl.fileType.startsWith("video/") ? (
+                                    <video
+                                      key={index}
+                                      src={mediaUrl.url || ""}
+                                      ref={videoRef}
+                                      alt='this is post video'
+                                      className='w-[400px] min-h-[505px] rounded-md border border-gray-400 border-opacity-40'
+                                      controls
+                                      muted
+                                      preload='metadata'
+                                    />
+                                  ) : (
+                                    <img
+                                      key={index}
+                                      src={mediaUrl.url || ""}
+                                      alt='this is post image'
+                                      className='min-w-[250px] min-h-[505px] rounded-md border border-gray-400 border-opacity-40 '
+                                    />
+                                  )
+                                )}
+                            </div>
+                          </div>
+                        )}
+
+                      {post.mediaUrls &&
+                        post.mediaUrls.length > 0 &&
+                        post.mediaUrls.length >= 5 && (
+                          <Box
+                            sx={{
+                              width: "100%",
+                              padding: "10px",
+                              height: "500px",
+                            }}
+                          >
+                            <Slider {...settings}>
+                              {post.mediaUrls.map((mediaUrl, index) => (
+                                <Card
+                                  className='border-2 rounded-md border-gray-400 border-opacity-40 shadow-md'
+                                  key={index}
+                                  style={{ width: "100%" }}
+                                >
+                                  {mediaUrl.fileType.startsWith("image/") ? (
+                                    <CardMedia
+                                      component='img'
+                                      alt={`Media ${index + 1}`}
+                                      image={mediaUrl.url}
+                                      sx={{
+                                        height: "480px",
+                                        width: "100%",
+                                        objectFit: "cover",
+                                      }}
+                                    />
+                                  ) : (
+                                    mediaUrl.fileType.startsWith("video/") && (
+                                      <video
+                                        width='100%'
+                                        ref={videoRef}
+                                        src={mediaUrl.url || ""}
+                                        className='h-[480px]'
+                                        controls
+                                        preload='metadata'
+                                        style={{ objectFit: "cover" }}
+                                      />
+                                    )
+                                  )}
+                                </Card>
+                              ))}
+                            </Slider>
+                          </Box>
+                        )}
+
+                      {post.mediaUrls &&
+                        post.mediaUrls.length > 0 &&
+                        post.mediaUrls.length === 4 && (
+                          <div className='post-image w-[100%] mt-2 flex flex-wrap gap-1 justify-center items-center'>
+                            {post.mediaUrls.map((mediaUrl, index) =>
+                              mediaUrl.fileType.startsWith("video/") ? (
+                                <video
+                                  key={index}
+                                  src={mediaUrl.url || ""}
+                                  ref={videoRef}
+                                  alt='this is post video'
+                                  className='w-[45%] max-h-[300px] min-h-[300px]  rounded-md h-auto border border-gray-400 border-opacity-30'
+                                  controls // You can add controls for the video
+                                  muted // Optional: Start video muted to prevent unwanted audio
+                                  preload='metadata' // Load only metadata at first
+                                />
+                              ) : (
+                                <img
+                                  key={index}
+                                  src={mediaUrl.url || ""}
+                                  alt='this is post image'
+                                  className='w-[45%] max-h-[300px]  min-h-[300px] rounded-md h-auto border border-gray-400 border-opacity-30'
+                                />
+                              )
+                            )}
+                          </div>
+                        )}
 
                       <div className='flex justify-between'>
                         <p className={"text-[#959799]"}>

@@ -107,3 +107,38 @@
 .curr-menu-active {
   border-bottom: 3px solid #000;
 }
+
+.slick-slider {
+  width: 80%; /* Set a specific width */
+  margin: 0 auto; /* Center the slider */
+}
+
+.slick-next {
+  font-size: 50px !important;
+  position: absolute;
+  right: -20px;
+  color: #000 !important;
+  background: none !important;
+}
+.slick-prev {
+  font-size: 50px !important;
+  position: absolute;
+  left: -70px;
+  color: #000 !important;
+  background: none !important;
+}
+
+.slick-next:hover {
+  font-size: 40px !important;
+  transition: all 0.3s ease-in-out;
+
+  color: #000 !important;
+  background: none !important;
+}
+.slick-prev:hover {
+  font-size: 40px !important;
+  transition: all 0.3s ease-in-out;
+
+  color: #000 !important;
+  background: none !important;
+}
