@@ -28,11 +28,13 @@ import {
 } from "../../services/api.js";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import EditIcon from "@mui/icons-material/Edit";
 import Tostify from "../Tostify.jsx";
 import Slider from "react-slick";
 import { Card, CardMedia, Box } from "@mui/material";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import UpdatePostDialog from "./UpdatePostDialog.jsx";
 
 const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const { setCurrUserData, currUserData, setCurrMenu, lightMode } =
@@ -48,11 +50,14 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [commentCount, setCommentCount] = useState({});
   const [followStatus, setFollowStatus] = useState({});
   const [postSkeleton, setPostSkeleton] = useState(true);
+  const [selectedPostForUpdate, setSelectedPostForUpdate] = useState(null);
   const navigate = useNavigate();
   const [page, setPage] = useState(1); // For pagination
   const [hasMore, setHasMore] = useState(true); // For checking if there are more notifications to load
   const limit = 3; // Number of notifications to load at a time
   const videoRef = useRef(null);
+
+  const [updatePostDialog, setUpdatePostDialog] = useState(false);
 
   // loading state:
   const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
@@ -680,6 +685,29 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                               </button>
                             </div>
                           )
+                        )}
+                        {currUserData && post.user._id === currUserData._id && (
+                          <div className='follow-btn p-2 relative lg:left-[300px] '>
+                            {updatePostDialog && (
+                              <UpdatePostDialog
+                                setUpdatePostDialog={setUpdatePostDialog}
+                                setAllPost={setAllPost}
+                                updatePostDialog={updatePostDialog}
+                                selectedPostForUpdate={selectedPostForUpdate}
+                                setSelectedPostForUpdate={
+                                  setSelectedPostForUpdate
+                                }
+                              />
+                            )}
+                            <EditIcon
+                              onClick={() => {
+                                setUpdatePostDialog(true);
+                                setSelectedPostForUpdate(post);
+                              }}
+                              fontSize='medium'
+                              className='text-[#3c3c3c] hover:text-blue-500 cursor-pointer'
+                            />
+                          </div>
                         )}
                       </div>
                       <div className='post-text w-[100%]'>

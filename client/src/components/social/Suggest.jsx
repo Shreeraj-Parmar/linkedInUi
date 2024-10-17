@@ -100,12 +100,12 @@ const Suggest = ({
               return (
                 <div
                   key={data._id ? data._id : `${data._id}_${index}`}
-                  className={`rounded-md bg-[#293138] m-2 ${
+                  className={`rounded-md bg-[#293138] m-1 mr-2 ${
                     lightMode &&
                     " bg-[#F4F2EE] border border-gray-50 border-opacity-40"
                   }`}
                 >
-                  <div className='suggested-wrapper w-[100%] flex items-center p-2 space-x-3'>
+                  <div className='suggested-wrapper w-[100%] flex items-center p-1 space-x-3'>
                     <div className='sugg-profile-photo w-[30%]'>
                       <img
                         src={data.profilePicture || "/blank.png"}
