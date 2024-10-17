@@ -110,24 +110,24 @@ const PostDialog = ({
 
       if (res.status === 200) {
         console.log("post saved successfully");
-        // let newPost = {
-        //   text: postText,
-        //   url: permanentUrlForPost,
-        //   _id: res.data.postId,
-        //   comments: [],
-        //   likeCount: 0,
-        //   likedBy: [],
-        //   createdAt: Date.now(),
-        //   updatedAt: Date.now(),
-        //   user: {
-        //     _id: currUserData._id,
-        //     name: currUserData.name,
-        //     profilePicture: currUserData.profilePicture || imgUrl,
-        //     city: currUserData.city,
-        //   },
-        // };
-        // console.log("new post is here", newPost);
-        // setAllPost((prev) => [newPost, ...prev]);
+        let newPost = {
+          text: postText,
+          mediaUrls: uploadedUrls,
+          _id: res.data.postId,
+          comments: [],
+          likeCount: 0,
+          likedBy: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          user: {
+            _id: currUserData._id,
+            name: currUserData.name,
+            profilePicture: currUserData.profilePicture || imgUrl,
+            city: currUserData.city,
+          },
+        };
+        console.log("new post is here", newPost);
+        setAllPost((prev) => [newPost, ...prev]);
         setPostText("");
         setPostFile(null);
       } else {
@@ -211,28 +211,31 @@ const PostDialog = ({
               {previewUrl.map((url, index) => (
                 <div
                   key={index}
-                  className='relative border-2 border-gray-400 border-opacity-40 rounded-md'
+                  className={`relative border-2 border-gray-400 border-opacity-40  animate-fadeIn  rounded-md preview-post`}
+                  id={`preview-${index}`}
                 >
                   {postFile[index].type.startsWith("video/") ? (
                     <video
                       src={url}
                       controls
-                      className='w-[118px] h-[120px] rounded-md'
+                      className='w-[118px] h-[120px] rounded-md '
                     />
                   ) : (
                     <img
                       src={url}
                       alt='preview'
-                      className='w-[118px] h-[120px] rounded-md'
+                      className='w-[118px] h-[120px] rounded-md preview-post'
                     />
                   )}
                   <CloseIcon
                     onClick={() => {
                       let updatedFiles = postFile.filter((_, i) => i !== index);
-                      setPostFile(updatedFiles);
-                      setPreviewUrl((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      );
+                      setTimeout(() => {
+                        setPostFile(updatedFiles);
+                        setPreviewUrl((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }, 500);
                     }}
                     fontSize='small'
                     className='absolute top-[-9px]  right-[-8px] hover:text-[#e74c3c] text-[#ffffff] bg-[#4f4f4f] rounded-full cursor-pointer'
@@ -243,6 +246,7 @@ const PostDialog = ({
           )}
           <AddPhotoAlternateIcon
             className=' cursor-pointer text-blue-400'
+            fontSize='large'
             onClick={() => {
               handlePostFileClick();
             }}

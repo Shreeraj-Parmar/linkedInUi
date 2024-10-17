@@ -142,3 +142,7 @@
   color: #000 !important;
   background: none !important;
 }
+
+.preview-post {
+  transition: all 2s ease-in-out;
+}
