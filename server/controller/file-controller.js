@@ -111,3 +111,27 @@ export const sendPreSignedURLFORPOST = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// generate presigend url for download
+
+export const sendURLForDownload = async (req, res) => {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: `PostPicture/${req.body.fileName}`,
+      Expires: 60, // Expiry time for the link
+      ResponseContentDisposition: "attachment; filename=${req.body.fileName}",
+    });
+    const url = await getSignedUrl(s3Client, command);
+    if (url) {
+      res.status(200).json({ url });
+    } else {
+      res.status(201).json({ message: "URL NOT FOUND FROM AWS" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling sendURLForDownload API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

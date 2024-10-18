@@ -15,6 +15,11 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import StarIcon from "@mui/icons-material/Star";
 import Button from "@mui/material/Button";
 import { styled } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
+import AttachmentIcon from "@mui/icons-material/Attachment";
+import CloseIcon from "@mui/icons-material/Close";
+import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 
 import moment from "moment";
 
@@ -27,6 +32,9 @@ import {
   checkConnectionEachOther,
   markAsRead,
   changeFavourite,
+  uploadFileAWS,
+  getURLForPOST,
+  getPresignedURLForDownload,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
 
@@ -60,10 +68,13 @@ const Message = () => {
   const limit = 15; // Number of messages to fetch per request
   const [sendMsgText, setSendMsgText] = useState("");
   const [lastMsg, setLastMsg] = useState({});
+  const [previewUrl, setPreviewUrl] = useState(null); // for image preview
+  const [postFile, setPostFile] = useState(null);
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
   console.log("receevier id is", receiverId);
   const [favList, setFavList] = useState(currUserData?.favorites || []);
+  const postPhotoRef = useRef();
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
@@ -283,35 +294,134 @@ const Message = () => {
     let resChek = await checkConnectionEachOther({ receiverId: receiverId });
     if (resChek.status === 200) {
       console.log("you enable to msg");
+      let mediaUrl;
 
-      if (currConversationId) {
-        let res = await sendMsg({
-          receiverId: receiverId,
-          conversationId: currConversationId,
-          text: sendMsgText,
-        });
+      if (postFile) {
+        let res = await getURLForPOST({ fileType: postFile.type });
         if (res.status === 200) {
-          // send to socket server
-          const message = {
-            senderId: currUserData._id,
+          console.log(res.data.url);
+          const nameOfFile = res.data.fileName;
+          // upload in aws
+
+          let resOfAWS = await uploadFileAWS({
+            uploadURL: res.data.url,
+            postFile,
+            fileType: postFile.type,
+          });
+          if (resOfAWS.status === 200) {
+            console.log("uploaded");
+            const bukket = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
+            const region = import.meta.env.VITE_AWS_REGION;
+            const permanentUrlForPost = `https://${bukket}.s3.${region}.amazonaws.com/PostPicture/${nameOfFile}`;
+            console.log(permanentUrlForPost);
+
+            mediaUrl = {
+              url: permanentUrlForPost,
+              fileType: postFile.type,
+            };
+
+            if (currConversationId) {
+              let res = await sendMsg({
+                receiverId: receiverId,
+                conversationId: currConversationId,
+                text: sendMsgText,
+                mediaUrl: mediaUrl,
+              });
+              if (res.status === 200) {
+                // send to socket server
+                const message = {
+                  senderId: currUserData._id,
+                  receiverId: receiverId,
+                  conversationId: currConversationId,
+                  text: sendMsgText,
+                  mediaUrl: mediaUrl,
+                  createdAt: new Date(),
+                };
+
+                // ui update in message
+
+                setMessages((prevMessages) => [...prevMessages, message]);
+                console.log(res.data);
+                setTimeout(() => {
+                  if (chatEndRef.current) {
+                    chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+                  }
+                }, 200);
+                setSendMsgText("");
+                setPostFile(null);
+                setPreviewUrl(null);
+              } else {
+                toast.error(
+                  `Somthing Error To Send Message, please refresh page`,
+                  {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                  }
+                );
+              }
+            } else {
+              toast.error(`please first select conversation`, {
+                position: "top-right",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+              });
+            }
+          }
+        }
+      } else {
+        if (currConversationId) {
+          let res = await sendMsg({
             receiverId: receiverId,
             conversationId: currConversationId,
             text: sendMsgText,
+          });
+          if (res.status === 200) {
+            // send to socket server
+            const message = {
+              senderId: currUserData._id,
+              receiverId: receiverId,
+              conversationId: currConversationId,
+              text: sendMsgText,
+              createdAt: new Date(),
+            };
 
-            createdAt: new Date(),
-          };
+            // ui update in message
 
-          // ui update in message
-
-          setMessages((prevMessages) => [...prevMessages, message]);
-          console.log(res.data);
-          setTimeout(() => {
-            if (chatEndRef.current) {
-              chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 200);
+            setMessages((prevMessages) => [...prevMessages, message]);
+            console.log(res.data);
+            setTimeout(() => {
+              if (chatEndRef.current) {
+                chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 200);
+            setSendMsgText("");
+            setPostFile(null);
+            setPreviewUrl(null);
+          } else {
+            toast.error(`Somthing Error To Send Message, please refresh page`, {
+              position: "top-right",
+              autoClose: 2000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            });
+          }
         } else {
-          toast.error(`Somthing Error To Send Message, please refresh page`, {
+          toast.error(`please first select conversation`, {
             position: "top-right",
             autoClose: 2000,
             hideProgressBar: false,
@@ -322,20 +432,9 @@ const Message = () => {
             theme: "light",
           });
         }
-      } else {
-        toast.error(`please first select conversation`, {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
       }
     }
-    setSendMsgText("");
+    // setSendMsgText("");
   };
 
   const markAsReadFunction = async (convId, userId) => {
@@ -355,6 +454,49 @@ const Message = () => {
     return message.length > maxLength
       ? `${message.substring(0, maxLength)}...`
       : message;
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    console.log(file);
+    setPostFile(file);
+    if (file) {
+      const preview = URL.createObjectURL(file);
+      setPreviewUrl(preview);
+    }
+  };
+
+  const handleDownloadMsgMedia = async (msg) => {
+    const url = msg && msg.mediaUrl && msg.mediaUrl.url;
+
+    const fileName = url.split("/").pop();
+
+    let res = await getPresignedURLForDownload({
+      fileName: fileName,
+      bucketName: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
+    });
+
+    if (res.status === 200) {
+      const url_dow = res.data.url; // This is your file URL
+
+      const link = document.createElement("a");
+      link.href = url_dow;
+      link.setAttribute("download", fileName); // Set the filename in the download attribute
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      toast.error(`Somthing Error To download media`, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
   };
 
   return (
@@ -523,8 +665,52 @@ const Message = () => {
                               isCurrentUser ? "  text-black " : " text-white "
                             }`}
                           >
-                            {msg && msg.text}
+                            {msg && msg.text && msg.text}
                           </p>
+                          {msg && msg.mediaUrl && (
+                            <div className=''>
+                              {msg.mediaUrl.fileType.startsWith("image") && (
+                                <img
+                                  src={msg && msg.mediaUrl.url}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+                              {msg.mediaUrl.fileType.startsWith("video") && (
+                                <video
+                                  src={msg && msg.mediaUrl.url}
+                                  alt=''
+                                  controls
+                                  preload='metadata'
+                                  className='max-w-[300px] min-w-[300px] max-h-[300px] min-h-[300px] rounded-sm'
+                                />
+                              )}
+                              {msg.mediaUrl.fileType ===
+                                "application/vnd.openxmlformats-officedocument.presentationml.presentation" && (
+                                <img
+                                  src={"/pptx.png"}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+                              {msg.mediaUrl.fileType ===
+                                "application/vnd.openxmlformats-officedocument.presentationml.presentation" && (
+                                <img
+                                  src={"/pptx.png"}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+                              <IconButton
+                                onClick={() => {
+                                  handleDownloadMsgMedia(msg);
+                                }}
+                              >
+                                <DownloadForOfflineIcon />
+                              </IconButton>
+                            </div>
+                          )}
+
                           <p className='text-gray-400'>
                             {moment(msg && msg.createdAt).fromNow()}
                           </p>
@@ -551,7 +737,112 @@ const Message = () => {
                 )}
               </div>
               <div className='msg-ipnut min-h-[9%] p-2 border '>
-                <div className='flex items-center space-x-1'>
+                <div className='flex items-center space-x-1 relative'>
+                  <div className='flex justify-center items-center'>
+                    <IconButton color='primary' aria-label='add an emoji'>
+                      <SentimentSatisfiedAltIcon onClick={() => {}} />
+                    </IconButton>
+                    <IconButton color='secondary' aria-label='add a file'>
+                      <AttachmentIcon
+                        onClick={() => {
+                          postPhotoRef.current.click();
+                        }}
+                      />
+                      <div className='profile-file-form'>
+                        <input
+                          type='file'
+                          name=''
+                          id=''
+                          ref={postPhotoRef}
+                          onChange={(e) => {
+                            handleFileChange(e);
+                          }}
+                        />
+                      </div>
+                    </IconButton>
+                  </div>
+
+                  {postFile && (
+                    <div className=' flex justify-center items-center absolute top-[-60px] right-[80px]'>
+                      {postFile.type.startsWith("video/") && (
+                        <video
+                          src={previewUrl}
+                          controls
+                          className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                        />
+                      )}
+                      {postFile.type.startsWith("image/") && (
+                        <img
+                          src={previewUrl}
+                          alt='preview'
+                          className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                        />
+                      )}
+                      {postFile.type ===
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" && (
+                        <div className='flex space-x-1 justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/docs.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+                      {postFile.type ===
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" && (
+                        <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/excle.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+                      {postFile.type === "application/x-javascript" && (
+                        <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/js.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+                      {postFile.type === "text/css" && (
+                        <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/js.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+                      {postFile.type ===
+                        "application/vnd.openxmlformats-officedocument.presentationml.presentation" && (
+                        <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/pptx.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+
+                      <CloseIcon
+                        className=' cursor-pointer hover:text-red-500 text-[#fff] bg-[#4b4b4b] rounded-full absolute top-[-11px] right-[-9px]'
+                        onClick={() => {
+                          setPostFile(null);
+                          setPreviewUrl(null);
+                        }}
+                        fontSize='small'
+                      />
+                    </div>
+                  )}
+
                   <input
                     type='text'
                     name='msg'
@@ -568,11 +859,13 @@ const Message = () => {
                     onClick={() => {
                       handleSendMsg();
                     }}
-                    disabled={sendMsgText === ""}
+                    disabled={sendMsgText === "" && postFile === null}
                   >
                     <SendIcon
                       className={` cursor-pointer  ml-2 ${
-                        sendMsgText === "" ? "text-gray-400" : " text-[#3986c9]"
+                        sendMsgText === "" && postFile === null
+                          ? "text-gray-400"
+                          : " text-[#3986c9]"
                       } `}
                       fontSize='large'
                     />

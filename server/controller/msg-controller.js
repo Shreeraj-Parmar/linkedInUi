@@ -4,29 +4,48 @@ import User from "../model/user.js";
 import { io, socketClient } from "../index.js";
 
 export const saveMSGInDB = async (req, res) => {
-  let { receiverId, conversationId, text } = req.body;
+  let { receiverId, conversationId, text, mediaUrl } = req.body;
   try {
-    const newMessage = new Message({
-      receiverId: receiverId,
-      conversationId: conversationId,
-      senderId: req._id,
-      text: text,
-    });
+    const newMessage = mediaUrl
+      ? new Message({
+          receiverId: receiverId,
+          conversationId: conversationId,
+          senderId: req._id,
+          text: text,
+          mediaUrl: mediaUrl && mediaUrl,
+        })
+      : new Message({
+          receiverId: receiverId,
+          conversationId: conversationId,
+          senderId: req._id,
+          text: text,
+        });
     let result = await newMessage.save();
     console.log(result);
     const conver = await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: result._id,
     });
 
-    const message = {
-      senderId: req._id,
-      receiverId: receiverId,
-      text: text,
-      conversationId: conversationId,
-      _id: result._id,
+    const message = mediaUrl
+      ? {
+          senderId: req._id,
+          receiverId: receiverId,
+          text: text,
+          conversationId: conversationId,
+          _id: result._id,
+          mediaUrl: mediaUrl && mediaUrl,
 
-      createdAt: new Date(),
-    };
+          createdAt: new Date(),
+        }
+      : {
+          senderId: req._id,
+          receiverId: receiverId,
+          text: text,
+          conversationId: conversationId,
+          _id: result._id,
+
+          createdAt: new Date(),
+        };
 
     io.to(conversationId).emit("receive_message", message);
 
@@ -55,6 +74,7 @@ export const saveMSGInDB = async (req, res) => {
 
     return res.status(200).json("message sent succcessfully");
   } catch (error) {
+    console.error(error.message);
     return res.status(500).json(error.message);
   }
 };

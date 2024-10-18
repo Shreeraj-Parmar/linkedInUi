@@ -798,3 +798,19 @@ export const changeFavourite = async (data) => {
     );
   }
 };
+
+// generate presigned url for download
+export const getPresignedURLForDownload = async (data) => {
+  try {
+    let res = await axios.post(`${API}/aws/msg/download`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getPresignedURLForDownload & error is : ${error.message}`
+    );
+  }
+};

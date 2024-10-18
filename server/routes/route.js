@@ -27,6 +27,7 @@ import {
   sendPreSignedURL,
   saveURLIntoDB,
   sendPreSignedURLFORPOST,
+  sendURLForDownload,
 } from "../controller/file-controller.js";
 import {
   savePostDataIntoDB,
@@ -130,4 +131,6 @@ router.get("/notifications", jwtMiddle, sendAllNotifications);
 // refresh token
 router.post("/refresh-verify", generateRefresh);
 
+// aws download
+router.post("/aws/msg/download", jwtMiddle, sendURLForDownload);
 export default router;

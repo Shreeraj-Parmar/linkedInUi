@@ -24,6 +24,10 @@ const messageSchema = new mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId], // Stores the user IDs of users who have deleted the message
       default: [],
     },
+    mediaUrl: {
+      url: String,
+      fileType: String,
+    },
   },
   {
     timestamps: true,
