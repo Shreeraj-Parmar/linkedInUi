@@ -86,7 +86,7 @@ export const sendAllConversations = async (req, res) => {
       })
       .populate({
         path: "lastMessage", // Populate the last message
-        select: "text createdAt senderId", // Only get the message text and createdAt time
+        select: "text createdAt senderId mediaUrl", // Only get the message text and createdAt time
       });
 
     if (!conversations) {
@@ -103,6 +103,8 @@ export const sendAllConversations = async (req, res) => {
       // console.log("reciever is", receiver);
       const lastMessage = conversation.lastMessage;
 
+      console.log("lastmassage is", lastMessage);
+
       return {
         conversationId: conversation._id,
         receiverId: receiver._id,
@@ -110,9 +112,10 @@ export const sendAllConversations = async (req, res) => {
         unreadMessages: conversation.unreadMessages,
 
         receiverProfilePicture: receiver.profilePicture,
-        lastMessage: conversation.lastMessage
-          ? conversation.lastMessage.text
-          : "No messages yet",
+        lastMessage: conversation.lastMessage.mediaUrl.url
+          ? "Attechment Sends"
+          : conversation.lastMessage.text,
+
         lastMessageTime: conversation.lastMessage
           ? conversation.lastMessage.createdAt
           : null,
