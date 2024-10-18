@@ -467,9 +467,34 @@ const Message = () => {
   };
 
   const handleDownloadMsgMedia = async (msg) => {
+    let fileExe = [
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.ms-excel",
+      "application/vnd.ms-powerpoint",
+      "text/plain",
+    ];
+
+    if (fileExe.includes(msg.mediaUrl.fileType)) {
+      const url_dow = msg.mediaUrl.url; // This is your file URL
+
+      const link = document.createElement("a");
+      link.href = url_dow;
+      link.setAttribute("download", ""); // Set the filename in the download attribute
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
     const url = msg && msg.mediaUrl && msg.mediaUrl.url;
 
     const fileName = url.split("/").pop();
+
+    console.log("filemane : ", fileName);
 
     let res = await getPresignedURLForDownload({
       fileName: fileName,
@@ -478,10 +503,10 @@ const Message = () => {
 
     if (res.status === 200) {
       const url_dow = res.data.url; // This is your file URL
-
+      console.log("url presined is the thne rjnerfd : ", url_dow);
       const link = document.createElement("a");
       link.href = url_dow;
-      link.setAttribute("download", fileName); // Set the filename in the download attribute
+      link.setAttribute("download", ""); // Set the filename in the download attribute
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -694,13 +719,44 @@ const Message = () => {
                                 />
                               )}
                               {msg.mediaUrl.fileType ===
-                                "application/vnd.openxmlformats-officedocument.presentationml.presentation" && (
+                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" && (
                                 <img
-                                  src={"/pptx.png"}
+                                  src={"/docs.png"}
                                   alt=''
                                   className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
                                 />
                               )}
+                              {msg.mediaUrl.fileType ===
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" && (
+                                <img
+                                  src={"/excle.png"}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+                              {msg.mediaUrl.fileType ===
+                                "application/x-javascript" && (
+                                <img
+                                  src={"/js.png"}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+                              {msg.mediaUrl.fileType === "text/css" && (
+                                <img
+                                  src={"/css.png"}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+                              {msg.mediaUrl.fileType === "application/pdf" && (
+                                <img
+                                  src={"/pdf.png"}
+                                  alt=''
+                                  className='max-w-[200px] min-w-[200px] max-h-[200px] min-h-[200px] rounded-sm'
+                                />
+                              )}
+
                               <IconButton
                                 onClick={() => {
                                   handleDownloadMsgMedia(msg);
@@ -825,6 +881,26 @@ const Message = () => {
                         <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
                           <img
                             src='/pptx.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+                      {postFile.type === "application/pdf" && (
+                        <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/pdf.png'
+                            alt='preview docs'
+                            className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
+                          />
+                          <p>{postFile.name}</p>
+                        </div>
+                      )}
+                      {postFile.type === "audio/mpeg" && (
+                        <div className='flex space-x-1 bg-white justify-center items-center border-2 rounded-sm border-gray-400 border-opacity-40 p-1'>
+                          <img
+                            src='/mp3.png'
                             alt='preview docs'
                             className='min-w-[60px] min-h-[60px] max-w-[60px] max-h-[60px] rounded-md'
                           />
