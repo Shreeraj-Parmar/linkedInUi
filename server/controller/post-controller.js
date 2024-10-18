@@ -193,3 +193,33 @@ export const sendCommentCount = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// update post
+export const updatePostDataInDB = async (req, res) => {
+  let { postId, text, mediaUrls } = req.body;
+  try {
+    const post = await Post.findById(postId);
+    if (post.user.toString() !== req._id.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: "you are not authorized to update this post",
+      });
+    }
+    post.text = text;
+    post.mediaUrls = mediaUrls;
+    let finalRes = await post.save();
+    console.log("updated pppost is here", finalRes);
+    if (finalRes) {
+      res.status(200).json({ success: true, message: "Post Updated" });
+    } else {
+      res
+        .status(201)
+        .json({ success: false, message: "Post not Updated !!!!!" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling updatePostDataInDB API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

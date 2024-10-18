@@ -766,3 +766,35 @@ export const withdrawConnectionReq = async (data) => {
     return null; // Return null or handle the error as needed
   }
 };
+
+/// update post
+export const updatePostData = async (data) => {
+  try {
+    let res = await axios.put(`${API}/post`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling updatePostData & error is : ${error.message}`
+    );
+  }
+};
+
+// update favorite
+export const changeFavourite = async (data) => {
+  try {
+    let res = await axios.put(`${API}/user/favourite`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling changeFavourite & error is : ${error.message}`
+    );
+  }
+};

@@ -777,7 +777,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                       {post.mediaUrls &&
                         post.mediaUrls.length > 0 &&
                         post.mediaUrls.length === 2 && (
-                          <div className='post-image w-[100%] mt-2 flex gap-3 justify-center items-center'>
+                          <div className='post-image w-[100%] mt-2 flex gap-1 justify-center items-center'>
                             {post.mediaUrls.map((mediaUrl, index) =>
                               mediaUrl.fileType.startsWith("video/") ? (
                                 <video

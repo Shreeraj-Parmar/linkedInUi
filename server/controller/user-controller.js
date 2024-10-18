@@ -691,3 +691,49 @@ export const withdrawReq = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// update user favorite
+export const updateUserFavouriteInDB = async (req, res) => {
+  const receiverId = req.body.receiverId;
+
+  if (!receiverId) {
+    return res.status(400).json({ message: "Receiver ID is required" });
+  }
+
+  try {
+    // Find the user to check if the receiverId is already in the favorites array
+    const user = await User.findById(req._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let updateQuery;
+
+    // Check if the receiverId is already in the favorites array
+    if (user.favorites.includes(receiverId)) {
+      // Remove from favorites
+      updateQuery = { $pull: { favorites: receiverId } };
+    } else {
+      // Add to favorites
+      updateQuery = { $addToSet: { favorites: receiverId } };
+    }
+
+    // Update the user document
+    const updatedUser = await User.findByIdAndUpdate(req._id, updateQuery, {
+      new: true, // Return the updated document
+    });
+
+    console.log("Updated user:", updatedUser);
+
+    res.status(200).json({
+      message: updatedUser.favorites.includes(receiverId)
+        ? "Added to favourites"
+        : "Removed from favourites",
+    });
+  } catch (error) {
+    console.error(
+      `Error while calling updateUserFavouriteInDB API: ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

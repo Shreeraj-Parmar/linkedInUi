@@ -21,6 +21,7 @@ import {
   sendConnectReqCount,
   sendAllUsersWhichNotConnected,
   withdrawReq,
+  updateUserFavouriteInDB,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -34,6 +35,7 @@ import {
   sendCommentAccPost,
   saveCommentIntoDB,
   sendCommentCount,
+  updatePostDataInDB,
 } from "../controller/post-controller.js";
 import {
   sendUserDataAccId,
@@ -70,11 +72,13 @@ router.post("/user/login", checkLogin);
 router.get("/user", jwtMiddle, sendUserData);
 router.get("/users", sendAllData);
 router.get("/users/more", jwtMiddle, sendAllUsersWhichNotConnected);
+router.put("/user/favourite", jwtMiddle, updateUserFavouriteInDB);
 router.post("/user/edu", jwtMiddle, saveEDUDetails);
 router.post("/aws/generate", jwtMiddle, sendPreSignedURL);
 router.post("/aws/post/generate", jwtMiddle, sendPreSignedURLFORPOST);
 router.post("/aws/url", jwtMiddle, saveURLIntoDB);
 router.post("/post", jwtMiddle, savePostDataIntoDB);
+router.put("/post", jwtMiddle, updatePostDataInDB);
 router.get("/post/all", sendAllPosts);
 router.post("/like", jwtMiddle, updateLike);
 router.post("/comment", jwtMiddle, saveCommentIntoDB);

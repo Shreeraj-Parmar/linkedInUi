@@ -11,6 +11,10 @@ import { AllContext } from "../../context/UserContext";
 import { toast } from "react-toastify";
 import Brightness1Icon from "@mui/icons-material/Brightness1";
 import Badge from "@mui/material/Badge";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import StarIcon from "@mui/icons-material/Star";
+import Button from "@mui/material/Button";
+import { styled } from "@mui/material";
 
 import moment from "moment";
 
@@ -22,8 +26,16 @@ import {
   getMsgAccConvId,
   checkConnectionEachOther,
   markAsRead,
+  changeFavourite,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
+
+const StyledButton = styled(Button)`
+  border-radius: 100%;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+`;
 
 const Message = () => {
   const {
@@ -51,6 +63,7 @@ const Message = () => {
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
   console.log("receevier id is", receiverId);
+  const [favList, setFavList] = useState(currUserData?.favorites || []);
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
@@ -160,6 +173,14 @@ const Message = () => {
     if (res.status === 200) {
       console.log("all conv", res.data);
 
+      // let allReciverId = res.data.map((conv) => {
+      //   return {
+      //     [conv.receiverId]: currUserData.favorites.includes(conv.receiverId),
+      //   };
+      // });
+
+      // setFavList(allReciverId);
+
       let unread = res.data.map((conv) => {
         return {
           [conv.conversationId]: conv.unreadMessages,
@@ -241,6 +262,20 @@ const Message = () => {
         // Check if there is text to send
         handleSendMsg();
       }
+    }
+  };
+
+  const handleChangeFavourite = async (data) => {
+    let res = await changeFavourite(data);
+    if (res.status === 200) {
+      setFavList((prevFavList) => {
+        if (prevFavList.includes(data.receiverId)) {
+          return prevFavList.filter((id) => id !== data.receiverId);
+        } else {
+          return [...prevFavList, data.receiverId];
+        }
+      });
+      console.log(res.data);
     }
   };
 
@@ -380,6 +415,12 @@ const Message = () => {
                             </p>
                           </p>
                         </div>
+
+                        <div>
+                          {favList && favList.includes(conv.receiverId) && (
+                            <StarIcon className='text-[#C37D16]   cursor-pointer' />
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -398,34 +439,51 @@ const Message = () => {
                 <div className='text-black ml-9'>
                   {currConversationId ? (
                     <>
-                      <p
-                        className=' hover:underline cursor-pointer'
-                        onClick={() => {
-                          setCurrMenu("");
-                          setTimeout(() => {
-                            navigate(`/user/${receiverId}`);
-                          }, 500);
-                        }}
-                      >
-                        {receiverName}{" "}
-                      </p>
-                      <p>
-                        {Array.isArray(allOnlineUsers) &&
-                        allOnlineUsers.some(
-                          (user) => user.userId === receiverId
-                        ) ? (
-                          <p className=' text-green-700 text-sm flex items-center'>
-                            <Brightness1Icon
-                              className='text-green-700 text-xs'
-                              fontSize='6px'
-                            />
-                            &nbsp;
-                            <span className=' text-sm'> Online</span>
+                      <div className='flex justify-between items-center'>
+                        <div className=''>
+                          <p
+                            className=' hover:underline cursor-pointer inline-block'
+                            onClick={() => {
+                              setCurrMenu("");
+                              setTimeout(() => {
+                                navigate(`/user/${receiverId}`);
+                              }, 500);
+                            }}
+                          >
+                            {receiverName}{" "}
                           </p>
-                        ) : (
-                          <p className='  text-sm'>Offline</p>
-                        )}
-                      </p>
+                          <p>
+                            {Array.isArray(allOnlineUsers) &&
+                            allOnlineUsers.some(
+                              (user) => user.userId === receiverId
+                            ) ? (
+                              <p className=' text-green-700 text-sm flex items-center'>
+                                <Brightness1Icon
+                                  className='text-green-700 text-xs'
+                                  fontSize='6px'
+                                />
+                                &nbsp;
+                                <span className=' text-sm '> Online</span>
+                              </p>
+                            ) : (
+                              <p className='  text-sm '>Offline</p>
+                            )}
+                          </p>
+                        </div>
+                        <div className='mr-5  cursor-pointer'>
+                          <StyledButton
+                            onClick={() => {
+                              handleChangeFavourite({ receiverId: receiverId });
+                            }}
+                          >
+                            {favList && favList.includes(receiverId) ? (
+                              <StarIcon className='text-[#C37D16]   ' />
+                            ) : (
+                              <StarBorderIcon className='text-[#C37D16]   ' />
+                            )}
+                          </StyledButton>
+                        </div>
+                      </div>
                     </>
                   ) : (
                     <p className='p-2 text-black font-semibold'>
@@ -493,7 +551,7 @@ const Message = () => {
                 )}
               </div>
               <div className='msg-ipnut min-h-[9%] p-2 border '>
-                <div className='flex items-center'>
+                <div className='flex items-center space-x-1'>
                   <input
                     type='text'
                     name='msg'
@@ -506,13 +564,19 @@ const Message = () => {
                     placeholder='Enter Message'
                     className='inp-message p-2 placeholder:text-[#3c3737] rounded-md border border-gray-400 w-[95%]'
                   />
-                  <SendIcon
+                  <Button
                     onClick={() => {
                       handleSendMsg();
                     }}
-                    className=' cursor-pointer text-[#444444] ml-2 '
-                    fontSize='large'
-                  />
+                    disabled={sendMsgText === ""}
+                  >
+                    <SendIcon
+                      className={` cursor-pointer  ml-2 ${
+                        sendMsgText === "" ? "text-gray-400" : " text-[#3986c9]"
+                      } `}
+                      fontSize='large'
+                    />
+                  </Button>
                 </div>
               </div>
             </div>

@@ -20,6 +20,10 @@ const messageSchema = new mongoose.Schema(
     text: {
       type: String,
     },
+    deletedBy: {
+      type: [mongoose.Schema.Types.ObjectId], // Stores the user IDs of users who have deleted the message
+      default: [],
+    },
   },
   {
     timestamps: true,

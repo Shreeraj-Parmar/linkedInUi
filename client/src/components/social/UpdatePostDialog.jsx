@@ -4,7 +4,11 @@ import Tostify from "../Tostify.jsx";
 import { toast } from "react-toastify";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { Dialog } from "@mui/material";
-import { getURLForPOST, uploadFileAWS } from "../../services/api.js";
+import {
+  getURLForPOST,
+  uploadFileAWS,
+  updatePostData,
+} from "../../services/api.js";
 
 const dialogStyle = {
   position: "fixed",
@@ -14,10 +18,10 @@ const dialogStyle = {
   bottom: 0,
 
   margin: "auto",
-  Width: "70vw",
+  Width: "90vw",
   color: "#000",
 
-  maxHeight: "55vh",
+  maxHeight: "75vh",
 
   //   overflow: "hidden",
   borderRadius: "20px",
@@ -65,11 +69,24 @@ const UpdatePostDialog = ({
 
   const handlePostFileChange = (e) => {
     const files = Array.from(e.target.files); // Convert FileList to an array
-
+    if (postFile.includes(files[0])) {
+      toast.error(`File Already Added. !`, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      return;
+    }
     setPostFile((prevFiles) => [...prevFiles, ...files]); // Append new files to the existing array
     const previews = files.map((file) => ({
       url: URL.createObjectURL(file),
       fileType: file.type,
+      name: file.name,
     })); // Generate previews for all new files
     setPreviewUrl((prevUrls) => [...prevUrls, ...previews]);
   };
@@ -125,77 +142,68 @@ const UpdatePostDialog = ({
       console.log("new upload in mongo url is", newUploadUrl);
 
       // save post in db
-      //   let res = await savePostData({
-      //     text: postText,
-      //     mediaUrls: uploadedUrls,
-      //   });
+      let res = await updatePostData({
+        postId: selectedPostForUpdate._id,
+        mediaUrls: newUploadUrl,
+        text: postText,
+      });
 
-      //   if (res.status === 200) {
-      //     console.log("post saved successfully");
-      //     let newPost = {
-      //       text: postText,
-      //       mediaUrls: uploadedUrls,
-      //       _id: res.data.postId,
-      //       comments: [],
-      //       likeCount: 0,
-      //       likedBy: [],
-      //       createdAt: Date.now(),
-      //       updatedAt: Date.now(),
-      //       user: {
-      //         _id: currUserData._id,
-      //         name: currUserData.name,
-      //         profilePicture: currUserData.profilePicture || imgUrl,
-      //         city: currUserData.city,
-      //       },
-      //     };
-      //     console.log("new post is here", newPost);
-      //     setAllPost((prev) => [newPost, ...prev]);
-      //     setPostText("");
-      //     setPostFile(null);
-      //   } else {
-      //     toast.error(`Error While Uploading IMAGE . !`, {
-      //       position: "top-right",
-      //       autoClose: 4000,
-      //       hideProgressBar: false,
-      //       closeOnClick: true,
-      //       pauseOnHover: true,
-      //       draggable: true,
-      //       progress: undefined,
-      //       theme: "light",
-      //     });
-      //     console.log("error while generating url");
+      if (res.status === 200) {
+        console.log("post saved successfully");
 
-      setPostFile([]);
-      setPreviewUrl([]);
-      setPostText("");
-      //   }
+        setAllPost((prev) =>
+          prev.map((post) =>
+            post._id === selectedPostForUpdate._id
+              ? { ...post, text: postText, mediaUrls: newUploadUrl }
+              : post
+          )
+        );
+        setPostText("");
+        setPostFile(null);
+        setPreviewUrl([]);
+        setUpdatePostDialog(false);
+      } else {
+        toast.error(`Error While Uploading IMAGE . !`, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        console.log("error while generating url");
+
+        setPostFile([]);
+        setPreviewUrl([]);
+        setPostText("");
+      }
     } else {
       console.log("new upload in mongo url is", uploadedUrls);
-      //   let res = await savePostData({
-      //     text: postText,
-      //   });
-      //   if (res.status === 200) {
-      //     let newPost = {
-      //       text: postText,
-      //       _id: res.data.postId,
-      //       comments: [],
-      //       likeCount: 0,
-      //       likedBy: [],
-      //       createdAt: Date.now(),
-      //       updatedAt: Date.now(),
-      //       user: {
-      //         _id: currUserData._id,
-      //         name: currUserData.name,
-      //         profilePicture: currUserData.profilePicture || imgUrl,
-      //         city: currUserData.city,
-      //       },
-      //     };
+      let res = await updatePostData({
+        postId: selectedPostForUpdate._id,
+        mediaUrls: uploadedUrls,
+        text: postText,
+      });
+      if (res.status === 200) {
+        setAllPost((prev) =>
+          prev.map((post) =>
+            post._id === selectedPostForUpdate._id
+              ? { ...post, text: postText, mediaUrls: uploadedUrls }
+              : post
+          )
+        );
 
-      //     setAllPost((prev) => [newPost, ...prev]);
-      //     console.log("post saved successfully");
-      //   } else {
-      //     console.log("error while generating url");
-      //   }
+        console.log("post saved successfully");
+
+        setPostText("");
+        setPostFile(null);
+        setPreviewUrl([]);
+        setUpdatePostDialog(false);
+      } else {
+        console.log("error while generating url");
+      }
     }
 
     setPostFile([]);
@@ -251,16 +259,6 @@ const UpdatePostDialog = ({
                   )}
                   <CloseIcon
                     onClick={() => {
-                      //   let availablefile = postFile.find(
-                      //     (obj) => obj.find((file) => file.url) === pre.url
-                      //   );
-                      //   if (availablefile) {
-                      //     let updatedFiles = postFile.filter(
-                      //       (obj) => obj !== availablefile
-                      //     );
-
-                      //     setPostFile(updatedFiles);
-                      //   }
                       setPreviewUrl((prev) =>
                         prev.filter((_, i) => i !== index)
                       );
@@ -268,7 +266,7 @@ const UpdatePostDialog = ({
                         prev.filter((obj) => obj.url !== pre.url)
                       );
                       const updatedFiles = postFile.filter(
-                        (file) => URL.createObjectURL(file) !== pre.url
+                        (file) => file.name !== pre.name // Compare using file name
                       );
                       setPostFile(updatedFiles);
                     }}

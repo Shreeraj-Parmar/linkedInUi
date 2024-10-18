@@ -103,6 +103,9 @@ const userSchema = new mongoose.Schema(
         isRead: { type: Boolean, default: false }, // New isRead field
       }, // Users who sent a connection request
     ],
+    favorites: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Mutual followers (Connections)
+    ],
   },
   {
     timestamps: true,
