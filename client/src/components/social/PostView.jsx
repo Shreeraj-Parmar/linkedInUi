@@ -35,6 +35,7 @@ import { Card, CardMedia, Box } from "@mui/material";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import UpdatePostDialog from "./UpdatePostDialog.jsx";
+import linkifyContent from "../../utils/linkify.js";
 
 const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const { setCurrUserData, currUserData, setCurrMenu, lightMode } =
@@ -436,17 +437,6 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   };
 
   // Helper function to detect URLs and convert them into clickable links
-  const linkifyContent = (content) => {
-    const urlPattern =
-      /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
-
-    // Replace URLs in the content with clickable <a> elements
-    const linkifiedContent = content.replace(urlPattern, (url) => {
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:blue; text-decoration:underline">${url}</a>`;
-    });
-
-    return linkifiedContent;
-  };
 
   return (
     <div className='post-wrapper  w-[100%]   flex-row space-y-'>

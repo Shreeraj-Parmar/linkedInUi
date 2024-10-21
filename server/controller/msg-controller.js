@@ -218,9 +218,34 @@ export const deleteMsgInDB = async (req, res) => {
       );
       return res.status(200).json("deleted for you successfully");
     } else if (deleteFor === "every") {
+      const conversationId = deletedMsgList[0].conversationId;
+
+      // Find the latest message in this conversation that is not being deleted
+      const latestMessage = await Message.findOne({
+        conversationId: conversationId,
+        _id: { $nin: messageIds }, // Exclude the messages that are being deleted
+      })
+        .sort({ createdAt: -1 }) // Sort by creation time, most recent first
+        .limit(1); // Only get the latest one
+
+      if (latestMessage) {
+        // Update the lastMessage field of the conversation
+        await Conversation.updateOne(
+          { _id: conversationId },
+          { $set: { lastMessage: latestMessage._id } }
+        );
+      } else {
+        // If there are no more messages, set lastMessage to null
+        await Conversation.updateOne(
+          { _id: conversationId },
+          { $set: { lastMessage: null } }
+        );
+      }
+
       const result = await Message.deleteMany({
         _id: { $in: messageIds },
       });
+
       // console.log("result is", result);
       return res.status(200).json("deleted for everyOne successfully");
     }

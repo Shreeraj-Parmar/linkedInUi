@@ -22,6 +22,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import moment from "moment";
+import linkifyContent from "../../utils/linkify.js";
 
 import { useNavigate } from "react-router-dom";
 import {
@@ -35,11 +36,11 @@ import {
   uploadFileAWS,
   getURLForPOST,
   getPresignedURLForDownload,
-  deleteMsg,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
 import Picker from "emoji-picker-react";
 import DeleteMsgDialog from "./DeleteMsgDialog.jsx";
+import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
 
 const StyledButton = styled(Button)`
   border-radius: 100%;
@@ -83,6 +84,7 @@ const Message = () => {
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [timer, setTimer] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
@@ -92,7 +94,8 @@ const Message = () => {
   // this is for debugging.......
   useEffect(() => {
     console.log("this is unread arr of object inside useEffect", unreadMSG);
-  }, [unreadMSG]);
+    console.log("curruntConvId is", currConversationId);
+  }, [unreadMSG, currConversationId]);
 
   const socketMessageFunction = async () => {
     socket.on("online_users", handleOnlineUsers);
@@ -106,6 +109,9 @@ const Message = () => {
     socket.on(`unread_messages_${currUserData._id}`, (data) => {
       console.log("unread triggerd and data is", data);
       if (currConversationId !== data.conversationId) {
+        console.log(
+          `this is currConvId ${currConversationId} and data convId ${data.conversationId}`
+        );
         setUnreadMSG((prevUnreadMSG) => {
           // Get the unreadMessages object for the specific conversationId
           const conversationUnread = prevUnreadMSG[data.conversationId] || {};
@@ -125,13 +131,13 @@ const Message = () => {
     // Listen for new messages
     socket.on("receive_message", (message) => {
       console.log("this is receved msg from socketio", message);
+      setLastMsg((prevLastMsg) => ({
+        ...prevLastMsg,
+        [message.conversationId]: message.text,
+      }));
       if (message.conversationId === currConversationId) {
         // Mark message as read if conversation is active
         markAsReadFunction(currConversationId, currUserData._id);
-        setLastMsg((prevLastMsg) => ({
-          ...prevLastMsg,
-          [currConversationId]: message.text,
-        }));
         console.log("this is last msg", lastMsg);
       }
       if (message.senderId !== currUserData._id) {
@@ -200,10 +206,11 @@ const Message = () => {
 
       // setFavList(allReciverId);
 
-      let unread = res.data.map((conv) => {
-        return {
-          [conv.conversationId]: conv.unreadMessages,
-        };
+      let unread = {};
+
+      // Loop over each conversation and add the receiverId: unreadMessages pair to the unread object
+      res.data.forEach((conv) => {
+        unread[conv.conversationId] = conv.unreadMessages;
       });
 
       console.log("unread messages is", unread);
@@ -244,12 +251,24 @@ const Message = () => {
   };
 
   const handleScroll = (e) => {
-    const { scrollTop } = e.target; // Get the scroll position
-    // console.log("scrol top is ", scrollTop);
+    const { scrollTop, clientHeight, scrollHeight } = e.target; // Get the scroll position
+    // console.log(
+    //   "client height is ",
+    //   clientHeight,
+    //   "scroll height is ",
+    //   scrollHeight,
+    //   "scroll top is ",
+    //   scrollTop
+    // );
     if (scrollTop === 0 && hasMore) {
       // If user scrolled to the top and more messages are available
       setPage((prevPage) => prevPage + 1); // Increment page number
       // e.target.scrollTop === scrollTop + 173;
+    }
+    if (scrollTop + clientHeight < scrollHeight) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
     }
   };
 
@@ -603,13 +622,7 @@ const Message = () => {
                           <p className='text-black'>{conv.receiverName}</p>
                           <p className='text-[#ACACAC] text-sm flex  items-center'>
                             {truncateMessage(
-                              (lastMsg && lastMsg[conv.conversationId]) ||
-                                (messages &&
-                                  messages.length > 0 &&
-                                  (messages[messages.length - 1]?.mediaUrl?.url
-                                    ? "Attachment sends"
-                                    : messages[messages.length - 1]?.text)) ||
-                                ""
+                              (lastMsg && lastMsg[conv.conversationId]) || ""
                             )}
 
                             <p className=' text-right  flex ml-20 justify-end'>
@@ -707,6 +720,8 @@ const Message = () => {
                             setMessages={setMessages}
                             messages={messages}
                             setIsMultiSelectMode={setIsMultiSelectMode}
+                            setLastMsg={setLastMsg}
+                            currConversationId={currConversationId}
                           />
                           {isMultiSelectMode && (
                             <div
@@ -771,9 +786,13 @@ const Message = () => {
                                 ? "  text-[#333333] "
                                 : " text-white "
                             }`}
-                          >
-                            {msg && msg.text && msg.text}
-                          </p>
+                            dangerouslySetInnerHTML={{
+                              __html: linkifyContent(
+                                msg && msg.text && msg.text,
+                                isCurrentUser ? "blue" : "yellow"
+                              ),
+                            }}
+                          ></p>
                           {msg && msg.mediaUrl && (
                             <div className=''>
                               {msg.mediaUrl.fileType.startsWith("image") && (
@@ -863,6 +882,24 @@ const Message = () => {
                     );
                   })}
                 <div ref={chatEndRef} />
+                {showScrollButton && (
+                  <div className='relative flex justify-end'>
+                    <button
+                      className='scroll-down-btn  bottom-[150px] fixed rounded-full'
+                      onClick={() => {
+                        chatEndRef.current.scrollIntoView({
+                          behavior: "smooth",
+                        });
+                      }}
+                    >
+                      <ExpandCircleDownIcon
+                        className='text-[#A0AEC0]'
+                        fontSize='large'
+                      />
+                    </button>
+                  </div>
+                )}
+
                 {!currConversationId && (
                   <div>
                     <div>

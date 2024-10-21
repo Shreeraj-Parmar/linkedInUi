@@ -31,7 +31,9 @@ const DeleteMsgDialog = ({
   deleteDialog,
   messages,
   setMessages,
+  currConversationId,
   setIsMultiSelectMode,
+  setLastMsg,
 }) => {
   const handleDeleteSelectedMsgs = async (data) => {
     let deletedMsgList = messages.filter((msg) => msg.selected);
@@ -44,6 +46,16 @@ const DeleteMsgDialog = ({
     if (res.status === 200) {
       console.log("message deleted");
       setMessages(messages.filter((msg) => !msg.selected));
+
+      let newMessages = messages.filter((msg) => !msg.selected);
+
+      setLastMsg((prevLastMsg) => ({
+        ...prevLastMsg,
+        [currConversationId]: newMessages[newMessages.length - 1].mediaUrl
+          ? "Attechment sends"
+          : newMessages[newMessages.length - 1].text,
+      }));
+
       setIsMultiSelectMode(false);
 
       setDeleteDialog(false);
