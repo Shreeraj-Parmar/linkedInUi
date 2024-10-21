@@ -20,7 +20,7 @@ import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import CloseIcon from "@mui/icons-material/Close";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 import moment from "moment";
 
 import { useNavigate } from "react-router-dom";
@@ -35,8 +35,11 @@ import {
   uploadFileAWS,
   getURLForPOST,
   getPresignedURLForDownload,
+  deleteMsg,
 } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
+import Picker from "emoji-picker-react";
+import DeleteMsgDialog from "./DeleteMsgDialog.jsx";
 
 const StyledButton = styled(Button)`
   border-radius: 100%;
@@ -75,6 +78,11 @@ const Message = () => {
   console.log("receevier id is", receiverId);
   const [favList, setFavList] = useState(currUserData?.favorites || []);
   const postPhotoRef = useRef();
+  const inputRef = useRef(null);
+  const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [timer, setTimer] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
@@ -217,8 +225,16 @@ const Message = () => {
     if (res.status === 200) {
       console.log("Messages:", res.data);
 
-      // If messages are fetched, prepend them to the existing messages
-      setMessages((prevMessages) => [...res.data.reverse(), ...prevMessages]);
+      const modifiedMessages = res.data.map((message) => ({
+        ...message, // Spread the existing message properties
+        selected: false, // Add 'selected: false' to each message
+      }));
+
+      // Prepend the modified messages to the existing messages
+      setMessages((prevMessages) => [
+        ...modifiedMessages.reverse(),
+        ...prevMessages,
+      ]);
 
       // Check if there are more messages to load
       if (res.data.length < limit) {
@@ -524,11 +540,31 @@ const Message = () => {
     }
   };
 
+  // msg selsection and deletion
+
+  const handleSelectMsg = (id) => {
+    if (isMultiSelectMode) {
+      setMessages(
+        messages.map((msg) =>
+          msg._id === id ? { ...msg, selected: !msg.selected } : msg
+        )
+      );
+      const hasSelectedMsgs = messages.some((msg) =>
+        msg._id === id ? !msg.selected : msg.selected
+      );
+      // console.log("selsected msg", hasSelectedMsgs);
+      if (!hasSelectedMsgs) {
+        setIsMultiSelectMode(false);
+      }
+    }
+  };
+
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <Tostify />
       <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         <Navbar />
+
         <div className='main-display border-2 border-gray-400 shadow-sm border-opacity-40 bg-white w-[80vw] max-h-[900vh] h-[90vh] m-auto mt-[55px] p-4  '>
           <div className='flex   '>
             <div className='conversations-wrapper w-[30%] border-2 border-gray-400 border-opacity-40 border-collapse'>
@@ -543,22 +579,37 @@ const Message = () => {
                         onClick={() =>
                           handleConversationSelect(conv.conversationId)
                         }
-                        className={`conversation border-b-2 border-collapse cursor-pointer hover:bg-[#EBEBEB] flex p-2 w-[100%] ${
-                          isSelected ? "bg-[#EDF3F8]" : ""
+                        className={`conversation border-b-2 relative border-collapse cursor-pointer hover:bg-[#EBEBEB] flex p-2 w-[100%] ${
+                          isSelected ? "bg-[#EDF3F8]  " : ""
                         }`}
                       >
-                        <div className='w-[30%]'>
+                        {isSelected && (
+                          <div className='w-[3.5px] bg-[#01754F] absolute top-[-0.5px] left-[-1.5px] h-[78px]'></div>
+                        )}
+                        <div className='w-[30%] relative '>
                           <img
                             src={conv.receiverProfilePicture || "/blank.png"}
                             alt=''
-                            className='min-w-[50px] w-[80px] h-[80px] min-h-[50px] border border-gray-400 border-opacity-40 rounded-full'
+                            className='min-w-[60px] max-w-[60px] max-h-[60px] min-h-[60px] border border-gray-400 border-opacity-40 rounded-full'
                           />
+                          {Array.isArray(allOnlineUsers) &&
+                            allOnlineUsers.some(
+                              (user) => user.userId === conv.receiverId
+                            ) && (
+                              <div className='absolute bottom-0 right-8 w-[10px] h-[10px] bg-green-500 rounded-full'></div>
+                            )}
                         </div>
                         <div className='w-[70%] '>
                           <p className='text-black'>{conv.receiverName}</p>
                           <p className='text-[#ACACAC] text-sm flex  items-center'>
                             {truncateMessage(
-                              (lastMsg && lastMsg[conv.conversationId]) || ""
+                              (lastMsg && lastMsg[conv.conversationId]) ||
+                                (messages &&
+                                  messages.length > 0 &&
+                                  (messages[messages.length - 1]?.mediaUrl?.url
+                                    ? "Attachment sends"
+                                    : messages[messages.length - 1]?.text)) ||
+                                ""
                             )}
 
                             <p className=' text-right  flex ml-20 justify-end'>
@@ -582,8 +633,7 @@ const Message = () => {
                             </p>
                           </p>
                         </div>
-
-                        <div>
+                        <div className='min-w-[50px] '>
                           {favList && favList.includes(conv.receiverId) && (
                             <StarIcon className='text-[#C37D16]   cursor-pointer' />
                           )}
@@ -630,14 +680,16 @@ const Message = () => {
                                   fontSize='6px'
                                 />
                                 &nbsp;
-                                <span className=' text-sm '> Online</span>
+                                <span className=' text-sm '>
+                                  Available In Desktop
+                                </span>
                               </p>
                             ) : (
-                              <p className='  text-sm '>Offline</p>
+                              <p className='  text-sm '>Not Available</p>
                             )}
                           </p>
                         </div>
-                        <div className='mr-5  cursor-pointer'>
+                        <div className='mr-5 flex justify-center items-center  cursor-pointer'>
                           <StyledButton
                             onClick={() => {
                               handleChangeFavourite({ receiverId: receiverId });
@@ -649,6 +701,24 @@ const Message = () => {
                               <StarBorderIcon className='text-[#C37D16]   ' />
                             )}
                           </StyledButton>
+                          <DeleteMsgDialog
+                            deleteDialog={deleteDialog}
+                            setDeleteDialog={setDeleteDialog}
+                            setMessages={setMessages}
+                            messages={messages}
+                            setIsMultiSelectMode={setIsMultiSelectMode}
+                          />
+                          {isMultiSelectMode && (
+                            <div
+                              onClick={() => {
+                                setDeleteDialog(true);
+                              }}
+                            >
+                              <IconButton>
+                                <DeleteIcon className='text-red-400' />
+                              </IconButton>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </>
@@ -673,21 +743,33 @@ const Message = () => {
                       msg.senderId === currUserData._id;
                     return (
                       <div
+                        onMouseDown={() => {
+                          const newTimer = setTimeout(() => {
+                            setIsMultiSelectMode(true);
+                          }, 500); // Long press threshold (500ms)
+                          setTimer(newTimer);
+                        }}
+                        onClick={() => handleSelectMsg(msg._id)}
+                        onMouseUp={() => clearTimeout(timer)}
                         key={index}
-                        className={`message   flex   mt-2 ${
+                        className={`message hover:bg-[#F4F2EE] ${
+                          msg.selected && "bg-[#EDF3F8]"
+                        }   flex   mt-2 ${
                           isCurrentUser ? "justify-end" : " justify-start"
                         }`}
                       >
                         <div
                           className={`w-fit p-1 pl-2 pr-2 max-w-[70%] rounded-xl ${
                             isCurrentUser
-                              ? " bg-[#F4F2EE] text-black "
-                              : "bg-gray-700 text-white "
+                              ? " bg-[#F5F5F5] text-[#333333] "
+                              : "bg-[#3D4852] text-white "
                           }`}
                         >
                           <p
                             className={` ${
-                              isCurrentUser ? "  text-black " : " text-white "
+                              isCurrentUser
+                                ? "  text-[#333333] "
+                                : " text-white "
                             }`}
                           >
                             {msg && msg.text && msg.text}
@@ -762,12 +844,18 @@ const Message = () => {
                                   handleDownloadMsgMedia(msg);
                                 }}
                               >
-                                <DownloadForOfflineIcon />
+                                <DownloadForOfflineIcon
+                                  className={`${
+                                    isCurrentUser
+                                      ? "text-[#333333]"
+                                      : "text-white"
+                                  }`}
+                                />
                               </IconButton>
                             </div>
                           )}
 
-                          <p className='text-gray-400'>
+                          <p className='text-[#A0AEC0]'>
                             {moment(msg && msg.createdAt).fromNow()}
                           </p>
                         </div>
@@ -792,11 +880,41 @@ const Message = () => {
                   </div>
                 )}
               </div>
-              <div className='msg-ipnut min-h-[9%] p-2 border '>
+              <div className='msg-ipnut min-h-[9%] max-h-[9%] p-2 border '>
                 <div className='flex items-center space-x-1 relative'>
-                  <div className='flex justify-center items-center'>
+                  <div className='flex justify-center items-center relative'>
+                    {isEmojiPickerVisible && (
+                      <div className=' absolute top-[-460px] right-[-50px] '>
+                        <Picker
+                          onEmojiClick={(e) => {
+                            const emoji = e.emoji; // Get the selected emoji
+                            const input = inputRef.current; // Get the input field reference
+                            const start = input.selectionStart; // Get cursor position (start of selection)
+                            const end = input.selectionEnd; // Get cursor position (end of selection)
+                            const newText =
+                              sendMsgText.slice(0, start) +
+                              emoji +
+                              sendMsgText.slice(end);
+
+                            setSendMsgText(newText); // Set the new text with emoji
+                            setIsEmojiPickerVisible(false); // Close the picker
+                            input.focus(); // Move focus back to the input field
+
+                            // Set the cursor position right after the emoji
+                            input.setSelectionRange(
+                              start + emoji.length,
+                              start + emoji.length
+                            );
+                          }}
+                        />
+                      </div>
+                    )}
                     <IconButton color='primary' aria-label='add an emoji'>
-                      <SentimentSatisfiedAltIcon onClick={() => {}} />
+                      <SentimentSatisfiedAltIcon
+                        onClick={() => {
+                          setIsEmojiPickerVisible(!isEmojiPickerVisible);
+                        }}
+                      />
                     </IconButton>
                     <IconButton color='secondary' aria-label='add a file'>
                       <AttachmentIcon
@@ -922,6 +1040,7 @@ const Message = () => {
                   <input
                     type='text'
                     name='msg'
+                    ref={inputRef}
                     value={sendMsgText}
                     id='inp-msg'
                     onKeyDown={handleKeyDown}

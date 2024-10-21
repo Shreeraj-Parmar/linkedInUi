@@ -58,6 +58,7 @@ import {
   markAsReadUpdate,
   sendAllUnreadMSG,
   availableForSendingMsgOrNot,
+  deleteMsgInDB,
 } from "../controller/msg-controller.js";
 
 import {
@@ -117,6 +118,7 @@ router.post("/conversation/receiver", jwtMiddle, sendReceiverData);
 
 // msg
 router.post("/msg", jwtMiddle, saveMSGInDB);
+router.delete("/msg", jwtMiddle, deleteMsgInDB);
 router.get("/msg/:convId", jwtMiddle, sendALlMsgAccConvId);
 router.post("/msg/read", jwtMiddle, markAsReadUpdate);
 router.get("/msg-unread", jwtMiddle, sendAllUnreadMSG);

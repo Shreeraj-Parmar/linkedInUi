@@ -814,3 +814,22 @@ export const getPresignedURLForDownload = async (data) => {
     );
   }
 };
+
+// delete selected msgs
+export const deleteMsg = async (data) => {
+  // console.log("delete selected msgs data inside api.js", data);
+  try {
+    let res = await axios.delete(`${API}/msg`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      params: {
+        deletedMsgList: data.deletedMsgList,
+        deleteFor: data.deleteFor,
+      }, // pass data as query params
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling deleteMsg & error is : ${error.message}`);
+  }
+};

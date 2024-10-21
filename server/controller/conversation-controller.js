@@ -112,13 +112,13 @@ export const sendAllConversations = async (req, res) => {
         unreadMessages: conversation.unreadMessages,
 
         receiverProfilePicture: receiver.profilePicture,
-        lastMessage: conversation.lastMessage.mediaUrl.url
-          ? "Attechment Sends"
-          : conversation.lastMessage.text,
-
-        lastMessageTime: conversation.lastMessage
-          ? conversation.lastMessage.createdAt
+        lastMessage: lastMessage
+          ? lastMessage.mediaUrl && lastMessage.mediaUrl.url
+            ? "Attachment Sent"
+            : lastMessage.text
           : null,
+
+        lastMessageTime: lastMessage ? lastMessage.createdAt : null,
         lastMessageSenderId: lastMessage?.senderId || null, // Safely access senderId
       };
     });
@@ -126,6 +126,10 @@ export const sendAllConversations = async (req, res) => {
     // Step 3: Send the formatted conversation data
     res.status(200).json(formattedConversations);
   } catch (error) {
+    console.error(
+      `error while calling sendAllConversations & error is : `,
+      error
+    );
     console.log(
       `error while calling sendAllConversations & error is : `,
       error.message

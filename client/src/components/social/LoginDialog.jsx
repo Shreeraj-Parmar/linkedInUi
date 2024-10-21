@@ -2,7 +2,6 @@ import React, { useEffect, useContext, useState } from "react";
 import { Dialog, styled } from "@mui/material";
 import { sendLoginData } from "../../services/api.js";
 import Tostify from "../Tostify.jsx";
-import input from "../Reusable Components/input.jsx";
 import Button from "../Reusable Components/Button.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
 
@@ -141,17 +140,17 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
         },
       }}
     >
-      <div className="login  flex flex-col items-center gap-4 p-2  rounded-md w-[70%]">
+      <div className='login  flex flex-col items-center gap-4 p-2  rounded-md w-[70%]'>
         <Tostify />
-        <h2 className="font-semibold text-2xl  text-center w-[100%]">
+        <h2 className='font-semibold text-2xl  text-center w-[100%]'>
           Login Here
         </h2>
         <form
           onSubmit={formik.handleSubmit}
-          className="flex-row space-y-2  w-[100%]"
+          className='flex-row space-y-2  w-[100%]'
         >
-          <div className="w-full flex justify-center">
-            <div className="w-[90%] ">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%] '>
               <input
                 type={"email"}
                 placeholder={"Enter Email"}
@@ -164,12 +163,12 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
                 name={"email"}
               />
               {formik.touched.email && formik.errors.email ? (
-                <div className="text-red-500">{formik.errors.email}</div>
+                <div className='text-red-500'>{formik.errors.email}</div>
               ) : null}
             </div>
           </div>
-          <div className="w-full flex justify-center">
-            <div className="w-[90%]">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%]'>
               <input
                 type={"password"}
                 placeholder={"Enter Password"}
@@ -182,12 +181,12 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
                 name={"password"}
               />
               {formik.touched.password && formik.errors.password ? (
-                <div className="text-red-500">{formik.errors.password}</div>
+                <div className='text-red-500'>{formik.errors.password}</div>
               ) : null}
             </div>
           </div>
-          <div className="w-full flex justify-center">
-            <div className="w-[100px]">
+          <div className='w-full flex justify-center'>
+            <div className='w-[100px]'>
               <Button
                 type={"submit"}
                 lable={"Login"}
@@ -201,7 +200,7 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
         <p>
           Are You New User?
           <span
-            className="text-blue-500 hover:text-blue-600 cursor-pointer"
+            className='text-blue-500 hover:text-blue-600 cursor-pointer'
             onClick={() => {
               navigate("/signup");
             }}
@@ -211,7 +210,7 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
         </p>
       </div>
       <div
-        className="absolute top-[20px] right-[30px] text-2xl cursor-pointer"
+        className='absolute top-[20px] right-[30px] text-2xl cursor-pointer'
         onClick={() => {
           setLoginDialog(false);
         }}

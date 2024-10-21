@@ -89,7 +89,10 @@ export const sendALlMsgAccConvId = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Find messages for the specific conversation and apply pagination
-    const messages = await Message.find({ conversationId: req.params.convId })
+    const messages = await Message.find({
+      conversationId: req.params.convId,
+      deletedBy: { $ne: req._id },
+    })
       .sort({ createdAt: -1 }) // Sort by most recent messages first
       .skip(skip) // Skip the documents for previous pages
       .limit(limit); // Limit the number of documents returned
@@ -195,6 +198,34 @@ export const availableForSendingMsgOrNot = async (req, res) => {
       res.status(201).json("you can not send msg untile not connected !");
     }
   } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
+
+// delete msgs inside database
+
+export const deleteMsgInDB = async (req, res) => {
+  const { deletedMsgList, deleteFor } = req.query;
+
+  console.log("deleted msg list is", req.query);
+  try {
+    const messageIds = deletedMsgList.map((msg) => msg._id);
+
+    if (deleteFor === "me") {
+      await Message.updateMany(
+        { _id: { $in: messageIds } },
+        { $push: { deletedBy: req._id } }
+      );
+      return res.status(200).json("deleted for you successfully");
+    } else if (deleteFor === "every") {
+      const result = await Message.deleteMany({
+        _id: { $in: messageIds },
+      });
+      // console.log("result is", result);
+      return res.status(200).json("deleted for everyOne successfully");
+    }
+  } catch (error) {
+    console.log("error while calling deleteMsgInDB", error.message);
     return res.status(500).json(error.message);
   }
 };
