@@ -133,19 +133,19 @@ const Login = () => {
   });
 
   return (
-    <div className="login-wrapper p-5 flex w-[100%] justify-center">
+    <div className='login-wrapper p-5 flex w-[100%] justify-center'>
       <Tostify />
       <Loader />
-      <div className="login mt-16 flex flex-col items-center gap-4 p-5 border border-black rounded-md w-[25%]">
-        <h2 className="font-semibold text-2xl  text-center w-[100%]">
+      <div className='login mt-16 flex flex-col items-center gap-4 p-5 border border-black rounded-md w-[25%]'>
+        <h2 className='font-semibold text-2xl  text-center w-[100%]'>
           Login Here
         </h2>
         <form
           onSubmit={formik.handleSubmit}
-          className="flex-row space-y-2  w-[100%]"
+          className='flex-row space-y-2  w-[100%]'
         >
-          <div className="w-full flex justify-center">
-            <div className="w-[90%] ">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%] '>
               <Input
                 type={"email"}
                 lable={"Enter Email"}
@@ -156,12 +156,12 @@ const Login = () => {
                 name={"email"}
               />
               {formik.touched.email && formik.errors.email ? (
-                <div className="text-red-500">{formik.errors.email}</div>
+                <div className='text-red-500'>{formik.errors.email}</div>
               ) : null}
             </div>
           </div>
-          <div className="w-full flex justify-center">
-            <div className="w-[90%]">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%]'>
               <Input
                 type={"password"}
                 lable={"Enter Password"}
@@ -172,12 +172,12 @@ const Login = () => {
                 name={"password"}
               />
               {formik.touched.password && formik.errors.password ? (
-                <div className="text-red-500">{formik.errors.password}</div>
+                <div className='text-red-500'>{formik.errors.password}</div>
               ) : null}
             </div>
           </div>
-          <div className="w-full flex justify-center">
-            <div className="w-[100px]">
+          <div className='w-full flex justify-center'>
+            <div className='w-[100px]'>
               <Button
                 type={"submit"}
                 lable={"Login"}
@@ -189,7 +189,7 @@ const Login = () => {
         <p>
           Are You New User?
           <span
-            className="text-blue-600 cursor-pointer"
+            className='text-blue-600 cursor-pointer'
             onClick={() => {
               navigate("/signup");
             }}

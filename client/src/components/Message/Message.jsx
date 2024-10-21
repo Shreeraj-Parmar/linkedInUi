@@ -95,7 +95,7 @@ const Message = () => {
   useEffect(() => {
     console.log("this is unread arr of object inside useEffect", unreadMSG);
     console.log("curruntConvId is", currConversationId);
-  }, [unreadMSG, currConversationId]);
+  }, [unreadMSG]);
 
   const socketMessageFunction = async () => {
     socket.on("online_users", handleOnlineUsers);
@@ -108,7 +108,7 @@ const Message = () => {
 
     socket.on(`unread_messages_${currUserData._id}`, (data) => {
       console.log("unread triggerd and data is", data);
-      if (currConversationId !== data.conversationId) {
+      if (currConversationId.toString() !== data.conversationId.toString()) {
         console.log(
           `this is currConvId ${currConversationId} and data convId ${data.conversationId}`
         );

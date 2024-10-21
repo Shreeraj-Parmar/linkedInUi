@@ -7,21 +7,9 @@ import Navbar from "./Navbar.jsx";
 import { useNavigate } from "react-router-dom";
 
 const ViewProfile = () => {
-  const { currUserData, setCurrUserData, isLogin, socket, setCurrMenu } =
-    useContext(AllContext);
+  const { currUserData, isLogin, socket } = useContext(AllContext);
   const [addEduDialog, setAddEduDialog] = useState(false);
   const navigate = useNavigate();
-  useEffect(() => {
-    if (window.location.pathname === "/profile") {
-      setCurrMenu("profile");
-    }
-    const getData = async () => {
-      let res = await getUserData();
-      console.log(res.data);
-      setCurrUserData(res.data.user);
-    };
-    getData();
-  }, [addEduDialog]);
 
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] h-auto'>

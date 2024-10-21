@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useRef } from "react";
 
-import { getUserData, verifyToken } from "./../services/api.js";
+import { getUserData, verifyToken, refresIt } from "./../services/api.js";
 import { io } from "socket.io-client";
 const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
 
@@ -52,12 +52,12 @@ const UserContext = ({ children }) => {
     let res = await getUserData();
     console.log(res.data);
     setCurrUserData(res.data.user);
-    return res.data.user;
   };
   const verifyTokenForIslogin = async () => {
     let res = await verifyToken();
     if (res.status === 200) {
       console.log("TOken is valid");
+      getData();
       setIsLogin(true);
     } else if (res.status === 204) {
       console.log("TOken is invalid ! please relogin");
@@ -66,7 +66,26 @@ const UserContext = ({ children }) => {
     }
   };
 
+  const refreshMyToken = async () => {
+    // TODO: add a try catch block in case the refresh token is invalid
+    try {
+      let res = await refresIt({
+        refreshToken: localStorage.getItem("refreshToken"),
+      });
+      // console.log(res);
+      localStorage.removeItem("token");
+      localStorage.setItem("token", res.data.accessToken);
+    } catch (err) {
+      console.error(err);
+      // If the refresh token is invalid, log the user out
+      setIsLogin(false);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+    }
+  };
+
   useEffect(() => {
+    verifyTokenForIslogin();
     console.log("useEffect is nunning now Socket URL:", socketLinkURL);
     let socketOn = io(socketLinkURL);
     console.log("Socket URL:", socketLinkURL);
@@ -75,14 +94,16 @@ const UserContext = ({ children }) => {
       console.log("Socket connected with ID:", socketOn.id);
     });
     setSocket(socketOn);
+    const refreshInterval = setInterval(() => {
+      refreshMyToken();
+    }, 6 * 60 * 1000); // 6 minutes
 
-    verifyTokenForIslogin();
-    getData();
     return () => {
       socketOn.off("receive_message");
       socketOn.off("online_users");
       socketOn.off("join_conversation");
       socketOn.disconnect();
+      clearInterval(refreshInterval);
     };
   }, []);
 

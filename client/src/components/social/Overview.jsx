@@ -66,33 +66,12 @@ const Overview = () => {
       setIsLogin(false);
     }
   };
-  const refreshMyToken = async () => {
-    // TODO: add a try catch block in case the refresh token is invalid
-    try {
-      let res = await refresIt({
-        refreshToken: localStorage.getItem("refreshToken"),
-      });
-      // console.log(res);
-      localStorage.removeItem("token");
-      localStorage.setItem("token", res.data.accessToken);
-    } catch (err) {
-      console.error(err);
-      // If the refresh token is invalid, log the user out
-      setIsLogin(false);
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-    }
-  };
 
   useLayoutEffect(() => {
     if (window.location.pathname === "/") {
       setCurrMenu("home");
     }
-    const refreshInterval = setInterval(() => {
-      refreshMyToken();
-    }, 6 * 60 * 1000); // 1 minutes
     verifyTokenForIslogin();
-    return () => clearInterval(refreshInterval);
   }, []);
 
   const handleSubmitFile = async (e, isFile) => {
