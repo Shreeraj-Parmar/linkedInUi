@@ -959,13 +959,13 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                       [post._id]: true,
                                     }));
                                   }}
-                                  className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-80 absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
+                                  className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-100 absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
                                 >
                                   <AddIcon
                                     fontSize='large'
-                                    className='text-[#000]'
+                                    className='text-[#fff]'
                                   />
-                                  <p className='text-black text-2xl font-semibold'>
+                                  <p className='text-white text-2xl font-semibold'>
                                     {post.mediaUrls.length - 4} More
                                   </p>
                                 </div>
