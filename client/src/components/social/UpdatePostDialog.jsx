@@ -35,7 +35,7 @@ const UpdatePostDialog = ({
   updatePostDialog,
   setAllPost,
   setUpdatePostDialog,
-
+  setShowAllMedia,
   setSelectedPostForUpdate,
   selectedPostForUpdate,
 }) => {
@@ -158,6 +158,10 @@ const UpdatePostDialog = ({
               : post
           )
         );
+        setShowAllMedia((prev) => ({
+          ...prev,
+          [selectedPostForUpdate._id]: false,
+        }));
         setPostText("");
         setPostFile(null);
         setPreviewUrl([]);

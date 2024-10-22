@@ -35,6 +35,7 @@ const PostDialog = ({
   setAllPost,
   imgUrl,
   currUserData,
+  setShowAllMedia,
 }) => {
   const [previewUrl, setPreviewUrl] = useState([]); // for image preview
   const [postFile, setPostFile] = useState([]);
@@ -128,6 +129,10 @@ const PostDialog = ({
         };
         console.log("new post is here", newPost);
         setAllPost((prev) => [newPost, ...prev]);
+        setShowAllMedia((prev) => ({
+          ...prev,
+          [res.data.postId]: false,
+        }));
         setPostText("");
         setPostFile(null);
       } else {

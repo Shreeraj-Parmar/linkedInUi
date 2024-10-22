@@ -80,13 +80,12 @@ const MoreConnection = ({ connectionReqLength, user_id }) => {
     if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
       setPage((prevPage) => prevPage + 1); // Move to the next page
     }
+    e.stopPropagation();
   };
 
   return (
     <div
-      className={` flex justify-end   relative ${
-        connectionReqLength > 0 ? "" : "top-[-200px]"
-      } right-[50px] mt-2`}
+      className={` flex justify-end more-connection  pointer-events-auto  relative right-[55px] mt-2`}
     >
       <ConnectionWithdrawDialog
         setIsWithdrawDialogOpen={setIsWithdrawDialogOpen}

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Post author
-  text: { type: String, required: true }, // Post content text
+  text: { type: String, required: false }, // Post content text
   mediaUrls: [
     {
       url: { type: String },

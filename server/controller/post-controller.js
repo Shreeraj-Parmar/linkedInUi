@@ -7,16 +7,20 @@ export const savePostDataIntoDB = async (req, res) => {
   console.log("this is media urls", req.body.mediaUrls);
 
   try {
-    // Create a new post without including the _id for mediaUrls
-    const mediaUrls = req.body.mediaUrls.map(({ url, fileType }) => ({
-      url,
-      fileType,
-    }));
+    let mediaUrls = [];
+
+    // Check if mediaUrls exists and assign it
+    if (req.body.mediaUrls && req.body.mediaUrls.length > 0) {
+      mediaUrls = req.body.mediaUrls.map(({ url, fileType }) => ({
+        url,
+        fileType,
+      }));
+    }
 
     let newPost = new Post({
       user: req._id,
       text: req.body.text,
-      mediaUrls: mediaUrls || [], // Use the new structure without _id
+      mediaUrls: mediaUrls, // Now using the correctly scoped mediaUrls
     });
 
     // Save the post to the database

@@ -100,9 +100,15 @@ const Suggest = ({
               return (
                 <div
                   key={data._id ? data._id : `${data._id}_${index}`}
-                  className={`rounded-md bg-[#293138] m-1 mr-2 ${
+                  onClick={() => {
+                    setCurrMenu("");
+                    setTimeout(() => {
+                      navigate(`/user/${data._id}`);
+                    }, 500);
+                  }}
+                  className={`rounded-md bg-[#293138] cursor-pointer m-1 mr-2 ${
                     lightMode &&
-                    " bg-[#F4F2EE] border border-gray-50 border-opacity-40"
+                    " bg-[#F4F2EE] border border-gray-400 border-opacity-30"
                   }`}
                 >
                   <div className='suggested-wrapper w-[100%] flex items-center p-1 space-x-3'>
@@ -114,15 +120,7 @@ const Suggest = ({
                       />
                     </div>
                     <div className='commet-des  heading-post  w-[80%]   flex-row space-y-[-5px]'>
-                      <p
-                        onClick={() => {
-                          setCurrMenu("");
-                          setTimeout(() => {
-                            navigate(`/user/${data._id}`);
-                          }, 500);
-                        }}
-                        className='text-[12px] hover:underline hover:text-blue-500 cursor-pointer'
-                      >
+                      <p className='text-[12px] hover:underline hover:text-blue-500 cursor-pointer'>
                         {data.name}
                       </p>
                       <p className=' text-[#959799] text-sm'>

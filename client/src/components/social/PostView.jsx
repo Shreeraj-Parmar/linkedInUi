@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
 import PostDialog from "../../Post Compo/PostDialog";
+import AddIcon from "@mui/icons-material/Add";
 import {
   getAllPostFromDB,
   sendCommentData,
@@ -57,6 +58,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const [hasMore, setHasMore] = useState(true); // For checking if there are more notifications to load
   const limit = 3; // Number of notifications to load at a time
   const videoRef = useRef(null);
+  const [showAllMedia, setShowAllMedia] = useState({});
 
   const [updatePostDialog, setUpdatePostDialog] = useState(false);
 
@@ -230,6 +232,20 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         }));
       });
 
+      // to show 4 or more image with slider
+
+      let ShowAllMediasData = res.data.allPosts.reduce((acc, post) => {
+        acc[post._id] = false; // Set the value to false for each post._id
+        return acc;
+      }, {}); // Initialize an empty object
+
+      console.log("ShowAllMediasData", ShowAllMediasData);
+
+      setShowAllMedia((prev) => ({
+        ...prev,
+        ...ShowAllMediasData,
+      }));
+
       // Check if there are more posts to load
       if (res.data.allPosts.length < limit) {
         setHasMore(false); // No more posts to load
@@ -263,6 +279,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   useLayoutEffect(() => {
     getData();
   }, [isLogin]);
+
+  useEffect(() => {
+    console.log("showAllMedia is now", showAllMedia);
+  }, [showAllMedia]);
 
   // useEffect(() => {
   //   postFunc(page, limit); // Fetch posts once user data is available
@@ -446,6 +466,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         setPostDialog={setPostDialog}
         setAllPost={setAllPost}
         currUserData={currUserData}
+        setShowAllMedia={setShowAllMedia}
         imgUrl={imgUrl}
       />
       <div className=' flex justify-center items-center'>
@@ -644,7 +665,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                           </p>
                         </div>
                         {currUserData && post.user._id !== currUserData._id ? (
-                          <div className='follow-btn p-2 relative lg:left-[280px]'>
+                          <div className='follow-btn p-2 relative lg:left-[16rem]'>
                             <button
                               onClick={() => {
                                 handleFollowClick(post.user && post.user._id);
@@ -681,6 +702,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                             {updatePostDialog && (
                               <UpdatePostDialog
                                 setUpdatePostDialog={setUpdatePostDialog}
+                                setShowAllMedia={setShowAllMedia}
                                 setAllPost={setAllPost}
                                 updatePostDialog={updatePostDialog}
                                 selectedPostForUpdate={selectedPostForUpdate}
@@ -806,7 +828,8 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                       src={mediaUrl.url || ""}
                                       ref={videoRef}
                                       alt='this is post video'
-                                      className='w-[300px] max-h-[250px] border border-gray-400 border-opacity-40 min-h-[250px] rounded-md '
+                                      className='w-[300px] h-[250px] max-h-[250px] border border-gray-400 border-opacity-40 min-h-[250px] rounded-md '
+                                      width='100%'
                                       controls
                                       muted
                                       preload='metadata'
@@ -831,7 +854,8 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                       src={mediaUrl.url || ""}
                                       ref={videoRef}
                                       alt='this is post video'
-                                      className='w-[400px] min-h-[505px] rounded-md border border-gray-400 border-opacity-40'
+                                      className='w-[400px] min-h-[505px] h-[250px] rounded-md border border-gray-400 border-opacity-40'
+                                      width='100%'
                                       controls
                                       muted
                                       preload='metadata'
@@ -852,48 +876,102 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                       {post.mediaUrls &&
                         post.mediaUrls.length > 0 &&
                         post.mediaUrls.length >= 5 && (
-                          <Box
-                            sx={{
-                              width: "100%",
-                              padding: "10px",
-                              height: "500px",
-                            }}
-                          >
-                            <Slider {...settings}>
-                              {post.mediaUrls.map((mediaUrl, index) => (
-                                <Card
-                                  className='border-2 rounded-md border-gray-400 border-opacity-40 shadow-md'
-                                  key={index}
-                                  style={{ width: "100%" }}
-                                >
-                                  {mediaUrl.fileType.startsWith("image/") ? (
-                                    <CardMedia
-                                      component='img'
-                                      alt={`Media ${index + 1}`}
-                                      image={mediaUrl.url}
-                                      sx={{
-                                        height: "480px",
-                                        width: "100%",
-                                        objectFit: "cover",
-                                      }}
-                                    />
-                                  ) : (
-                                    mediaUrl.fileType.startsWith("video/") && (
+                          <>
+                            {showAllMedia[post._id] ? (
+                              <Box
+                                sx={{
+                                  width: "100%",
+                                  padding: "10px",
+                                  height: "500px",
+                                }}
+                              >
+                                <Slider {...settings}>
+                                  {post.mediaUrls.map((mediaUrl, index) => (
+                                    <Card
+                                      className='border-2 rounded-md border-gray-400 border-opacity-40 shadow-md'
+                                      key={index}
+                                      style={{ width: "100%" }}
+                                    >
+                                      {mediaUrl.fileType.startsWith(
+                                        "image/"
+                                      ) ? (
+                                        <CardMedia
+                                          component='img'
+                                          alt={`Media ${index + 1}`}
+                                          image={mediaUrl.url}
+                                          sx={{
+                                            height: "480px",
+                                            width: "100%",
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                      ) : (
+                                        <video
+                                          width='100%'
+                                          ref={videoRef}
+                                          src={mediaUrl.url || ""}
+                                          className='h-[480px]'
+                                          controls
+                                          preload='metadata'
+                                          style={{ objectFit: "cover" }}
+                                        />
+                                      )}
+                                    </Card>
+                                  ))}
+                                </Slider>
+                              </Box>
+                            ) : (
+                              <div className='post-image w-[100%] relative mt-2 flex flex-wrap gap-1 justify-center items-center'>
+                                {post.mediaUrls
+                                  .slice(0, 4)
+                                  .map((mediaUrl, index) => {
+                                    const isLastMedia = index === 3; // Check if it's the last of the 4 items
+                                    const classNameOf = `w-[45%] max-h-[300px] min-h-[300px] rounded-md h-auto border border-gray-400 border-opacity-30 ${
+                                      isLastMedia ? "opacity-100 blur-sm" : ""
+                                    }`; // Adjust opacity and blur for the last media
+
+                                    return mediaUrl.fileType.startsWith(
+                                      "video/"
+                                    ) ? (
                                       <video
-                                        width='100%'
-                                        ref={videoRef}
+                                        key={index}
                                         src={mediaUrl.url || ""}
-                                        className='h-[480px]'
+                                        ref={videoRef}
+                                        alt='this is post video'
+                                        className={classNameOf}
                                         controls
+                                        muted
                                         preload='metadata'
-                                        style={{ objectFit: "cover" }}
                                       />
-                                    )
-                                  )}
-                                </Card>
-                              ))}
-                            </Slider>
-                          </Box>
+                                    ) : (
+                                      <img
+                                        key={index}
+                                        src={mediaUrl.url || ""}
+                                        alt='this is post image'
+                                        className={classNameOf}
+                                      />
+                                    );
+                                  })}
+                                <div
+                                  onClick={() => {
+                                    setShowAllMedia((prev) => ({
+                                      ...prev,
+                                      [post._id]: true,
+                                    }));
+                                  }}
+                                  className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-80 absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
+                                >
+                                  <AddIcon
+                                    fontSize='large'
+                                    className='text-[#000]'
+                                  />
+                                  <p className='text-black text-2xl font-semibold'>
+                                    {post.mediaUrls.length - 4} More
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
 
                       {post.mediaUrls &&
