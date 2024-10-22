@@ -307,7 +307,11 @@ const UserProfile = () => {
             >
               <div className=' w-[100%]'>
                 <p className='text-[#000] text-xl font-semibold'>Posts</p>
-                <UserPosts userData={userData} />
+                <UserPosts
+                  userData={userData}
+                  setFollow={setFollow}
+                  follow={follow}
+                />
               </div>
             </div>
           </div>

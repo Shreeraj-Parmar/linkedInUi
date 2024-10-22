@@ -1,6 +1,7 @@
 import Post from "../model/post.js";
 import User from "../model/user.js";
 import Comment from "../model/comment.js";
+import mongoose from "mongoose";
 
 // save post into DB
 export const savePostDataIntoDB = async (req, res) => {
@@ -230,7 +231,7 @@ export const updatePostDataInDB = async (req, res) => {
 
 export const sendAllPostsAccUser = async (req, res) => {
   // Extract page and limit from the request query parameters
-  const { page = 1, limit = 10, userId } = req.query; // Default to page 1 and limit 10 if not provided
+  const { page = 1, limit = 10, userid } = req.query; // Default to page 1 and limit 10 if not provided
   console.log("req queary is for post acc user", req.query);
   try {
     // Convert page and limit to numbers
@@ -241,12 +242,11 @@ export const sendAllPostsAccUser = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     // Fetch posts with pagination
-    let allPosts = await Post.find()
+    let allPosts = await Post.find({ user: userid })
       .populate("user", "name city profilePicture") // Populate user information
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the posts according to pagination
       .limit(limitNumber); // Limit the number of posts fetched
-    // let allPosts = await Post.find();
 
     // Get the total number of posts for further use (like checking if there are more posts)
     // const totalPosts = await Post.countDocuments();
