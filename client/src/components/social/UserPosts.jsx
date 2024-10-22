@@ -319,7 +319,6 @@ const UserPosts = ({ userData, setFollow, follow }) => {
           message: "you have new follower",
         });
       }
-      // Toggle the follow status locally
     } else {
       toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
         position: "top-right",
