@@ -18,6 +18,7 @@ import Tostify from "../Tostify.jsx";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+import UserPosts from "./UserPosts.jsx";
 
 const UserProfile = () => {
   const {
@@ -197,7 +198,7 @@ const UserProfile = () => {
         <Tostify />
 
         <div className='main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  '>
-          <div className='main-down mt-[60px] w-[95%]  min-h-[70%]'>
+          <div className='main-down mt-[60px]  w-[95%]  min-h-[70%]'>
             <div className='profile-wrapper-all bg-[#fff] border-2 shadow-sm border-gray-400 border-opacity-40 w-[65%] p-5 pl-10 rounded-md flex-row space-y-3  '>
               <div className='profil-pic'>
                 <img
@@ -299,6 +300,15 @@ const UserProfile = () => {
               ) : (
                 <p className='text-[#000]'>No Any Education Here</p>
               )}
+            </div>
+            <div
+              className='profile-wrapper-all bg-[#fff] border-2 
+ border-gray-400 border-opacity-40 mt-3 w-[65%] p-3   rounded-md flex  items-center space-y-3  '
+            >
+              <div className=' w-[100%]'>
+                <p className='text-[#000] text-xl font-semibold'>Posts</p>
+                <UserPosts userData={userData} />
+              </div>
             </div>
           </div>
         </div>

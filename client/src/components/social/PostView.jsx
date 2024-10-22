@@ -41,8 +41,8 @@ import linkifyContent from "../../utils/linkify.js";
 const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   const { setCurrUserData, currUserData, setCurrMenu, lightMode } =
     useContext(AllContext);
-  const [commentBoxOpen, setCommentBoxOpen] = useState({});
   const [postDialog, setPostDialog] = useState(false);
+  const [commentBoxOpen, setCommentBoxOpen] = useState({});
   const [allPost, setAllPost] = useState([]);
   const [likes, setLikes] = useState({});
   const [isDisabledPostBtn, setIsDisabledPostBtn] = useState(true);

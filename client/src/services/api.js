@@ -833,3 +833,23 @@ export const deleteMsg = async (data) => {
     console.log(`error while calling deleteMsg & error is : ${error.message}`);
   }
 };
+
+// get all post of user
+export const getAllPostAccUser = async (data) => {
+  try {
+    // Construct the URL with query parameters
+    const url = `${API}/post/user/all?page=${data.page}&limit=${data.limit}&userid=${data.userId}`;
+
+    // Use GET request with the constructed URL
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getAllPostAccUser & error is: ${error.message}`
+    );
+  }
+};

@@ -37,6 +37,7 @@ import {
   saveCommentIntoDB,
   sendCommentCount,
   updatePostDataInDB,
+  sendAllPostsAccUser,
 } from "../controller/post-controller.js";
 import {
   sendUserDataAccId,
@@ -82,6 +83,7 @@ router.post("/aws/url", jwtMiddle, saveURLIntoDB);
 router.post("/post", jwtMiddle, savePostDataIntoDB);
 router.put("/post", jwtMiddle, updatePostDataInDB);
 router.get("/post/all", sendAllPosts);
+router.get("/post/user/all", sendAllPostsAccUser);
 router.post("/like", jwtMiddle, updateLike);
 router.post("/comment", jwtMiddle, saveCommentIntoDB);
 router.get("/comment", sendCommentAccPost);
