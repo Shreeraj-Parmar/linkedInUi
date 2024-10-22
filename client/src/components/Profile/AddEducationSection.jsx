@@ -6,7 +6,7 @@ import { Select, MenuItem, FormControl } from "@mui/material";
 import { sendEDUDetails } from "../../services/api.js";
 
 // AddEducationSection component
-const AddEducationSection = ({ addEduDialog }) => {
+const AddEducationSection = ({ addEduDialog, setAllEducation }) => {
   const months = [
     "January",
     "February",
@@ -67,6 +67,7 @@ const AddEducationSection = ({ addEduDialog }) => {
       console.log(values);
       let res = await sendEDUDetails(values);
       if (res.status === 200) {
+        setAllEducation((prev) => [...prev, values]);
         addEduDialog(false);
         alert("Education added Succesfully");
       } else {
@@ -77,36 +78,36 @@ const AddEducationSection = ({ addEduDialog }) => {
   });
 
   return (
-    <div className="flex justify-center ">
+    <div className='flex justify-center '>
       <div
-        className="edu-wrapper p-4  w-[100%]"
+        className='edu-wrapper p-4  w-[100%]'
         style={{
           // Adjust height as needed
           overflowY: "auto", // This enables vertical scrolling
         }}
       >
-        <div className="">
-          <h3 className="font-semibold mb-2 text-xl">Add Education</h3>
+        <div className=''>
+          <h3 className='font-semibold mb-2 text-xl'>Add Education</h3>
           <hr />
         </div>
         <form onSubmit={formik.handleSubmit}>
-          <div className="mt-5 w-[100%]">
+          <div className='mt-5 w-[100%]'>
             <inputLabel>Enter School Name</inputLabel>
             <input
               className={
                 "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
-              id="school"
+              id='school'
               value={formik.values.school}
-              name="school"
-              type="text"
-              label="School"
+              name='school'
+              type='text'
+              label='School'
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />{" "}
-            <div className="formik-err">
+            <div className='formik-err'>
               {formik.touched.school && formik.errors.school && (
-                <div className="text-red-500">{formik.errors.school}</div>
+                <div className='text-red-500'>{formik.errors.school}</div>
               )}
             </div>
           </div>
@@ -118,17 +119,17 @@ const AddEducationSection = ({ addEduDialog }) => {
               className={
                 "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
-              id="university"
+              id='university'
               value={formik.values.university}
-              name="university"
-              type="text"
-              label="University"
+              name='university'
+              type='text'
+              label='University'
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
             <div>
               {formik.touched.university && formik.errors.university && (
-                <div className="text-red-500">{formik.errors.university}</div>
+                <div className='text-red-500'>{formik.errors.university}</div>
               )}
             </div>
           </div>
@@ -140,11 +141,11 @@ const AddEducationSection = ({ addEduDialog }) => {
               className={
                 "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
-              id="grade"
+              id='grade'
               value={formik.values.grade}
-              name="grade"
-              type="text"
-              label="Grade"
+              name='grade'
+              type='text'
+              label='Grade'
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
@@ -156,17 +157,17 @@ const AddEducationSection = ({ addEduDialog }) => {
               className={
                 "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
-              id="degree"
+              id='degree'
               value={formik.values.degree}
-              name="degree"
-              type="text"
-              label="Degree"
+              name='degree'
+              type='text'
+              label='Degree'
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
             <div>
               {formik.touched.degree && formik.errors.degree && (
-                <div className="text-red-500">{formik.errors.degree}</div>
+                <div className='text-red-500'>{formik.errors.degree}</div>
               )}
             </div>
           </div>
@@ -177,22 +178,22 @@ const AddEducationSection = ({ addEduDialog }) => {
               className={
                 "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
               }
-              id="description"
+              id='description'
               value={formik.values.description}
-              name="description"
-              type="text"
-              label="Description"
+              name='description'
+              type='text'
+              label='Description'
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
           </div>
-          <div className="start-date-month flex w-[100%] space-x-2 justify-center">
-            <div className="w-[50%]">
-              <FormControl className="w-[100%]">
+          <div className='start-date-month flex w-[100%] space-x-2 justify-center'>
+            <div className='w-[50%]'>
+              <FormControl className='w-[100%]'>
                 <inputLabel>Start Month</inputLabel>
 
                 <Select
-                  name="startDate.month"
+                  name='startDate.month'
                   className={
                     "border  bg-white border-gray-400 border-opacity-40  rounded-md "
                   }
@@ -211,43 +212,43 @@ const AddEducationSection = ({ addEduDialog }) => {
               <div>
                 {formik.touched.startDate?.month &&
                   formik.errors.startDate?.month && (
-                    <div className="text-red-500">
+                    <div className='text-red-500'>
                       {formik.errors.startDate.month}
                     </div>
                   )}
               </div>
             </div>
-            <div className="w-[50%]">
+            <div className='w-[50%]'>
               <inputLabel>Start Year</inputLabel>
               <input
                 className={
                   "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
                 }
-                id="startDate.year"
+                id='startDate.year'
                 value={formik.values.startDate.year}
-                name="startDate.year"
-                type="number"
-                label="Start Year"
+                name='startDate.year'
+                type='number'
+                label='Start Year'
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
               <div>
                 {formik.touched.startDate?.year &&
                   formik.errors.startDate?.year && (
-                    <div className="text-red-500">
+                    <div className='text-red-500'>
                       {formik.errors.startDate.year}
                     </div>
                   )}
               </div>
             </div>
           </div>
-          <div className="end-date-month flex space-x-2 w-[100%] justify-center">
-            <div className="w-[50%]">
-              <FormControl fullWidth className=" text-white">
+          <div className='end-date-month flex space-x-2 w-[100%] justify-center'>
+            <div className='w-[50%]'>
+              <FormControl fullWidth className=' text-white'>
                 <inputLabel>End Month</inputLabel>
 
                 <Select
-                  name="endDate.month"
+                  name='endDate.month'
                   className={
                     "border  bg-white border-gray-400 border-opacity-40rounded-md  text-white   "
                   }
@@ -266,41 +267,41 @@ const AddEducationSection = ({ addEduDialog }) => {
               <div>
                 {formik.touched.endDate?.month &&
                   formik.errors.endDate?.month && (
-                    <div className="text-red-500">
+                    <div className='text-red-500'>
                       {formik.errors.endDate.month}
                     </div>
                   )}
               </div>
             </div>
 
-            <div className="w-[50%]">
+            <div className='w-[50%]'>
               <inputLabel>End Month</inputLabel>
               <input
                 className={
                   "border  bg-white border-gray-400 border-opacity-40 placeholder:text-[#000] rounded-md w-[100%] p-3"
                 }
-                id="endDate.year"
+                id='endDate.year'
                 value={formik.values.endDate.year}
-                name="endDate.year"
-                type="number"
-                label="End Year"
+                name='endDate.year'
+                type='number'
+                label='End Year'
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
               <div>
                 {formik.touched.endDate?.year &&
                   formik.errors.endDate?.year && (
-                    <div className="text-red-500">
+                    <div className='text-red-500'>
                       {formik.errors.endDate.year}
                     </div>
                   )}
               </div>
             </div>
           </div>
-          <div className="flex justify-end">
+          <div className='flex justify-end'>
             <button
-              type="submit"
-              className="p-2 bg-[#48a7ff] rounded-md mt-2 text-black"
+              type='submit'
+              className='p-2 bg-[#48a7ff] rounded-md mt-2 text-black'
             >
               Add Education
             </button>

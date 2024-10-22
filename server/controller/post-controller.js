@@ -252,7 +252,7 @@ export const sendAllPostsAccUser = async (req, res) => {
     // const totalPosts = await Post.countDocuments();
 
     // Return posts and information about pagination
-    console.log("all posts is for user perticular", allPosts);
+    // console.log("all posts is for user perticular", allPosts);
     res.status(200).json({ allPosts });
   } catch (error) {
     console.log(

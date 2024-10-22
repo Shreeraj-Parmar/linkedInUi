@@ -9,6 +9,9 @@ import { useNavigate } from "react-router-dom";
 const ViewProfile = () => {
   const { currUserData, isLogin, socket } = useContext(AllContext);
   const [addEduDialog, setAddEduDialog] = useState(false);
+  const [allEducation, setAllEducation] = useState(
+    (currUserData && currUserData.education) || []
+  );
   const navigate = useNavigate();
 
   return (
@@ -17,6 +20,7 @@ const ViewProfile = () => {
         <AddEducationDialog
           addEduDialog={addEduDialog}
           setAddEduDialog={setAddEduDialog}
+          setAllEducation={setAllEducation}
         />
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
@@ -76,7 +80,7 @@ const ViewProfile = () => {
             >
               <p className='text-[#000] text-xl font-semibold'>Education</p>
               {currUserData && currUserData.education[0] ? (
-                currUserData.education.map((edu) => {
+                allEducation.map((edu) => {
                   return (
                     <div
                       key={currUserData._id}
@@ -100,7 +104,7 @@ const ViewProfile = () => {
             <div>
               <div className='flex mt-2'>
                 <button
-                  className='p-2 bg-[#71B7FB] hover:bg-[#369bff] border rounded-md text-black'
+                  className='p-2 border-2 border-[#0A66C4] hover:bg-[#0A66C4] hover:text-white text-[#0A66C4]  rounded-md '
                   onClick={() => {
                     localStorage.removeItem("token");
                     navigate("/login");
