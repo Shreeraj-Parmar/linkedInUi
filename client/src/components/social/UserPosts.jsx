@@ -313,6 +313,7 @@ const UserPosts = ({ userData, setFollow, follow }) => {
       if (res.data.message === "Now you are following the user!") {
         await sendNotification({
           recipient: receiver,
+
           sender: currUserData._id,
           type: "follow",
           message: "you have new follower",
