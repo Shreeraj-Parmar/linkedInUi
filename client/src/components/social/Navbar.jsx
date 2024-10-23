@@ -106,7 +106,7 @@ const Navbar = () => {
     } else if (window.location.pathname === "/notification") {
       setCurrMenu("notification");
     } else {
-      setCurrMenu("home");
+      setCurrMenu("");
     }
   }, [window.location.href]);
 

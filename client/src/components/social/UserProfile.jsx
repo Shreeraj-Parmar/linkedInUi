@@ -19,6 +19,8 @@ import TelegramIcon from "@mui/icons-material/Telegram";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import UserPosts from "./UserPosts.jsx";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import linkifyContent from "../../utils/linkify.js";
 
 const UserProfile = () => {
   const {
@@ -39,7 +41,8 @@ const UserProfile = () => {
   const [follow, setFollow] = useState(false);
   const [connection, setConnection] = useState(false);
   const [pendinConnection, setPendingConnection] = useState(false);
-
+  const [showMore, setShowMore] = useState(false);
+  const maxLength = 100;
   const getUserDataFunc = async () => {
     console.log("use trigger");
     let res = await getUserDataAccId(userId);
@@ -214,14 +217,72 @@ const UserProfile = () => {
               </div>
               <div className='profil-details'>
                 <p className='text-[#000] text-2xl font-semibold hover:bg-[#c2c2c2] w-fit cursor-pointer rounded-md'>
-                  {userData ? userData.name : "Name"}
+                  {userData ? userData.name : "Name"}&nbsp;&nbsp;&nbsp;
+                  {userData && userData.role && (
+                    <span className='text-[#9b9b9b] text-[15px]'>
+                      {userData.role}
+                    </span>
+                  )}
                 </p>
-                <p className='text-[#686868] text-sm'>
+                {userData && userData.heading && (
+                  <p className='text-[#252525] heading-para text-xl font-semibold  w-fit cursor-pointer rounded-md'>
+                    {userData.heading}
+                  </p>
+                )}
+                <p className='text-[#686868] mt-2 text-sm'>
                   {`${userData ? userData.city : ""}, ${
                     userData ? userData.state : ""
                   }, ${userData ? userData.country : ""}`}
                 </p>
-                <p className='text-[#686868] text-sm'>
+
+                {userData && userData.website && userData.website.linkText ? (
+                  <div className='flex space-x-1 mt-2 cursor-pointer'>
+                    <a
+                      href={userData.website && userData.website.link}
+                      target='_blank'
+                      rel='noreferrer'
+                    >
+                      <p className='text-[#352eff] text-sm hover:underline'>
+                        {userData.website && userData.website.linkText}
+                      </p>
+                    </a>
+                    <OpenInNewIcon
+                      fontSize='small'
+                      className='text-[#352eff]'
+                      onClick={() =>
+                        window.open(userData.website && userData.website.link)
+                      }
+                    />
+                  </div>
+                ) : (
+                  userData &&
+                  userData.website &&
+                  userData.website.link(
+                    <div className='flex space-x-1 mt-2 cursor-pointer'>
+                      <a
+                        href={
+                          userData &&
+                          userData.website &&
+                          userData.website.link &&
+                          userData.website.link
+                        }
+                      >
+                        {userData &&
+                          userData.website &&
+                          userData.website.link &&
+                          userData.website.link}
+                      </a>
+                      <OpenInNewIcon
+                        fontSize='small'
+                        className='text-[#352eff]'
+                        onClick={() =>
+                          window.open(userData.website && userData.website.link)
+                        }
+                      />
+                    </div>
+                  )
+                )}
+                <p className='text-[#686868] mt-2 text-sm'>
                   {userData ? userData.followers.length : ""} followers
                 </p>
               </div>
@@ -233,7 +294,7 @@ const UserProfile = () => {
                       onClick={async () => {
                         if (isLogin) {
                           await sendFollowReq({ receiverId: userData._id });
-                          console.group("sdfsdfsfd");
+
                           getUserDataFunc();
                         } else {
                           // setLoginDialog(true);
@@ -274,33 +335,59 @@ const UserProfile = () => {
                   </div>
                 )}
             </div>
-            <div
-              className='profile-wrapper-all bg-[#fff] border-2 
+            {userData &&
+              userData.education &&
+              userData.education.length > 0 && (
+                <div
+                  className='profile-wrapper-all bg-[#fff] border-2 
  border-gray-400 border-opacity-40 mt-3 w-[65%] p-3 pl-10 rounded-md flex-row space-y-3  '
-            >
-              <p className='text-[#000] text-xl font-semibold'>Education</p>
-              {userData && userData.education[0] ? (
-                userData.education.map((edu) => {
-                  return (
-                    <div
-                      key={userData._id}
-                      className='profile-edu bg-[#F4F2EE] p-2 pl-3 rounded-md w-[80%] flex  items-center'
-                    >
-                      <div>
-                        <p className='text-[#000]'>{edu.degree}</p>
+                >
+                  <p className='text-[#000] text-xl font-semibold'>Education</p>
+                  {userData && userData.education[0] ? (
+                    userData.education.map((edu) => {
+                      return (
+                        <div
+                          key={userData._id}
+                          className='profile-edu bg-[#F4F2EE] p-2 pl-3 rounded-md w-[80%] flex  items-center'
+                        >
+                          <div>
+                            <p className='text-[#000]'>{edu.degree}</p>
 
-                        <p className='text-[#686868] -mb-1 text-sm'>
-                          {edu.university}
-                        </p>
-                        <p className='text-[#686868] -mb-1 text-sm'>{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <p className='text-[#000]'>No Any Education Here</p>
+                            <p className='text-[#686868] -mb-1 text-sm'>
+                              {edu.university}
+                            </p>
+                            <p className='text-[#686868] -mb-1 text-sm'>{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className='text-[#000]'>No Any Education Here</p>
+                  )}
+                </div>
               )}
-            </div>
+
+            {userData && userData.skills && userData.skills[0] && (
+              <div className=' bg-white w-[65%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
+                <p className='text-[#000] text-xl font-semibold'>Skills</p>
+                {userData &&
+                  userData.skills &&
+                  userData.skills.length > 0 &&
+                  userData.skills.map((skill, index) => {
+                    return (
+                      <div
+                        className='flex p-2 items-center space-x-2 border-b-2 border-gray-400 border-opacity-40'
+                        key={index}
+                      >
+                        <p className='text-[#686868] hover:underline cursor-pointer text-sm'>
+                          {skill}
+                        </p>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+
             <div
               className='profile-wrapper-all bg-[#fff] border-2 
  border-gray-400 border-opacity-40 mt-3 w-[65%] p-3   rounded-md flex  items-center space-y-3  '
@@ -315,6 +402,35 @@ const UserProfile = () => {
                 />
               </div>
             </div>
+            {userData && userData.about && (
+              <div className=' bg-white w-[65%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
+                <p className='text-[#000] text-xl font-semibold'>About Me</p>
+                <div className='p-2'>
+                  <pre
+                    className=' text-wrap'
+                    dangerouslySetInnerHTML={{
+                      __html: !showMore
+                        ? linkifyContent(
+                            userData &&
+                              userData.about &&
+                              userData.about.substring(0, maxLength)
+                          )
+                        : linkifyContent(
+                            userData && userData.about && userData.about
+                          ),
+                    }}
+                  ></pre>
+                  {userData.about.length > maxLength && (
+                    <button
+                      onClick={() => setShowMore(true)}
+                      className='text-blue-600 cursor-pointer mt-2'
+                    >
+                      {!showMore && "more..."}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

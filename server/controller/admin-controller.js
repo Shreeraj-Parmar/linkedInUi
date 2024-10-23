@@ -7,9 +7,7 @@ export const sendUserDataAccId = async (req, res) => {
   //   console.log(req.params);
   const { id } = req.params;
   try {
-    let userDataById = await User.findById(id).select(
-      "name gender education followers connections profilePicture city state country connectionRequests"
-    );
+    let userDataById = await User.findById(id);
     //   console.log("User data after populate:", userDataById); // Log after populate
     if (userDataById) {
       res

@@ -10,6 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditProfile from "./EditProfile.jsx";
+import linkifyContent from "../../utils/linkify.js";
 
 const ViewProfile = () => {
   const { currUserData, isLogin, socket } = useContext(AllContext);
@@ -20,6 +21,8 @@ const ViewProfile = () => {
   const navigate = useNavigate();
   const [editProfildialog, setEditProfildialog] = useState(false);
   const [profileData, setProfileData] = useState();
+  const [showMore, setShowMore] = useState(false);
+  const maxLength = 250;
 
   useEffect(() => {
     setProfileData({
@@ -100,24 +103,21 @@ const ViewProfile = () => {
                       : "Your Role"}
                   </span>
                 </p>
-                <p className='text-[#252525] text-xl font-semibold  w-fit cursor-pointer rounded-md'>
+                <p className='text-[#252525] heading-para text-xl font-semibold  w-fit cursor-pointer rounded-md'>
                   {currUserData && profileData && profileData.heading
                     ? profileData.heading
                     : "<----Add Heading---->"}
                 </p>
-                <p className='text-[#686868] text-sm'>
+                <p className='text-[#686868] mt-2 text-sm'>
                   {`${currUserData ? profileData && profileData.city : ""}, ${
                     currUserData ? profileData && profileData.state : ""
                   }, ${currUserData ? profileData && profileData.country : ""}`}
-                </p>
-                <p className='text-[#686868] text-sm'>
-                  {currUserData ? currUserData.followers.length : ""} followers
                 </p>
                 {currUserData &&
                 profileData &&
                 profileData.linkText &&
                 profileData.linkText ? (
-                  <div className='flex space-x-1 cursor-pointer'>
+                  <div className='flex space-x-1 mt-2 cursor-pointer'>
                     <a href={profileData.link} target='_blank' rel='noreferrer'>
                       <p className='text-[#352eff] text-sm hover:underline'>
                         {profileData.linkText}
@@ -155,29 +155,58 @@ const ViewProfile = () => {
                     </div>
                   )
                 )}
+                <p className='text-[#686868] text-sm mt-2'>
+                  {currUserData ? currUserData.followers.length : ""} followers
+                </p>
               </div>
             </div>
 
-            <div className=' bg-white w-[65%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
+            <div className='bg-white w-[65%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
               <p className='text-[#000] text-xl font-semibold'>About Me</p>
               <div className='p-2'>
-                <p>
-                  {currUserData && profileData && profileData.about ? (
-                    profileData.about
-                  ) : (
-                    <div className='p-2 space-y-1 '>
-                      <div>Add About Me to search jobs</div>
-                      <button
-                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4]  hover:border-[#004182] hover:text-[#004182]'
-                        onClick={() => {
-                          setEditProfildialog(true);
-                        }}
+                {currUserData && profileData && profileData.about ? (
+                  <div>
+                    <pre
+                      className=' text-wrap'
+                      dangerouslySetInnerHTML={{
+                        __html: !showMore
+                          ? linkifyContent(
+                              currUserData &&
+                                profileData &&
+                                profileData.about &&
+                                profileData.about.substring(0, maxLength)
+                            )
+                          : linkifyContent(
+                              currUserData &&
+                                profileData &&
+                                profileData.about &&
+                                profileData.about
+                            ),
+                      }}
+                    ></pre>
+                    {profileData.about.length > maxLength && (
+                      <p
+                        className='text-blue-600 inline cursor-pointer mt-2'
+                        onClick={() => setShowMore(true)}
                       >
-                        Add About Me
-                      </button>
-                    </div>
-                  )}
-                </p>
+                        {" "}
+                        {!showMore && "more..."}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className='p-2 space-y-1'>
+                    <div>Add About Me to search jobs</div>
+                    <button
+                      className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4]  hover:border-[#004182] hover:text-[#004182]'
+                      onClick={() => {
+                        setEditProfildialog(true);
+                      }}
+                    >
+                      Add About Me
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <div className=' bg-white w-[65%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
@@ -218,27 +247,7 @@ const ViewProfile = () => {
             </div>
 
             {/* ADD EDU */}
-            <div className=' bg-white w-[65%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
-              <div className=' '>
-                <p className=' text-2xl text-[#56687A] font-semibold'>
-                  Education
-                </p>
-                <p>
-                  Show your qualifications and be up to 2X more likely to
-                  receive a recruiter InMail
-                </p>
-              </div>
-              <div className=' mt-1 '>
-                <button
-                  onClick={() => {
-                    setAddEduDialog(true);
-                  }}
-                  className=' p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4]  hover:border-[#004182] hover:text-[#004182]'
-                >
-                  Add education
-                </button>
-              </div>
-            </div>
+
             <div
               className='profile-wrapper-all bg-[#fff] border-2 
  border-gray-400 border-opacity-40 mt-3 w-[65%] p-3  rounded-md flex-row space-y-3  '
