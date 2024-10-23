@@ -27,7 +27,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
 import AddIcon from "@mui/icons-material/Add";
 
-const UserPosts = ({ userData, setFollow, follow }) => {
+const UserPosts = ({ userData, setFollow, follow, what }) => {
   const navigate = useNavigate();
   const {
     setCurrMenu,

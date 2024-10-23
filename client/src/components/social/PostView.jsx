@@ -459,7 +459,10 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   // Helper function to detect URLs and convert them into clickable links
 
   return (
-    <div className='post-wrapper  w-[100%]   flex-row space-y-'>
+    <div
+      onScroll={handleScrollPost}
+      className='post-wrapper max-h-[200vh]  w-[100%]  overflow-y-scroll  flex-row space-y-'
+    >
       <Tostify />
       <PostDialog
         postDialog={postDialog}
@@ -469,7 +472,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         setShowAllMedia={setShowAllMedia}
         imgUrl={imgUrl}
       />
-      <div className=' flex justify-center items-center'>
+      <div className=' flex justify-center   items-center'>
         <div
           className={`write-post text-[#DBDBDC] bg-[#1B1F23] w-[97%]  max-h-[10vh] h-[10vh] rounded-md p-4 pl-6 pr-6 ${
             lightMode && " bg-white text-black"
@@ -506,8 +509,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
       </div>
       {/* Show All Posts */}
       <div
-        onScroll={handleScrollPost}
-        className={`posts text-[#DBDBDC]  overflow-auto max-h-[100vh]  w-[100%] mt-1  p-1 rounded-md ${
+        className={`posts text-[#DBDBDC]    w-[100%] mt-1  p-1 rounded-md ${
           lightMode && "  text-black"
         }`}
       >
@@ -959,7 +961,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                       [post._id]: true,
                                     }));
                                   }}
-                                  className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-100 absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
+                                  className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-90  absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
                                 >
                                   <AddIcon
                                     fontSize='large'

@@ -106,7 +106,7 @@ const Suggest = ({
                       navigate(`/user/${data._id}`);
                     }, 500);
                   }}
-                  className={`rounded-md bg-[#293138] cursor-pointer m-1 mr-2 ${
+                  className={`rounded-md bg-[#293138] cursor-pointer shadow-sm m-1 mr-2 ${
                     lightMode &&
                     " bg-[#F4F2EE] border border-gray-400 border-opacity-30"
                   }`}
@@ -116,7 +116,7 @@ const Suggest = ({
                       <img
                         src={data.profilePicture || "/blank.png"}
                         alt='profile pic'
-                        className='rounded-full border border-gray-400 border-opacity-40 min-w-[55px] max-w-[55px] min-h-[55px] max-h-[55px]'
+                        className='rounded-full border border-gray-400 border-opacity-10 min-w-[55px] max-w-[55px] min-h-[55px] max-h-[55px]'
                       />
                     </div>
                     <div className='commet-des  heading-post  w-[80%]   flex-row space-y-[-5px]'>

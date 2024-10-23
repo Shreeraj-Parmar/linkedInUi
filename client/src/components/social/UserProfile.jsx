@@ -311,6 +311,7 @@ const UserProfile = () => {
                   userData={userData}
                   setFollow={setFollow}
                   follow={follow}
+                  what={"another"}
                 />
               </div>
             </div>

@@ -5,6 +5,7 @@ import { getUserData } from "../../services/api.js";
 import AddEducationDialog from "../Profile/AddEducationDialog.jsx";
 import Navbar from "./Navbar.jsx";
 import { useNavigate } from "react-router-dom";
+import UserPosts from "./UserPosts.jsx";
 
 const ViewProfile = () => {
   const { currUserData, isLogin, socket } = useContext(AllContext);
@@ -100,6 +101,15 @@ const ViewProfile = () => {
               ) : (
                 <p className='text-[#000]'>No Any Education Here</p>
               )}
+            </div>
+            <div
+              className='profile-wrapper-all bg-[#fff] border-2 
+ border-gray-400 border-opacity-40 mt-3 w-[65%] p-3   rounded-md flex  items-center space-y-3  '
+            >
+              <div className=' w-[100%]'>
+                <p className='text-[#000] text-xl font-semibold'>Posts</p>
+                <UserPosts userData={currUserData} what={"me"} />
+              </div>
             </div>
             <div>
               <div className='flex mt-2'>
