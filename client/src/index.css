@@ -150,3 +150,15 @@
 .more-connection {
   z-index: 1 !important;
 }
+
+.login-shadow {
+  box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.login-bg-img {
+  background-image: url("./social-3.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-color: #f4f2ee;
+}

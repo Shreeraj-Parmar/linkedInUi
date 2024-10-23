@@ -92,6 +92,24 @@ const Navbar = () => {
     };
   }, [socket, currUserData && currUserData._id]);
 
+  useEffect(() => {
+    if (window.location.pathname === "/profile") {
+      setCurrMenu("profile");
+    } else if (window.location.pathname === "/") {
+      setCurrMenu("home");
+    } else if (window.location.pathname === "/my-network") {
+      setCurrMenu("network");
+    } else if (window.location.pathname === "/follow") {
+      setCurrMenu("network");
+    } else if (window.location.pathname === "/message") {
+      setCurrMenu("message");
+    } else if (window.location.pathname === "/notification") {
+      setCurrMenu("notification");
+    } else {
+      setCurrMenu("home");
+    }
+  }, [window.location.href]);
+
   return (
     <div
       className={`flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ${

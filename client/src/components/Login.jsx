@@ -133,10 +133,10 @@ const Login = () => {
   });
 
   return (
-    <div className='login-wrapper p-5 flex w-[100%] justify-center'>
+    <div className='login-wrapper login-bg-img  min-h-[100vh]  p-5 flex w-[100%] justify-center items-center'>
       <Tostify />
       <Loader />
-      <div className='login mt-16 flex flex-col items-center gap-4 p-5 border border-black rounded-md w-[25%]'>
+      <div className='login mt-[100px] relative right-[-300px] top-[50px] flex flex-col h-[300px] items-center    gap-4 p-5 rounded-lg w-[25%]'>
         <h2 className='font-semibold text-2xl  text-center w-[100%]'>
           Login Here
         </h2>
@@ -177,11 +177,11 @@ const Login = () => {
             </div>
           </div>
           <div className='w-full flex justify-center'>
-            <div className='w-[100px]'>
+            <div className='w-[90%]'>
               <Button
                 type={"submit"}
                 lable={"Login"}
-                className={"btn rounded-md w-[100px]"}
+                className={"btn rounded-md w-full font-semibold"}
               />
             </div>
           </div>
@@ -194,7 +194,8 @@ const Login = () => {
               navigate("/signup");
             }}
           >
-            Register
+            {" "}
+            &nbsp; Register
           </span>
         </p>
       </div>

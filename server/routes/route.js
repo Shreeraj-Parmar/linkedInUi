@@ -22,6 +22,7 @@ import {
   sendAllUsersWhichNotConnected,
   withdrawReq,
   updateUserFavouriteInDB,
+  updateUserProfileInDb,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -71,6 +72,7 @@ import {
 
 router.post("/user/signup", saveNewUser);
 router.post("/user/url-check", jwtMiddle, checkURL);
+router.put("/user/profile", jwtMiddle, updateUserProfileInDb);
 router.post("/user/login", checkLogin);
 router.get("/user", jwtMiddle, sendUserData);
 router.get("/users", sendAllData);

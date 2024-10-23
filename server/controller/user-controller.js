@@ -737,3 +737,37 @@ export const updateUserFavouriteInDB = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// update user profile into db
+export const updateUserProfileInDb = async (req, res) => {
+  console.log(req.body);
+  try {
+    let updatUser = await User.findByIdAndUpdate(
+      req._id,
+      {
+        $set: {
+          name: req.body.name,
+          city: req.body.city,
+          country: req.body.country,
+          state: req.body.state,
+          heading: req.body.heading,
+          about: req.body.about,
+          role: req.body.role,
+          website: {
+            link: req.body.link,
+            linkText: req.body.linkText,
+          },
+          skills: req.body.skills,
+        },
+      },
+      { new: true }
+    );
+    console.log("updated user is", updatUser);
+    res.status(200).json({ message: "profile updated successfully" });
+  } catch (error) {
+    console.log(
+      updateUserProfileInDb`Error while calling updateUserProfileInDb API & error is: ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

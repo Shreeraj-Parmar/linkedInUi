@@ -853,3 +853,23 @@ export const getAllPostAccUser = async (data) => {
     );
   }
 };
+
+// update user profile
+export const updateUserProfile = async (data) => {
+  try {
+    // Construct the URL with query parameters
+    const url = `${API}/user/profile`;
+
+    // Use GET request with the constructed URL
+    let res = await axios.put(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling updateUserProfile & error is: ${error.message}`
+    );
+  }
+};

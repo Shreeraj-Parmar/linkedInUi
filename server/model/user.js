@@ -7,6 +7,28 @@ const userSchema = new mongoose.Schema(
       required: [true, "Name is required"],
       trim: true,
     },
+    skills: [
+      {
+        type: String,
+      },
+    ],
+    website: {
+      link: {
+        type: String,
+      },
+      linkText: {
+        type: String,
+      },
+    },
+    role: {
+      type: String,
+    },
+    about: {
+      type: String,
+    },
+    heading: {
+      type: String,
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
