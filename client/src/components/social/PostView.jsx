@@ -733,7 +733,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
                                 : linkifyContent(truncatedContent),
                             }}
                             className='w-[90%] text-wrap mt-2 inline'
-                          ></pre>{" "}
+                          ></pre>
                           &nbsp;
                           {post.text.length > 100 && (
                             <button
