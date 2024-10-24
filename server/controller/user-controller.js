@@ -154,7 +154,11 @@ export const checkURL = async (req, res) => {
 
 export const sendUserData = async (req, res) => {
   try {
-    let user = await User.findOne({ email: req.user });
+    let user = await User.findOne({ email: req.user }).populate({
+      path: "company",
+      select: "name profilePicture createdAt industry companySize",
+    });
+
     // console.log(user);
     if (user) {
       res.status(200).json({ user });

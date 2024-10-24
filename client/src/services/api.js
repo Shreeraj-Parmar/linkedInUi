@@ -873,3 +873,21 @@ export const updateUserProfile = async (data) => {
     );
   }
 };
+
+// save new company data
+export const saveNewCompanyData = async (data) => {
+  try {
+    const url = `${API}/company`;
+    let res = await axios.post(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling saveNewCompanyData & error is: ${error.message}`
+    );
+    console.error(`Error while calling saveNewCompanyData: ${error.message}`);
+  }
+};

@@ -20,6 +20,8 @@ import UserProfile from "./components/social/UserProfile";
 import Message from "./components/Message/Message";
 import CheckInternet from "./components/Internet/CheckInternet";
 import Notifications from "./components/Notifications/Notifications";
+import Business from "./components/social/business/Business";
+import NewCompany from "./components/social/business/company/NewCompany";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -74,6 +76,15 @@ function App() {
     {
       path: "/notification",
       element: <Notifications />,
+    },
+
+    {
+      path: "/business",
+      element: <Business />,
+    },
+    {
+      path: "/company/new",
+      element: <NewCompany />,
     },
   ]);
 

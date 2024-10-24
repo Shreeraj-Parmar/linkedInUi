@@ -38,7 +38,7 @@ const UserContext = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [unreadMSG, setUnreadMSG] = useState({});
-
+  const [IsSnakBar, setIsSnakBar] = useState(false);
   const [lightMode, setLightMode] = useState(true);
 
   const [loginDialog, setLoginDialog] = useState(false);
@@ -122,6 +122,8 @@ const UserContext = ({ children }) => {
         setAllOnlineUsers,
         currUserData,
         setCurrUserData,
+        IsSnakBar,
+        setIsSnakBar,
         selectMenu,
         setSelectMenu,
 

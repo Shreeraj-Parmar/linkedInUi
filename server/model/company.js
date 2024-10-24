@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
 const companySchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   name: { type: String, required: true }, // Company name
   city: { type: String, required: true }, // Company city
   state: { type: String, required: true }, // Company state
   country: { type: String, required: true }, // Company country
   industry: { type: String, required: true }, // Company industry
   description: { type: String, required: false }, // Company description
+  heading: { type: String, required: false }, // Company heading
+  companySize: { type: String, required: true }, // Company size
+  companyType: { type: String, required: true }, // Company type
   profilePicture: {
     type: String,
   },

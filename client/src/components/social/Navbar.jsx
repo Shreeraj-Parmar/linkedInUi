@@ -16,6 +16,7 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Badge from "@mui/material/Badge";
 import LoginDialog from "./LoginDialog.jsx";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 
 const Navbar = () => {
   const {
@@ -105,6 +106,8 @@ const Navbar = () => {
       setCurrMenu("message");
     } else if (window.location.pathname === "/notification") {
       setCurrMenu("notification");
+    } else if (window.location.pathname === "/business") {
+      setCurrMenu("business");
     } else {
       setCurrMenu("");
     }
@@ -338,6 +341,46 @@ const Navbar = () => {
                 <div className=' flex justify-center mt-[-5px] items-center'>
                   <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                     Me
+                  </p>
+                </div>
+              </div>
+            )}
+            <div className='w-[0.5px] h-[100%]  bg-[#393939]'></div>
+            {isLogin && (
+              <div
+                onClick={() => {
+                  if (!isLogin) {
+                    setLoginDialog(true);
+                    return;
+                  } else {
+                    setCurrMenu("business");
+                    setTimeout(() => {
+                      navigate("/business");
+                    }, 500);
+                  }
+                }}
+                className={` ${
+                  currMenu === "business" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
+              >
+                <div className=' flex justify-center items-center'>
+                  <button>
+                    {currMenu !== "business" ? (
+                      <BusinessCenterIcon
+                        fontSize='small'
+                        className='text-[#6c6c6c] hover:text-[#000]'
+                      />
+                    ) : (
+                      <BusinessCenterIcon
+                        fontSize='medium'
+                        className='text-[#6c6c6c] hover:text-[#000]'
+                      />
+                    )}
+                  </button>
+                </div>
+                <div className=' flex justify-center mt-[-5px] items-center'>
+                  <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
+                    For Business
                   </p>
                 </div>
               </div>
