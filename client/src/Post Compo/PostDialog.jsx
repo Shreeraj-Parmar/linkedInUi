@@ -1,12 +1,12 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useContext } from "react";
 
 import { Dialog, DialogContent } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { getURLForPOST, uploadFileAWS, savePostData } from "../services/api.js";
 import CloseIcon from "@mui/icons-material/Close";
-import Tostify from "../components/Tostify.jsx";
-import { toast } from "react-toastify";
-
+import { AllContext } from "../context/UserContext.jsx";
+import SnakBar from "../components/SnakBar.jsx";
+import Loader from "../components/Loader/Loader.jsx";
 // dialog style
 const dialogStyle = {
   position: "fixed",
@@ -33,15 +33,19 @@ const PostDialog = ({
   setPostDialog,
   postDialog,
   setAllPost,
+
   imgUrl,
   currUserData,
   setShowAllMedia,
 }) => {
+  const { setLoading, setIsSnakBar } = useContext(AllContext);
   const [previewUrl, setPreviewUrl] = useState([]); // for image preview
   const [postFile, setPostFile] = useState([]);
   const [postText, setPostText] = useState("");
   const [generatedfileName, setGeneratedFileName] = useState([]);
   const [generatedURL, setGeneratedURL] = useState([]);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   const postPhotoRef = useRef();
 
   const handlePostFileClick = () => {
@@ -59,16 +63,11 @@ const PostDialog = ({
   };
 
   const handlePostSubmit = async () => {
+    setLoading(true);
     if (postText === "" && postFile.length === 0) {
-      toast.error(`Please Write Somthing Or Select Photo. !`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Please Write Somthing Or Select Photo !",
       });
       return;
     }
@@ -96,7 +95,10 @@ const PostDialog = ({
               fileType: file.type,
             }); // Store the uploaded URL
           } else {
-            toast.error("Error while uploading image!");
+            setSnak({
+              type: "error",
+              text: "Somthing Error While uplaoding Image",
+            });
           }
         }
       }
@@ -134,23 +136,21 @@ const PostDialog = ({
           [res.data.postId]: false,
         }));
         setPostText("");
+        setSnak({
+          type: "success",
+          text: "Post Uploaded successfully",
+        });
         setPostFile(null);
       } else {
-        toast.error(`Error While Uploading IMAGE . !`, {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
         console.log("error while generating url");
 
         setPostFile([]);
         setPreviewUrl([]);
         setPostText("");
+        setSnak({
+          type: "error",
+          text: "Somthing Error.. please tye again",
+        });
       }
     } else {
       let res = await savePostData({
@@ -175,11 +175,19 @@ const PostDialog = ({
 
         setAllPost((prev) => [newPost, ...prev]);
         console.log("post saved successfully");
-      } else {
         console.log("error while generating url");
+        setSnak({
+          type: "success",
+          text: "Post saved successfully",
+        });
       }
     }
-    setPostDialog(false);
+    setIsSnakBar(true);
+    setTimeout(() => {
+      setLoading(false);
+
+      setPostDialog(false);
+    }, 1500);
     setPostFile([]);
     setPreviewUrl([]);
     setPostText("");
@@ -194,8 +202,10 @@ const PostDialog = ({
         },
       }}
     >
+      <Loader />
+      {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
       <div className='w-[100%] p-5 mt-[5%] h-[100%]'>
-        <Tostify />
         <div className='p-4 '>
           <div>
             <textarea

@@ -1,0 +1,46 @@
+import React from "react";
+
+const Dashboard = () => {
+  return (
+    <div className='p-2 border-2 border-gray-400 bg-white border-opacity-40 rounded-lg'>
+      <div className='p-2'>
+        <p className=' font-semibold text-xl'>Track performance</p>
+        <p className=' opacity-75 text-[#7e7979]'>
+          Grow your page 3x faster by leveraging insights and analytics
+        </p>
+      </div>
+      <div className='p-2 flex space-x-5 items-center'>
+        <div className='space-y-3 p-3 pl-5 lg:min-w-[200px] border-2 border-gray-400 border-opacity-40 hover:shadow-md cursor-pointer rounded-lg'>
+          <p className=' font-semibold text-3xl'>0</p>
+          <p className='text-blue-700 relative bottom-[5px] font-semibold'>
+            Followers
+          </p>
+          <p className='relative bottom-[15px]'>N/A</p>
+        </div>
+        <div className='space-y-3 p-3 pl-5 lg:min-w-[200px] border-2 border-gray-400 border-opacity-40 hover:shadow-md cursor-pointer rounded-lg'>
+          <p className=' font-semibold text-3xl'>0</p>
+          <p className='text-blue-700 relative bottom-[5px] font-semibold'>
+            Page visitors
+          </p>
+          <p className='relative bottom-[15px]'>N/A</p>
+        </div>
+        <div className='space-y-3 p-3 pl-5 lg:min-w-[200px] border-2 border-gray-400 border-opacity-40 hover:shadow-md cursor-pointer rounded-lg'>
+          <p className=' font-semibold text-3xl'>0</p>
+          <p className='text-blue-700 relative bottom-[5px] font-semibold'>
+            Page posts
+          </p>
+          <p className='relative bottom-[15px]'>N/A</p>
+        </div>
+        <div className='space-y-3 p-3 pl-5 lg:min-w-[200px] border-2 border-gray-400 border-opacity-40 hover:shadow-md cursor-pointer rounded-lg'>
+          <p className=' font-semibold text-3xl'>0</p>
+          <p className='text-blue-700 relative bottom-[5px] font-semibold'>
+            Total likes
+          </p>
+          <p className='relative bottom-[15px]'>N/A</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

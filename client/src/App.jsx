@@ -22,6 +22,7 @@ import CheckInternet from "./components/Internet/CheckInternet";
 import Notifications from "./components/Notifications/Notifications";
 import Business from "./components/social/business/Business";
 import NewCompany from "./components/social/business/company/NewCompany";
+import CompanyOverView from "./components/social/business/company/CompanyOverView";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -85,6 +86,10 @@ function App() {
     {
       path: "/company/new",
       element: <NewCompany />,
+    },
+    {
+      path: "/company/:companyId/admin",
+      element: <CompanyOverView />,
     },
   ]);
 

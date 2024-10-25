@@ -328,6 +328,9 @@ const ViewProfile = () => {
                         return (
                           <div
                             key={index}
+                            onClick={() => {
+                              navigate(`/company/${comp._id}/admin`);
+                            }}
                             className='flex hover:bg-[#F4F2EE] cursor-pointer p-2 rounded-md border-collapse items-center border-b-2 border-gray-400 border-opacity-40 space-x-2'
                           >
                             <div>

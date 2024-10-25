@@ -38,7 +38,14 @@ import "slick-carousel/slick/slick-theme.css";
 import UpdatePostDialog from "./UpdatePostDialog.jsx";
 import linkifyContent from "../../utils/linkify.js";
 
-const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
+const PostView = ({
+  imgUrl,
+  setLoginDialog,
+  loginDialog,
+  isLogin,
+  setIsSnakBar,
+  setLoading,
+}) => {
   const { setCurrUserData, currUserData, setCurrMenu, lightMode } =
     useContext(AllContext);
   const [postDialog, setPostDialog] = useState(false);
@@ -461,7 +468,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
   return (
     <div
       onScroll={handleScrollPost}
-      className='post-wrapper max-h-[200vh]  w-[100%]  overflow-y-scroll  flex-row space-y-'
+      className='post-wrapper max-h-[120vh]  w-[100%]  overflow-y-scroll  flex-row space-y-'
     >
       <Tostify />
       <PostDialog
@@ -471,6 +478,7 @@ const PostView = ({ imgUrl, setLoginDialog, loginDialog, isLogin }) => {
         currUserData={currUserData}
         setShowAllMedia={setShowAllMedia}
         imgUrl={imgUrl}
+        setIsSnakBar={setIsSnakBar}
       />
       <div className=' flex justify-center   items-center'>
         <div

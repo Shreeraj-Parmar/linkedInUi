@@ -323,67 +323,81 @@ const Navbar = () => {
                   currMenu === "profile" ? "curr-menu-active" : ""
                 } cursor-pointer main-menu-div  w-[100px]`}
               >
-                <div className=' flex justify-center items-center'>
+                <div className=' flex justify-center  items-center'>
                   <button>
                     {currMenu !== "profile" ? (
-                      <AccountCircleIcon
-                        fontSize='small'
-                        className='text-[#6c6c6c] hover:text-[#000]'
+                      <img
+                        src={
+                          (currUserData &&
+                            currUserData.profilePicture &&
+                            currUserData.profilePicture) ||
+                          "/blank.png"
+                        }
+                        alt=''
+                        className='rounded-full w-[20px] h-[20px]'
                       />
                     ) : (
-                      <AccountCircleIcon
-                        fontSize='medium'
-                        className='text-[#6c6c6c] hover:text-[#000]'
+                      <img
+                        src={
+                          (currUserData &&
+                            currUserData.profilePicture &&
+                            currUserData.profilePicture) ||
+                          "/blank.png"
+                        }
+                        alt=''
+                        className='rounded-full w-[25px] h-[25px]'
                       />
                     )}
                   </button>
                 </div>
-                <div className=' flex justify-center mt-[-5px] items-center'>
+                <div className=' flex justify-center mt-[-3px] items-center'>
                   <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                     Me
                   </p>
                 </div>
               </div>
             )}
-            <div className='w-[0.5px] h-[100%]  bg-[#393939]'></div>
             {isLogin && (
-              <div
-                onClick={() => {
-                  if (!isLogin) {
-                    setLoginDialog(true);
-                    return;
-                  } else {
-                    setCurrMenu("business");
-                    setTimeout(() => {
-                      navigate("/business");
-                    }, 500);
-                  }
-                }}
-                className={` ${
-                  currMenu === "business" ? "curr-menu-active" : ""
-                } cursor-pointer main-menu-div  w-[100px]`}
-              >
-                <div className=' flex justify-center items-center'>
-                  <button>
-                    {currMenu !== "business" ? (
-                      <BusinessCenterIcon
-                        fontSize='small'
-                        className='text-[#6c6c6c] hover:text-[#000]'
-                      />
-                    ) : (
-                      <BusinessCenterIcon
-                        fontSize='medium'
-                        className='text-[#6c6c6c] hover:text-[#000]'
-                      />
-                    )}
-                  </button>
+              <>
+                <div className='w-[1px] opacity-70 h-[100%]  bg-[#393939]'></div>
+                <div
+                  onClick={() => {
+                    if (!isLogin) {
+                      setLoginDialog(true);
+                      return;
+                    } else {
+                      setCurrMenu("business");
+                      setTimeout(() => {
+                        navigate("/business");
+                      }, 500);
+                    }
+                  }}
+                  className={` ${
+                    currMenu === "business" ? "curr-menu-active" : ""
+                  } cursor-pointer main-menu-div  w-[100px]`}
+                >
+                  <div className=' flex justify-center items-center'>
+                    <button>
+                      {currMenu !== "business" ? (
+                        <BusinessCenterIcon
+                          fontSize='small'
+                          className='text-[#6c6c6c] hover:text-[#000]'
+                        />
+                      ) : (
+                        <BusinessCenterIcon
+                          fontSize='medium'
+                          className='text-[#6c6c6c] hover:text-[#000]'
+                        />
+                      )}
+                    </button>
+                  </div>
+                  <div className=' flex justify-center mt-[-5px] items-center'>
+                    <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
+                      For Business
+                    </p>
+                  </div>
                 </div>
-                <div className=' flex justify-center mt-[-5px] items-center'>
-                  <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
-                    For Business
-                  </p>
-                </div>
-              </div>
+              </>
             )}
           </div>
         </div>
