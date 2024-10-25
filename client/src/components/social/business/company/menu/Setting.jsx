@@ -19,7 +19,7 @@ const Setting = () => {
         setAdminDialog={setAdminDialog}
         setLoading={setLoading}
       />
-      <div className='p-2 pl-4'>
+      <div className='p-2 pl-4 border-b-2 border-gray-400 border-opacity-40'>
         <p className=' font-semibold text-xl'>Settings</p>
       </div>
       <div className=' '>

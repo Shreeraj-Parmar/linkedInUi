@@ -11,7 +11,7 @@ import Applications from "./menu/Applications.jsx";
 import PagePost from "./menu/PagePost.jsx";
 import Inbox from "./menu/Inbox.jsx";
 import Settings from "./menu/Setting.jsx";
-import EditCompany from "./menu/EditCompany.jsx";
+import EditCompany from "./Edit/EditCompany.jsx";
 import Followers from "./menu/Followers.jsx";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -21,12 +21,17 @@ const CompanyOverView = () => {
   const { setLoading, setIsSnakBar } = useContext(AllContext);
   const [snak, setSnak] = useState({ type: null, text: null });
   const [companyMenu, setCompanyMenu] = useState("");
+  const [editCompanyDialog, setEditCompanyDialog] = useState(false);
 
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <div className='main-overview-wrapper max-w-[100vw] overflow-x-hidden'>
         <Navbar />
         <Loader />
+        <EditCompany
+          editCompanyDialog={editCompanyDialog}
+          setEditCompanyDialog={setEditCompanyDialog}
+        />
         {snak.type && <SnakBar type={snak.type} text={snak.text} />}
 
         <div className='main-display w-[80vw] min-h-[100vh] h-[90vh] flex m-auto mt-[55px] p-2 space-x-3'>
@@ -112,6 +117,7 @@ const CompanyOverView = () => {
                 <CompanyMenu
                   setCompanyMenu={setCompanyMenu}
                   companyMenu={companyMenu}
+                  setEditCompanyDialog={setEditCompanyDialog}
                 />
               </div>
             </div>

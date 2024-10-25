@@ -121,7 +121,7 @@ const Navbar = () => {
     >
       <LoginDialog isLogin={isLogin} setIsLogin={setIsLogin} />
       <div
-        className={` main-up h-[7vh]  text-white flex justify-center items-center  border-b-[1px] border-b-[rgb(186,186,186)]  w-[100%] ${
+        className={` main-up h-[7vh]  text-white flex justify-center items-center  border-b-2 border-gray-400 border-opacity-40  w-[100%] ${
           lightMode && " text-black"
         }`}
       >

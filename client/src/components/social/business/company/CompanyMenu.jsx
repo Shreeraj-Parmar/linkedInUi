@@ -1,6 +1,6 @@
 import React from "react";
 
-const CompanyMenu = ({ setCompanyMenu, companyMenu }) => {
+const CompanyMenu = ({ setCompanyMenu, companyMenu, setEditCompanyDialog }) => {
   return (
     <div className='menu-company flex-row'>
       <div
@@ -61,6 +61,7 @@ const CompanyMenu = ({ setCompanyMenu, companyMenu }) => {
       <div
         onClick={() => {
           //open dialog
+          setEditCompanyDialog(true);
         }}
         className={`  menu-btn-wrapper p-4 hover:bg-[#F3F3F3] font-semibold text-[#444444] cursor-pointer text-[17px]`}
       >

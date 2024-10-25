@@ -32,6 +32,11 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import AddIcon from "@mui/icons-material/Add";
 import SnakBar from "../../../SnakBar";
 import { AllContext } from "../../../../context/UserContext";
+import {
+  companyTypeArr,
+  companySizeArr,
+  industryArr,
+} from "../../../../utils/somearr.js";
 
 const dropZoneStyles = {
   border: "2px dashed #444444",
@@ -47,57 +52,6 @@ const dropZoneStyles = {
 };
 
 // sample arr
-const industryArr = [
-  "Agriculture",
-  "Automotive",
-  "Banking",
-  "Construction",
-  "Education",
-  "Energy",
-  "Entertainment",
-  "Finance",
-  "Food",
-  "Healthcare",
-  "Hospitality",
-  "Information Technology",
-  "Insurance",
-  "Manufacturing",
-  "Marketing",
-  "Media",
-  "Mining",
-  "Non-Profit",
-  "Real Estate",
-  "Retail",
-  "Software",
-  "Telecommunications",
-  "Transportation",
-  "Travel",
-];
-
-const companySizeArr = [
-  "1-10 employees",
-  "11-50 employees",
-  "51-200 employees",
-  "201-500 employees",
-  "501-1000 employees",
-  "1001-5000 employees",
-  "5001-10000 employees",
-  "10001+ employees",
-];
-
-const companyTypeArr = [
-  "Sole Proprietorship",
-  "Partnership",
-  "Corporation",
-  "Limited Liability Company",
-  "Limited Liability Partnership",
-  "Limited Partnership",
-  "Limited Liability Corporation",
-  "public limited company",
-  "sole trader",
-  "subsidiary",
-  "trust",
-];
 
 const NewCompany = () => {
   const { setIsSnakBar, setLoading } = useContext(AllContext);

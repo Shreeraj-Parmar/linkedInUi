@@ -22,7 +22,7 @@ const dialogStyle = {
   //   overflow: "hidden",
   borderRadius: "8px",
   display: "flex",
-  backgroundColor: "#F4F2EE",
+  backgroundColor: "#fff",
 };
 
 const DeleteCompanyDialog = ({
