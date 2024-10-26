@@ -23,6 +23,7 @@ import Notifications from "./components/Notifications/Notifications";
 import Business from "./components/social/business/Business";
 import NewCompany from "./components/social/business/company/NewCompany";
 import CompanyOverView from "./components/social/business/company/CompanyOverView";
+import { verifyTokenFunc } from "./utils/token-verification-func.js";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -107,8 +108,7 @@ function App() {
     ) {
       return;
     } else {
-      if (!localStorage.getItem("token")) window.location.href = "/login";
-      return;
+      verifyTokenFunc();
     }
   }, []);
 

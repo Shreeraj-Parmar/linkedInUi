@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Dialog } from "@mui/material";
 import Loader from "../../../../Loader/Loader.jsx";
 import SnakBar from "../../../../SnakBar.jsx";
@@ -23,10 +23,16 @@ const dialogStyle = {
   backgroundColor: "#fff",
 };
 
-const EditCompany = ({ setEditCompanyDialog, editCompanyDialog }) => {
+const EditCompany = ({
+  setEditCompanyDialog,
+  editCompanyDialog,
+  setCompanyDetails,
+  companyDetails,
+}) => {
   const [snak, setSnak] = useState({ type: null, text: null });
   const [checkBox, setCheckBox] = useState(false);
   const [editCompanyMenu, setEditCompanyMenu] = useState("info");
+  const saveBtnRef = useRef(null);
   return (
     <Dialog
       open={editCompanyDialog}
@@ -61,13 +67,17 @@ const EditCompany = ({ setEditCompanyDialog, editCompanyDialog }) => {
             <EditRight
               setEditCompanyMenu={setEditCompanyMenu}
               editCompanyMenu={editCompanyMenu}
+              setCompanyDetails={setCompanyDetails}
+              companyDetails={companyDetails}
+              saveBtnRef={saveBtnRef}
+              setEditCompanyDialog={setEditCompanyDialog}
             />
           </div>
         </div>
         <div className='action-buttons   z-50 flex justify-end  items-center mt-2 mr-5 '>
           <button
             onClick={() => {
-              // handle save action
+              saveBtnRef.current.click();
             }}
             className='flex items-center fixed bottom-[60px] space-x-2 bg-[#0a66c2] text-[#fff] px-4 py-2 rounded-full hover:bg-[#004182] focus:outline-none focus:ring-2 focus:ring-[#0a66c2] focus:ring-offset-2 transition duration-300 ease-in-out'
           >

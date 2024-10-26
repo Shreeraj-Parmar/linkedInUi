@@ -193,6 +193,11 @@ const Overview = ({ formik }) => {
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
         />
+        <div className='formik-err'>
+          {formik.touched.mobile && formik.errors.mobile && (
+            <div className='text-red-500'>{formik.errors.mobile}</div>
+          )}
+        </div>
       </div>
       <div className='inpss mt-3 '>
         <inputLabel className='text-[#000]'>Founded In</inputLabel>
@@ -203,7 +208,7 @@ const Overview = ({ formik }) => {
           id='foundedIn'
           value={formik.values.foundedIn}
           name='foundedIn'
-          type='text'
+          type='number'
           label='foundedIn'
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}

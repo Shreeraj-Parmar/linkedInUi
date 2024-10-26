@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 const companySchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   name: { type: String, required: true }, // Company name
+  mobile: { type: Number },
+  workPlace: {
+    type: String,
+    enum: ["Work from Home", "Office", "Remote", "Hybrid"],
+  },
+  foundedIn: { type: Number },
   city: { type: String, required: true }, // Company city
   state: { type: String, required: true }, // Company state
   country: { type: String, required: true }, // Company country

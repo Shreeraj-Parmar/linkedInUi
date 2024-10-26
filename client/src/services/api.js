@@ -891,3 +891,41 @@ export const saveNewCompanyData = async (data) => {
     console.error(`Error while calling saveNewCompanyData: ${error.message}`);
   }
 };
+
+// get company Data
+
+export const getCompanyData = async (data) => {
+  try {
+    const url = `${API}/company/${data}/admin`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getCompanyData & error is: ${error.message}`
+    );
+    console.error(`Error while calling getCompanyData: ${error.message}`);
+  }
+};
+
+// update company data
+
+export const updateCompanyData = async (data) => {
+  try {
+    const url = `${API}/company/`;
+    let res = await axios.put(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling updateCompanyData & error is: ${error.message}`
+    );
+    console.error(`Error while calling updateCompanyData: ${error.message}`);
+  }
+};

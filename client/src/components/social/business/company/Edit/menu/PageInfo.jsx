@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 
-const PageInfo = ({ formik }) => {
+const PageInfo = ({ formik, setLogoFile, logoFile }) => {
+  const [preview, setPreview] = useState(null);
+  const inpFileRef = useRef(null);
   return (
     <div className='p-4 w-[100%]'>
       <div className=' '>
@@ -10,12 +12,28 @@ const PageInfo = ({ formik }) => {
       </div>
       <div className='mt-2 relative'>
         <img
-          src='/blank.png'
+          src={preview || formik.values.profilePicture || "/blank.png"}
           className='w-[90px] h-[90px] rounded-sm shadow-sm border-2 border-gray-400 border-opacity-40'
           alt=''
         />
+        <div className='diplay-none'>
+          <input
+            type='file'
+            name='file'
+            ref={inpFileRef}
+            accept='image/*'
+            id='file'
+            onChange={(e) => {
+              setLogoFile(e.target.files[0]);
+              setPreview(URL.createObjectURL(e.target.files[0]));
+            }}
+          />
+        </div>
 
-        <div className='absolute bottom-[-10px] left-[75px]'>
+        <div
+          onClick={() => inpFileRef.current.click()}
+          className='absolute bottom-[-10px] left-[75px]'
+        >
           <IconButton
             size='small'
             style={{

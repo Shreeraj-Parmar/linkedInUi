@@ -15,6 +15,7 @@ import EditCompany from "./Edit/EditCompany.jsx";
 import Followers from "./menu/Followers.jsx";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import { getCompanyData } from "../../../../services/api.js";
 
 const CompanyOverView = () => {
   const companyId = useParams();
@@ -22,6 +23,22 @@ const CompanyOverView = () => {
   const [snak, setSnak] = useState({ type: null, text: null });
   const [companyMenu, setCompanyMenu] = useState("dashboard");
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState({});
+
+  const getCompanyDataFunc = async () => {
+    let res = await getCompanyData(companyId && companyId.companyId);
+    if (res.status === 200) {
+      console.log("this company data is", res.data);
+      setCompanyDetails(res.data.allData);
+    } else {
+      console.log("somthing error");
+    }
+  };
+
+  useEffect(() => {
+    console.log("companyId;:", companyId);
+    getCompanyDataFunc();
+  }, []);
 
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
@@ -31,6 +48,8 @@ const CompanyOverView = () => {
         <EditCompany
           editCompanyDialog={editCompanyDialog}
           setEditCompanyDialog={setEditCompanyDialog}
+          setCompanyDetails={setCompanyDetails}
+          companyDetails={companyDetails}
         />
         {snak.type && <SnakBar type={snak.type} text={snak.text} />}
 
@@ -51,14 +70,23 @@ const CompanyOverView = () => {
               <div className='above-company-details p-4'>
                 <div className=''>
                   <img
-                    src='/blank.png'
+                    src={
+                      (companyDetails &&
+                        companyDetails.profilePicture &&
+                        companyDetails.profilePicture) ||
+                      "/blank.png"
+                    }
                     className='w-[100px] h-[100px] rounded-md border-2 border-gray-400 border-opacity-40'
                     alt=''
                   />
                 </div>
-                <p className='text-[24px] mt-2 font-semibold'>Company Name</p>
+                <p className='text-[24px] mt-2 font-semibold'>
+                  {companyDetails && companyDetails.name && companyDetails.name}
+                </p>
                 <p className='text-[15px]  text-[#444444] font-semibold'>
-                  0 followers
+                  {companyDetails &&
+                    companyDetails.followers &&
+                    companyDetails.followers.length}
                 </p>
                 <div className='space-y-3'>
                   <button

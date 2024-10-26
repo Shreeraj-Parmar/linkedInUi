@@ -70,11 +70,17 @@ import {
   updateNotiClickOn,
 } from "../controller/notification-controller.js";
 
-import { saveNewCompanyInDB } from "../controller/company-controller.js";
+import {
+  saveNewCompanyInDB,
+  getDataViaAdmin,
+  updateCompanyInDB,
+} from "../controller/company-controller.js";
 
 // company routs:
 
 router.post("/company", jwtMiddle, saveNewCompanyInDB);
+router.put("/company", jwtMiddle, updateCompanyInDB);
+router.get("/company/:companyId/admin", jwtMiddle, getDataViaAdmin);
 
 router.post("/user/signup", saveNewUser);
 router.post("/user/url-check", jwtMiddle, checkURL);
