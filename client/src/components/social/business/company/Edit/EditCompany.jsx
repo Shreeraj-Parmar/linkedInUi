@@ -26,7 +26,7 @@ const dialogStyle = {
 const EditCompany = ({ setEditCompanyDialog, editCompanyDialog }) => {
   const [snak, setSnak] = useState({ type: null, text: null });
   const [checkBox, setCheckBox] = useState(false);
-  const [editCompanyMenu, setEditCompanyMenu] = useState(false);
+  const [editCompanyMenu, setEditCompanyMenu] = useState("info");
   return (
     <Dialog
       open={editCompanyDialog}

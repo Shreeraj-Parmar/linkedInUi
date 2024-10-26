@@ -20,7 +20,7 @@ const CompanyOverView = () => {
   const companyId = useParams();
   const { setLoading, setIsSnakBar } = useContext(AllContext);
   const [snak, setSnak] = useState({ type: null, text: null });
-  const [companyMenu, setCompanyMenu] = useState("");
+  const [companyMenu, setCompanyMenu] = useState("dashboard");
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
 
   return (
@@ -38,7 +38,12 @@ const CompanyOverView = () => {
           {/* Left side */}
           <div className='left-company-dash w-[25%] '>
             <div className='left-company-dash-wrapper relative bg-white border-2 border-gray-400 border-opacity-40 rounded-lg '>
-              <div className='absolute right-[20px] top-4'>
+              <div
+                onClick={() => {
+                  setEditCompanyDialog(true);
+                }}
+                className='absolute right-[20px] top-4'
+              >
                 <IconButton>
                   <EditIcon fontSize='medium' className='text-[#444444]' />
                 </IconButton>
