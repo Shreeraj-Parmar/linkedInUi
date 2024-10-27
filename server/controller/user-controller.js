@@ -775,3 +775,23 @@ export const updateUserProfileInDb = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// send user according search for add new admin
+
+export const sendUsersAccQueryForAdminSearch = async (req, res) => {
+  const { query } = req.query;
+  try {
+    const users = await User.find({
+      name: { $regex: query, $options: "i" }, // 'i' for case-insensitive
+    })
+      .limit(8)
+      .select("name role heading city profilePicture");
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(
+      `Error while calling sendUsersAccQueryForAdminSearch API & error is: ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

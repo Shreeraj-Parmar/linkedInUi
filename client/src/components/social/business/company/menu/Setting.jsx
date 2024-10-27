@@ -3,7 +3,7 @@ import { AllContext } from "../../../../../context/UserContext";
 import EastIcon from "@mui/icons-material/East";
 import DeleteCompanyDialog from "./DeleteCompanyDialog";
 import AdminDialog from "./AdminDialog";
-const Setting = () => {
+const Setting = ({ companyDetails }) => {
   const { setLoading } = useContext(AllContext);
   const [adminDialog, setAdminDialog] = useState(false);
   const [deleteCompanyDialog, setDeleteCompanyDialog] = useState(false);
@@ -18,6 +18,7 @@ const Setting = () => {
         adminDialog={adminDialog}
         setAdminDialog={setAdminDialog}
         setLoading={setLoading}
+        companyDetails={companyDetails}
       />
       <div className='p-2 pl-4 border-b-2 border-gray-400 border-opacity-40'>
         <p className=' font-semibold text-xl'>Settings</p>

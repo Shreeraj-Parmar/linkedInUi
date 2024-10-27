@@ -95,6 +95,7 @@
 
 .diplay-none {
   display: none;
+  /* height: fit-content; */
 }
 
 .main-menu-div:hover * {

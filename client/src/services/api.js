@@ -929,3 +929,64 @@ export const updateCompanyData = async (data) => {
     console.error(`Error while calling updateCompanyData: ${error.message}`);
   }
 };
+
+// search users for admin adding
+
+export const searchUserForAdmin = async (data) => {
+  try {
+    const url = `${API}/users/admin/add/search?query=${data}`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling searchUserForAdmin & error is: ${error.message}`
+    );
+    console.error(`Error while calling searchUserForAdmin: ${error.message}`);
+  }
+};
+
+// add admin of company
+
+export const addAdminOfCompany = async (data) => {
+  try {
+    const url = `${API}/company/admin/add`;
+    let res = await axios.put(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling addAdminOfCompany & error is: ${error.message}`
+    );
+    console.error(`Error while calling addAdminOfCompany: ${error.message}`);
+  }
+};
+
+// delete admin from company
+
+export const deleteAdminFromCompany = async (data) => {
+  try {
+    const url = `${API}/company/admin/?data=${encodeURIComponent(
+      JSON.stringify(data)
+    )}`;
+    let res = await axios.delete(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling deleteAdminFromCompany & error is: ${error.message}`
+    );
+    console.error(
+      `Error while calling deleteAdminFromCompany: ${error.message}`
+    );
+  }
+};

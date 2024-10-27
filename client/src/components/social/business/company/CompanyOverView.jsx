@@ -24,16 +24,25 @@ const CompanyOverView = () => {
   const [companyMenu, setCompanyMenu] = useState("dashboard");
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [companyDetails, setCompanyDetails] = useState({});
+  const navigate = useNavigate();
 
   const getCompanyDataFunc = async () => {
     let res = await getCompanyData(companyId && companyId.companyId);
     if (res.status === 200) {
       console.log("this company data is", res.data);
       setCompanyDetails(res.data.allData);
+    } else if (res.status === 204) {
+      console.log("you are not admin of that company");
+      navigate("/profile");
+      return;
     } else {
       console.log("somthing error");
     }
   };
+
+  // useEffect(() => {
+  //   console.log("user arr", companyDetails);
+  // }, [companyDetails]);
 
   useEffect(() => {
     console.log("companyId;:", companyId);
@@ -161,7 +170,9 @@ const CompanyOverView = () => {
             {companyMenu === "posts" && <PagePost />}
             {companyMenu === "applications" && <Applications />}
             {companyMenu === "inbox" && <Inbox />}
-            {companyMenu === "setting" && <Settings />}
+            {companyMenu === "setting" && (
+              <Settings companyDetails={companyDetails && companyDetails} />
+            )}
             {companyMenu === "followers" && <Followers />}
           </div>
         </div>

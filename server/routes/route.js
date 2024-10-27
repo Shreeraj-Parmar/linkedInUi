@@ -23,6 +23,7 @@ import {
   withdrawReq,
   updateUserFavouriteInDB,
   updateUserProfileInDb,
+  sendUsersAccQueryForAdminSearch,
 } from "../controller/user-controller.js";
 import {
   sendPreSignedURL,
@@ -74,6 +75,8 @@ import {
   saveNewCompanyInDB,
   getDataViaAdmin,
   updateCompanyInDB,
+  addAdminOfCompanyInDB,
+  deleteAdminFromDB,
 } from "../controller/company-controller.js";
 
 // company routs:
@@ -81,6 +84,8 @@ import {
 router.post("/company", jwtMiddle, saveNewCompanyInDB);
 router.put("/company", jwtMiddle, updateCompanyInDB);
 router.get("/company/:companyId/admin", jwtMiddle, getDataViaAdmin);
+router.put("/company/admin/add", jwtMiddle, addAdminOfCompanyInDB);
+router.delete("/company/admin", jwtMiddle, deleteAdminFromDB);
 
 router.post("/user/signup", saveNewUser);
 router.post("/user/url-check", jwtMiddle, checkURL);
@@ -151,4 +156,13 @@ router.post("/refresh-verify", generateRefresh);
 
 // aws download
 router.post("/aws/msg/download", jwtMiddle, sendURLForDownload);
+
+// serch apis
+
+router.get(
+  "/users/admin/add/search",
+  jwtMiddle,
+  sendUsersAccQueryForAdminSearch
+);
+
 export default router;

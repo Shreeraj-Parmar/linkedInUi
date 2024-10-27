@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog } from "@mui/material";
 import Loader from "../../../../Loader/Loader.jsx";
 import SnakBar from "../../../../SnakBar.jsx";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import AddAdmin from "./AddAdmin.jsx";
+import DeleteAdminConfirm from "./DeleteAdminConfirm.jsx";
 
 const dialogStyle = {
   position: "fixed",
@@ -26,9 +28,24 @@ const dialogStyle = {
   backgroundColor: "#fff",
 };
 
-const AdminDialog = ({ setAdminDialog, adminDialog, setLoading }) => {
+const AdminDialog = ({
+  setAdminDialog,
+  adminDialog,
+  setLoading,
+  companyDetails,
+}) => {
   const [snak, setSnak] = useState({ type: null, text: null });
   const [addAdminDialog, setAddadminDialog] = useState(false);
+  const [allAdmins, setAllAdmins] = useState(
+    companyDetails && companyDetails.user && companyDetails.user
+  );
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [selectUserForDelete, setSelectUserForDelete] = useState(null);
+
+  useEffect(() => {
+    console.log("user arr", companyDetails);
+  }, [companyDetails]);
+
   return (
     <Dialog
       open={adminDialog}
@@ -39,9 +56,16 @@ const AdminDialog = ({ setAdminDialog, adminDialog, setLoading }) => {
       }}
     >
       <Loader />
+      <DeleteAdminConfirm
+        deleteDialog={deleteDialog}
+        setDeleteDialog={setDeleteDialog}
+        selectUserForDelete={selectUserForDelete}
+        setAllAdmins={setAllAdmins}
+      />
       <AddAdmin
         setAddadminDialog={setAddadminDialog}
         addAdminDialog={addAdminDialog}
+        setAllAdmins={setAllAdmins}
       />
       {snak.type && <SnakBar type={snak.type} text={snak.text} />}
       <div className='w-[100%]   h-[100%]'>
@@ -70,6 +94,55 @@ const AdminDialog = ({ setAdminDialog, adminDialog, setLoading }) => {
             <p>Add admin</p>
           </button>
         </div>
+        <div className='p-2'>
+          <p className='font-semibold'>All Admins</p>
+        </div>
+        {allAdmins &&
+          allAdmins.length > 0 &&
+          allAdmins.map((user) => {
+            return (
+              <div
+                key={user._id}
+                className={`p-1  pl-4 flex space-x-3 items-center  cursor-pointer hover:bg-[#F3F3F3] rounded-md `}
+              >
+                <div className='w-[10%]'>
+                  <img
+                    src={
+                      (user.profilePicture && user.profilePicture) ||
+                      "/blank.png"
+                    }
+                    alt=''
+                    className='min-w-[80px] shadow-lg min-h-[80px] rounded-full'
+                  />
+                </div>
+                <div className='min-w-[600px]  max-w-[600px] relative left-2'>
+                  <p className='font-semibold'>{user.name}</p>
+                  <p className='text-sm relative '>
+                    {(user.heading && user.heading) ||
+                      (user.role && user.role) ||
+                      user.city}
+                  </p>
+                </div>
+                <div className='relative right-4'>
+                  <IconButton
+                    onClick={() => {
+                      if (allAdmins.length > 1) {
+                        setSelectUserForDelete(user);
+                        setDeleteDialog(true);
+                      } else {
+                        console.log(
+                          "you can not delete this user, one user jaroori"
+                        );
+                      }
+                    }}
+                    className='  text-2xl cursor-pointer'
+                  >
+                    <DeleteIcon className='text-[#000]' fontSize='medium' />
+                  </IconButton>
+                </div>
+              </div>
+            );
+          })}
       </div>
     </Dialog>
   );
