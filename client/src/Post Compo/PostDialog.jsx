@@ -7,6 +7,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { AllContext } from "../context/UserContext.jsx";
 import SnakBar from "../components/SnakBar.jsx";
 import Loader from "../components/Loader/Loader.jsx";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import ChangeAs from "./ChangeAs.jsx";
 // dialog style
 const dialogStyle = {
   position: "fixed",
@@ -19,7 +21,7 @@ const dialogStyle = {
   Width: "70vw",
   color: "#000",
 
-  maxHeight: "55vh",
+  maxHeight: "80vh",
 
   //   overflow: "hidden",
   borderRadius: "20px",
@@ -38,7 +40,14 @@ const PostDialog = ({
   currUserData,
   setShowAllMedia,
 }) => {
-  const { setLoading, setIsSnakBar } = useContext(AllContext);
+  const {
+    setLoading,
+    setIsSnakBar,
+    actAs,
+    setActAs,
+    changeAsDialog,
+    setChangeAsDialog,
+  } = useContext(AllContext);
   const [previewUrl, setPreviewUrl] = useState([]); // for image preview
   const [postFile, setPostFile] = useState([]);
   const [postText, setPostText] = useState("");
@@ -64,10 +73,11 @@ const PostDialog = ({
 
   const handlePostSubmit = async () => {
     setLoading(true);
+
     if (postText === "" && postFile.length === 0) {
       setSnak({
         type: "error",
-        text: "Please Write Somthing Or Select Photo !",
+        text: "Please write something or select a photo!",
       });
       return;
     }
@@ -79,7 +89,6 @@ const PostDialog = ({
         let res = await getURLForPOST({ fileType: file.type });
         if (res.status === 200) {
           const nameOfFile = res.data.fileName;
-
           let resOfAWS = await uploadFileAWS({
             uploadURL: res.data.url,
             postFile: file,
@@ -93,104 +102,80 @@ const PostDialog = ({
             uploadedUrls.push({
               url: permanentUrlForPost,
               fileType: file.type,
-            }); // Store the uploaded URL
+            });
           } else {
             setSnak({
               type: "error",
-              text: "Somthing Error While uplaoding Image",
+              text: "Error uploading image",
             });
+            return;
           }
         }
       }
 
-      console.log("total uploaded urls", uploadedUrls);
-
-      // save post in db
-      let res = await savePostData({
-        text: postText,
-        mediaUrls: uploadedUrls,
-      });
-
-      if (res.status === 200) {
-        console.log("post saved successfully");
-        let newPost = {
-          text: postText,
-          mediaUrls: uploadedUrls,
-          _id: res.data.postId,
-          comments: [],
-          likeCount: 0,
-          likedBy: [],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          user: {
-            _id: currUserData._id,
-            name: currUserData.name,
-            profilePicture: currUserData.profilePicture || imgUrl,
-            city: currUserData.city,
-          },
-        };
-        console.log("new post is here", newPost);
-        setAllPost((prev) => [newPost, ...prev]);
-        setShowAllMedia((prev) => ({
-          ...prev,
-          [res.data.postId]: false,
-        }));
-        setPostText("");
-        setSnak({
-          type: "success",
-          text: "Post Uploaded successfully",
-        });
-        setPostFile(null);
-      } else {
-        console.log("error while generating url");
-
-        setPostFile([]);
-        setPreviewUrl([]);
-        setPostText("");
-        setSnak({
-          type: "error",
-          text: "Somthing Error.. please tye again",
-        });
-      }
-    } else {
-      let res = await savePostData({
-        text: postText,
-      });
-      if (res.status === 200) {
-        let newPost = {
-          text: postText,
-          _id: res.data.postId,
-          comments: [],
-          likeCount: 0,
-          likedBy: [],
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          user: {
-            _id: currUserData._id,
-            name: currUserData.name,
-            profilePicture: currUserData.profilePicture || imgUrl,
-            city: currUserData.city,
-          },
-        };
-
-        setAllPost((prev) => [newPost, ...prev]);
-        console.log("post saved successfully");
-        console.log("error while generating url");
-        setSnak({
-          type: "success",
-          text: "Post saved successfully",
-        });
-      }
+      console.log("Uploaded URLs:", uploadedUrls);
     }
-    setIsSnakBar(true);
-    setTimeout(() => {
-      setLoading(false);
 
-      setPostDialog(false);
-    }, 1500);
+    // Create post data object based on `actAs` context
+    const postData = {
+      text: postText,
+      mediaUrls: uploadedUrls,
+      createdBy: {
+        type: actAs.type === "user" ? "User" : "Company",
+        id: actAs.id,
+      },
+    };
+
+    // Save post in the database
+    let res = await savePostData(postData);
+
+    if (res.status === 200) {
+      const newPost = {
+        ...postData,
+        _id: res.data.postId,
+        comments: [],
+        likeCount: 0,
+        likedBy: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        createdBy: {
+          id: {
+            _id: actAs.id,
+            name:
+              actAs.type === "user"
+                ? currUserData.name
+                : currUserData.company.find((comp) => comp._id === actAs.id)
+                    ?.name,
+            profilePicture:
+              actAs.type === "user"
+                ? currUserData.profilePicture || imgUrl || "/blank.png"
+                : currUserData.company.find((comp) => comp._id === actAs.id)
+                    ?.profilePicture || "/blank.png",
+          },
+        },
+      };
+
+      console.log(newPost);
+
+      setAllPost((prev) => [newPost, ...prev]);
+      setShowAllMedia((prev) => ({ ...prev, [res.data.postId]: false }));
+      setSnak({ type: "success", text: "Post uploaded successfully" });
+      resetPostFields();
+    } else {
+      setSnak({ type: "error", text: "Error saving post" });
+      resetPostFields();
+    }
+  };
+
+  const resetPostFields = () => {
     setPostFile([]);
     setPreviewUrl([]);
     setPostText("");
+    setTimeout(() => {
+      setLoading(false);
+      setPostDialog(false);
+    }, 2000);
+    setIsSnakBar(true);
   };
 
   return (
@@ -204,8 +189,69 @@ const PostDialog = ({
     >
       <Loader />
       {snak.type && <SnakBar type={snak.type} text={snak.text} />}
-
+      <ChangeAs
+        setActAs={setActAs}
+        setChangeAsDialog={setChangeAsDialog}
+        changeAsDialog={changeAsDialog}
+        currUserData={currUserData}
+      />
       <div className='w-[100%] p-5 mt-[5%] h-[100%]'>
+        <p className='text-2xl'> Post As</p>
+        <div className='p-4 flex space-x-2 max-w-[80%] justify-start hover:bg-[#DBDBDC] rounded-md cursor-pointer items-center'>
+          {actAs.type === "user" && (
+            <>
+              <div>
+                <img
+                  src={imgUrl || "/blank.png"}
+                  className='w-[60px] shadow-md rounded-full h-[60px]'
+                  alt=''
+                />
+              </div>
+              <div className='min-w-[100px]'>
+                <p> {currUserData?.name}</p>
+              </div>
+            </>
+          )}
+
+          {actAs.type === "company" && (
+            <>
+              <div>
+                <img
+                  src={
+                    currUserData.company.find((comp) => comp._id === actAs.id)
+                      ?.profilePicture || "/blank.png"
+                  }
+                  className='w-[60px] shadow-md rounded-full h-[60px]'
+                  alt=''
+                />
+              </div>
+              <div className='min-w-[100px]'>
+                <p>
+                  {
+                    currUserData.company.find((comp) => comp._id === actAs.id)
+                      ?.name
+                  }
+                </p>
+              </div>
+            </>
+          )}
+
+          {currUserData &&
+            currUserData.company &&
+            currUserData.company.length > 0 && (
+              <div>
+                <button
+                  onClick={() => {
+                    setChangeAsDialog(true);
+                  }}
+                  className='p-2 flex justify-center items-center min-w-[160px] bg-[#0A66C2] text-white hover:bg-[#004182] focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full font-semibold  space-x-1'
+                >
+                  <SwapHorizIcon />
+                  <p>Switch Account</p>
+                </button>
+              </div>
+            )}
+        </div>
         <div className='p-4 '>
           <div>
             <textarea
@@ -282,12 +328,12 @@ const PostDialog = ({
         </div>
         <div className='flex justify-end'>
           <button
-            className='bg-[#4eacff] text-black p-2 mr-3 mb-3 hover:bg-[#2c618f] rounded-md'
+            className='bg-[#0A66C2] text-white p-2 mr-3 mb-3 hover:bg-[#004182] rounded-md font-semibold'
             onClick={() => {
               handlePostSubmit();
             }}
           >
-            post
+            Post
           </button>
         </div>
       </div>

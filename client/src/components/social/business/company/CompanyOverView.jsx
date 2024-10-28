@@ -167,7 +167,9 @@ const CompanyOverView = () => {
           {/* Right side */}
           <div className='right-company-dash  w-[75%] '>
             {companyMenu === "dashboard" && <Dashboard />}
-            {companyMenu === "posts" && <PagePost />}
+            {companyMenu === "posts" && (
+              <PagePost companyDetails={companyDetails} />
+            )}
             {companyMenu === "applications" && <Applications />}
             {companyMenu === "inbox" && <Inbox />}
             {companyMenu === "setting" && (

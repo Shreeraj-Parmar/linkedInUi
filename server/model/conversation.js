@@ -4,8 +4,17 @@ const conversationSchema = mongoose.Schema(
   {
     members: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the member is a user or company
+          required: true,
+        },
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "members.type", // Dynamically reference either 'User' or 'Company' model
+        },
+        _id: false,
       },
     ],
     lastMessage: {

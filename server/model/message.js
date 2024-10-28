@@ -20,10 +20,21 @@ const messageSchema = new mongoose.Schema(
     text: {
       type: String,
     },
-    deletedBy: {
-      type: [mongoose.Schema.Types.ObjectId], // Stores the user IDs of users who have deleted the message
-      default: [],
-    },
+    deletedBy: [
+      {
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the deleter is a user or company
+          required: true,
+        },
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "deletedBy.type", // Dynamically reference 'User' or 'Company'
+        },
+        _id: false,
+      },
+    ], // Ar
     mediaUrl: {
       url: String,
       fileType: String,

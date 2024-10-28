@@ -1,5 +1,7 @@
 import Post from "../model/post.js";
 import User from "../model/user.js";
+import Company from "../model/company.js"; // Adjust the path as necessary
+
 import Comment from "../model/comment.js";
 import mongoose from "mongoose";
 
@@ -18,23 +20,36 @@ export const savePostDataIntoDB = async (req, res) => {
       }));
     }
 
+    // Create a new post with the createdBy structure
     let newPost = new Post({
-      user: req._id,
+      createdBy: {
+        type: req.body.createdBy.type, // 'User' or 'Company'
+        id: req.body.createdBy.id, // user or company ID
+      },
       text: req.body.text,
-      mediaUrls: mediaUrls, // Now using the correctly scoped mediaUrls
+      mediaUrls: mediaUrls,
     });
 
     // Save the post to the database
     let savedPost = await newPost.save();
     console.log("saved post in db is", savedPost);
 
-    // If post is saved successfully, update the user's posts array
+    // If post is saved successfully, update the user's or company's posts array
     if (savedPost) {
-      await User.findByIdAndUpdate(
-        req._id,
-        { $push: { posts: savedPost._id } },
-        { new: true }
-      );
+      // Update the respective user's posts array
+      if (req.body.createdBy.type === "User") {
+        await User.findByIdAndUpdate(
+          req.body.createdBy.id, // user ID from createdBy
+          { $push: { posts: savedPost._id } },
+          { new: true }
+        );
+      } else if (req.body.createdBy.type === "Company") {
+        await Company.findByIdAndUpdate(
+          req.body.createdBy.id, // company ID from createdBy
+          { $push: { posts: savedPost._id } },
+          { new: true }
+        );
+      }
 
       res
         .status(200)
@@ -63,18 +78,23 @@ export const sendAllPosts = async (req, res) => {
     // Calculate the number of posts to skip
     const skip = (pageNumber - 1) * limitNumber;
 
-    // Fetch posts with pagination
+    // Fetch posts with pagination, populating the createdBy field
     let allPosts = await Post.find()
-      .populate("user", "name city profilePicture") // Populate user information
+      .populate({
+        path: "createdBy.id", // Use the dynamic reference
+        select: "name city profilePicture", // Specify fields to return
+      })
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the posts according to pagination
       .limit(limitNumber); // Limit the number of posts fetched
 
     // Get the total number of posts for further use (like checking if there are more posts)
-    // const totalPosts = await Post.countDocuments();
+    const totalPosts = await Post.countDocuments();
 
     // Return posts and information about pagination
-    res.status(200).json({ allPosts });
+    res
+      .status(200)
+      .json({ allPosts, totalPosts, page: pageNumber, limit: limitNumber });
   } catch (error) {
     console.log(
       `Error while calling sendAllPosts API & error is: ${error.message}`
@@ -85,22 +105,46 @@ export const sendAllPosts = async (req, res) => {
 
 // update like count in db
 export const updateLike = async (req, res) => {
-  // console.log(req.body);
-  let { postId, likeStatus, whoLiked } = req.body;
+  let { postId, whoLiked, type } = req.body;
+
+  console.log(req.body);
+
   try {
     const post = await Post.findById(postId);
-    if (!post.likedBy.includes(whoLiked)) {
-      // Add user to likes array if not already liked
-      post.likedBy.push(whoLiked);
-    } else {
-      // Remove user from likes array if user already liked the post
-      post.likedBy = post.likedBy.filter((id) => id.toString() !== whoLiked);
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
     }
-    post.likeCount = post.likedBy.length;
+
+    // Create the liker object based on whether it's a user or company
+    const liker = {
+      type: type, // Set type based on isCompany
+      id: whoLiked, // ID of the user or company
+    };
+
+    // Check if the liker is already in the likedBy array
+    if (
+      !post.likedBy.some(
+        (like) => like.id.toString() === whoLiked && like.type === liker.type
+      )
+    ) {
+      // Add user/company to likes array if not already liked
+      post.likedBy.push(liker);
+    } else {
+      // Remove user/company from likes array if already liked
+      post.likedBy = post.likedBy.filter(
+        (like) => !(like.id.toString() === whoLiked && like.type === liker.type)
+      );
+    }
+
+    post.likeCount = post.likedBy.length; // Update the like count
 
     let finalRes = await post.save();
-    let FinalLikeStatus = finalRes.likedBy.includes(whoLiked);
-    console.log(finalRes);
+    let FinalLikeStatus = finalRes.likedBy.some(
+      (like) => like.id.toString() === whoLiked && like.type === liker.type
+    );
+
     if (finalRes) {
       res.status(200).json({
         success: true,
@@ -114,7 +158,7 @@ export const updateLike = async (req, res) => {
     }
   } catch (error) {
     console.log(
-      `error while calling updateLike API & error is ${error.message}`
+      `Error while calling updateLike API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -123,10 +167,15 @@ export const updateLike = async (req, res) => {
 // save comment into DB
 export const saveCommentIntoDB = async (req, res) => {
   // console.log(req.body);
-  let { postId, whoCommented, text } = req.body;
+  let { postId, whoCommented, text, type } = req.body;
   try {
+    let userIs = {
+      type: type, // Set type based on isCompany
+      id: whoCommented, // ID of the user or company
+    };
+
     const newComment = new Comment({
-      user: whoCommented,
+      createdBy: userIs,
       text: text,
       post: postId,
     });
@@ -157,10 +206,10 @@ export const saveCommentIntoDB = async (req, res) => {
 export const sendCommentAccPost = async (req, res) => {
   // console.log(req.query);
   try {
-    let commentsList = await Comment.find({ post: req.query.postId }).populate(
-      "user",
-      "name city profilePicture"
-    );
+    let commentsList = await Comment.find({ post: req.query.postId }).populate({
+      path: "createdBy.id", // Use the dynamic reference
+      select: "name city profilePicture", // Specify fields to return
+    });
     if (commentsList) {
       res.status(200).json({ commentsList });
     } else {
@@ -204,7 +253,7 @@ export const updatePostDataInDB = async (req, res) => {
   let { postId, text, mediaUrls } = req.body;
   try {
     const post = await Post.findById(postId);
-    if (post.user.toString() !== req._id.toString()) {
+    if (post.createdBy.id.toString() !== req._id.toString()) {
       return res.status(401).json({
         success: false,
         message: "you are not authorized to update this post",

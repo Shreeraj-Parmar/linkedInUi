@@ -1,6 +1,6 @@
 import React from "react";
 
-const PagePost = () => {
+const PagePost = ({ companyDetails }) => {
   return (
     <div className='w-[70.5%]'>
       <div className='p-2 border-2 border-gray-400  bg-white border-opacity-40 rounded-lg'>
@@ -9,9 +9,12 @@ const PagePost = () => {
         >
           <div className='write-post-left w-[10%]'>
             <img
-              src={"/blank.png"}
+              src={
+                (companyDetails && companyDetails.profilePicture) ||
+                "/blank.png"
+              }
               alt='your profile picture'
-              className='rounded-sm shadow-sm border border-gray-400 border-opacity-40 min-w-[60px] max-w-[60px] min-h-[60px] max-h-[60px]'
+              className='rounded-md shadow-sm border border-gray-400 border-opacity-40 min-w-[60px] max-w-[60px] min-h-[60px] max-h-[60px]'
             />
           </div>
           <div

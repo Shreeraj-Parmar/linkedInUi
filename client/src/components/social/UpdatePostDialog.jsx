@@ -33,6 +33,7 @@ const dialogStyle = {
 
 const UpdatePostDialog = ({
   updatePostDialog,
+  actAs,
   setAllPost,
   setUpdatePostDialog,
   setShowAllMedia,

@@ -40,6 +40,8 @@ const UserContext = ({ children }) => {
   const [unreadMSG, setUnreadMSG] = useState({});
   const [IsSnakBar, setIsSnakBar] = useState(false);
   const [lightMode, setLightMode] = useState(true);
+  const [actAs, setActAs] = useState({});
+  const [changeAsDialog, setChangeAsDialog] = useState(false);
 
   const [loginDialog, setLoginDialog] = useState(false);
 
@@ -83,6 +85,13 @@ const UserContext = ({ children }) => {
       localStorage.removeItem("refreshToken");
     }
   };
+
+  useEffect(() => {
+    setActAs({
+      type: "user",
+      id: currUserData && currUserData._id,
+    });
+  }, [currUserData]);
 
   useEffect(() => {
     verifyTokenForIslogin();
@@ -129,12 +138,16 @@ const UserContext = ({ children }) => {
 
         isLogin,
         setIsLogin,
+        changeAsDialog,
+        setChangeAsDialog,
         loginDialog,
         setLoginDialog,
         file,
         setFile,
         currMenu,
         setCurrMenu,
+        actAs,
+        setActAs,
         currConversationId,
         setCurrConversationId,
         messages,
