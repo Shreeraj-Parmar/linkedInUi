@@ -293,9 +293,14 @@ const UserProfile = () => {
                     <button
                       onClick={async () => {
                         if (isLogin) {
-                          await sendFollowReq({ receiverId: userData._id });
+                          let res = await sendFollowReq({
+                            receiverId: userData._id,
+                            receverType: "User",
+                            senderId: currUserData._id,
+                            senderType: "User",
+                          });
 
-                          getUserDataFunc();
+                          console.log(res.data);
                         } else {
                           // setLoginDialog(true);
                         }

@@ -14,7 +14,8 @@ import {
   getCommentCount,
   checkIfFollowingUser,
 } from "../../services/api.js";
-import { toast } from "react-toastify";
+import ChangeAs from "./../../Post Compo/ChangeAs.jsx";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
 import linkifyContent from "../../utils/linkify.js";
@@ -34,6 +35,10 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
     currUserData,
     lightMode,
     isLogin,
+    actAs,
+    setActAs,
+    changeAsDialog,
+    setChangeAsDialog,
     setLoginDialog,
     imgUrl,
   } = useContext(AllContext);
@@ -47,7 +52,6 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
   const [commentsByPost, setCommentsByPost] = useState({});
   const commentInputRef = useRef();
   const [commentCount, setCommentCount] = useState({});
-  const [followStatus, setFollowStatus] = useState({});
   const [selectedPostForUpdate, setSelectedPostForUpdate] = useState(null);
   // For checking if there are more notifications to load
   const limit = 3; // Number of notifications to load at a time
@@ -103,11 +107,16 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
 
   const postFunc = async (id) => {
     let res = await getAllPostAccUser({ page: page, limit: limit, userId: id });
-    if (res && res.status === 200) {
-      const posts = res.data.allPosts;
-      console.log("posts", posts);
-      setAllPost((prevPosts) => [...prevPosts, ...posts]);
 
+    if (res.status === 200) {
+      // Check if the response is successful
+      // let res.data.allPosts = res.data.allPosts.sort((a, b) => {
+      //   return new Date(b.createdAt) - new Date(a.createdAt); // Sort posts by newest first
+      // });
+      console.log("Sorted posts:", res.data.allPosts);
+
+      // Update all posts state with the newly fetched and sorted posts
+      setAllPost((prevPosts) => [...prevPosts, ...res.data.allPosts]);
       let readMoreForAllPost = res.data.allPosts.map((post) => ({
         [post._id]: false,
       }));
@@ -124,6 +133,8 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
         }));
       });
 
+      // to show 4 or more image with slider
+
       let ShowAllMediasData = res.data.allPosts.reduce((acc, post) => {
         acc[post._id] = false; // Set the value to false for each post._id
         return acc;
@@ -136,15 +147,33 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
         ...ShowAllMediasData,
       }));
 
-      if (posts.length < limit) {
-        setHasMore(false);
+      // Check if there are more posts to load
+      if (res.data.allPosts.length < limit) {
+        setHasMore(false); // No more posts to load
       }
 
       if (currUserData) {
         const newLikes = {}; // Store the likes for the newly loaded posts
         res.data.allPosts.forEach((post) => {
           // Check if the current user has liked the post
-          newLikes[post._id] = post.likedBy.includes(currUserData._id);
+
+          if (
+            currUserData &&
+            currUserData.company &&
+            currUserData.company.length > 0
+          ) {
+            newLikes[post._id] = {
+              user: post.likedBy.some(
+                (like) => like.type === "User" && like.id === currUserData._id
+              ),
+              company: post.likedBy.some(
+                (like) =>
+                  like.type === "Company" && like.id === currUserData._id
+              ),
+            };
+          } else {
+            newLikes[post._id] = post.likedBy.includes(currUserData._id);
+          }
         });
 
         // Use functional setLikes to merge with the existing likes state
@@ -157,34 +186,40 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
         setLikes({}); // User is not logged in
       }
 
-      //   checkFollowStatus(); // Check follow status   //................................
+      // checkFollowStatus(); // Check follow status
     } else {
       console.error("Failed to fetch posts:", res); // Handle error
     }
   };
 
   // like
-  const handleLike = async (postId, userId, likeArr) => {
+  const handleLike = async (postId) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
     }
-    // getData();
-    const currentLikeStatus =
-      likes[postId] || (currUserData && likeArr.includes(currUserData._id));
-
-    console.log("currunt like status", currentLikeStatus);
-
-    // Optimistically update UI before waiting for response
-
     console.log("curr id is", currUserData);
+    console.log("act as is", actAs);
     let res = await toggleLikeOnPost({
       postId: postId,
-      likeStatus: !currentLikeStatus,
-      whoLiked: currUserData._id,
+      whoLiked: actAs.id,
+      type: actAs.type === "company" ? "Company" : "User",
     });
+
     if (res.status === 200) {
+      const isUserLike = actAs.type === "user";
+
       console.log(res.data.message);
+
+      if (
+        currUserData &&
+        currUserData.company &&
+        currUserData.company.length > 0
+      ) {
+        if (!likes[postId]) {
+          likes[postId] = { user: false, company: false };
+        }
+      }
 
       if (res.data.FinalLikeStatus) {
         setAllPost((prevPosts) =>
@@ -194,10 +229,20 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
               : post
           )
         );
-        setLikes((prev) => ({
-          ...prev,
-          [postId]: true, // Toggle like status
-        }));
+
+        if (
+          currUserData &&
+          currUserData.company &&
+          currUserData.company.length > 0
+        ) {
+          likes[postId][isUserLike ? "user" : "company"] = true;
+          setLikes({ ...likes });
+        } else {
+          setLikes((prev) => ({
+            ...prev,
+            [postId]: true, // Toggle like status
+          }));
+        }
       } else {
         setAllPost((prevPosts) =>
           prevPosts.map((post) =>
@@ -206,20 +251,21 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
               : post
           )
         );
-        setLikes((prev) => ({
-          ...prev,
-          [postId]: false, // Toggle like status
-        }));
-      }
-      if (res.data.message === "Like status updated") {
-        !currentLikeStatus &&
-          (await sendNotification({
-            recipient: userId,
-            sender: currUserData._id,
-            type: "like",
-            message: "You Have new Liked On your post",
+        if (
+          currUserData &&
+          currUserData.company &&
+          currUserData.company.length > 0
+        ) {
+          likes[postId][isUserLike ? "user" : "company"] = false;
+          setLikes({ ...likes });
+        } else {
+          setLikes((prev) => ({
+            ...prev,
+            [postId]: false, // Toggle like status
           }));
+        }
       }
+      // notification here
     } else {
       console.error("Error updating like status on server", res.data.message);
     }
@@ -230,21 +276,31 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
     }
-    // getData();
+
     let res = await sendCommentData({
       postId: id,
-      whoCommented: currUserData._id,
+      whoCommented: actAs.id,
+      type: actAs.type === "company" ? "Company" : "User",
       text: commentText,
     });
     if (res.status === 200) {
       const newComment = {
         text: commentText,
         post: id,
-        user: {
-          _id: currUserData._id,
-          name: currUserData.name,
-          profilePicture: currUserData.profilePicture || imgUrl,
-          city: currUserData.city,
+        createdBy: {
+          id: {
+            _id: actAs.id,
+            name:
+              actAs.type === "user"
+                ? currUserData.name
+                : currUserData.company.find((com) => com._id === actAs.id).name,
+            profilePicture:
+              actAs.type === "user"
+                ? currUserData.profilePicture || "/blank.png"
+                : currUserData.company.find((com) => com._id === actAs.id)
+                    .profilePicture || "/blank.png",
+            city: currUserData.city,
+          },
         },
         createdAt: new Date().toISOString(),
       };
@@ -301,38 +357,38 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
   };
 
   // foloow
-  const handleFollowClick = async (receiver) => {
-    if (!isLogin) {
-      setLoginDialog(true); // Show login dialog if user is not logged in
-      return;
-    }
-    let res = await sendFollowReq({ receiverId: receiver });
-    if (res.status === 200) {
-      setFollow(true);
-      console.log(res.data.message);
-      if (res.data.message === "Now you are following the user!") {
-        await sendNotification({
-          recipient: receiver,
+  // const handleFollowClick = async (receiver) => {
+  //   if (!isLogin) {
+  //     setLoginDialog(true); // Show login dialog if user is not logged in
+  //     return;
+  //   }
+  //   let res = await sendFollowReq({ receiverId: receiver });
+  //   if (res.status === 200) {
+  //     setFollow(true);
+  //     console.log(res.data.message);
+  //     if (res.data.message === "Now you are following the user!") {
+  //       await sendNotification({
+  //         recipient: receiver,
 
-          sender: currUserData._id,
-          type: "follow",
-          message: "you have new follower",
-        });
-      }
-    } else {
-      toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      console.error("Error while following/unfollowing:", res.data.message);
-    }
-  };
+  //         sender: currUserData._id,
+  //         type: "follow",
+  //         message: "you have new follower",
+  //       });
+  //     }
+  //   } else {
+  //     toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
+  //       position: "top-right",
+  //       autoClose: 4000,
+  //       hideProgressBar: false,
+  //       closeOnClick: true,
+  //       pauseOnHover: true,
+  //       draggable: true,
+  //       progress: undefined,
+  //       theme: "light",
+  //     });
+  //     console.error("Error while following/unfollowing:", res.data.message);
+  //   }
+  // };
 
   const enableDisableCommentPostBtn = () => {
     // move to onChange function
@@ -342,6 +398,13 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
     } else {
       setIsDisabledPostBtn(false);
     }
+  };
+
+  const handleCommentClick = (postId) => {
+    setCommentBoxOpen((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
   };
 
   useEffect(() => {
@@ -372,79 +435,44 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
               return (
                 <div className='flex justify-center' key={post._id}>
                   <div
-                    className={`post bg-[#1B1F23]   p-5  rounded-md w-[100%] h-fit space-y-2 ${
+                    className={`post bg-[#1B1F23] p-5 rounded-md w-[100%] h-fit space-y-2 ${
                       lightMode &&
-                      " bg-white border-2 shadow-sm border-gray-400 border-opacity-40"
+                      "bg-white border-2 shadow-sm border-gray-400 border-opacity-40"
                     }`}
                   >
-                    <div className='post-des flex    w-[100%] space-x-2'>
+                    <div className='post-des flex w-[100%] space-x-2'>
                       <img
-                        src={
-                          (post.user && post.user.profilePicture) ||
-                          "/blank.png"
-                        }
+                        src={post.createdBy?.id?.profilePicture || "/blank.png"}
                         alt='who posted this post'
-                        className=' w-[9%] h-[55px] rounded-full'
+                        className='w-[9%] h-[55px] rounded-full'
                       />
-                      <div className='heading-post  lg:min-w-[200px] flex-row space-y-[-5px]'>
+                      <div className='heading-post lg:min-w-[200px] flex-row space-y-[-5px]'>
                         <p
                           onClick={() => {
                             setCurrMenu("");
                             setTimeout(() => {
-                              navigate(`/user/${post.user._id}`);
+                              navigate(
+                                post.createdBy?.type === "User"
+                                  ? `/user/${post.createdBy?.id._id}`
+                                  : `/company/${post.createdBy?.id._id}`
+                              );
                             }, 500);
                           }}
-                          className={
-                            "hover:underline  hover:text-blue-500 cursor-pointer"
-                          }
+                          className='hover:underline hover:text-blue-500 cursor-pointer'
                         >
-                          {post.user && post.user.name}
+                          {post.createdBy?.id?.name || "Unknown"}
                         </p>
-                        <p className={" text-[#959799] text-sm   "}>
-                          {post.user && post.user.city.toLowerCase()}
+                        <p className='text-[#959799] text-sm'>
+                          {post.createdBy?.id?.city?.toLowerCase() ||
+                            "Unknown City"}
                         </p>
-                        <p className={"text-[#959799] text-sm    "}>
-                          {moment(post.user && post.createdAt).fromNow()}
+                        <p className='text-[#959799] text-sm'>
+                          {moment(post.createdAt).fromNow()}
                         </p>
                       </div>
+
                       {currUserData &&
-                      post &&
-                      post.user &&
-                      post.user._id !== currUserData._id ? (
-                        <div className='follow-btn p-2 relative lg:left-[16rem]'>
-                          <button
-                            onClick={() => {
-                              handleFollowClick(post.user && post.user._id);
-                            }}
-                            className={`p-2  rounded-md ${
-                              lightMode &&
-                              " text-[#004182]  font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
-                            }`}
-                          >
-                            {follow ? "Folllowing" : "+ Follow"}
-                          </button>
-                        </div>
-                      ) : (
-                        !isLogin && (
-                          <div className='follow-btn p-2 relative lg:left-[280px]'>
-                            <button
-                              onClick={() => {
-                                setLoginDialog(true);
-                              }}
-                              className={`p-2  rounded-md  text-[#AAD6FF] hover:bg-[#1F2F41] ${
-                                lightMode &&
-                                " text-[#004182]  font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
-                              }`}
-                            >
-                              +Follow
-                            </button>
-                          </div>
-                        )
-                      )}
-                      {currUserData &&
-                        post &&
-                        post.user &&
-                        post.user._id === currUserData._id && (
+                        post.createdBy?.id._id === currUserData._id && (
                           <div className='follow-btn p-2 relative lg:left-[300px] '>
                             {updatePostDialog && (
                               <UpdatePostDialog
@@ -456,6 +484,7 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                                 setSelectedPostForUpdate={
                                   setSelectedPostForUpdate
                                 }
+                                actAs={actAs}
                               />
                             )}
                             <EditIcon
@@ -473,42 +502,32 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                       <div className=''>
                         <pre
                           dangerouslySetInnerHTML={{
-                            __html: readMore[post && post._id]
-                              ? linkifyContent(post && post.text && post.text)
+                            __html: readMore[post._id]
+                              ? linkifyContent(post.text)
                               : linkifyContent(truncatedContent),
                           }}
                           className='w-[90%] text-wrap mt-2 inline'
-                        ></pre>{" "}
+                        ></pre>
                         &nbsp;
-                        {post && post.text && post.text.length > 100 && (
+                        {post.text.length > 100 && (
                           <button
                             className='text-blue-500'
                             onClick={() => {
                               setReadMore((prev) => ({
                                 ...prev,
-                                [post && post._id]: !prev[post && post._id],
+                                [post._id]: !prev[post._id],
                               }));
                             }}
                           >
-                            {readMore && readMore[post && post._id]
+                            {readMore && readMore[post._id]
                               ? "Show Less"
                               : "more..."}
                           </button>
                         )}
                       </div>
                     </div>
-                    {post && post.url && post.url && (
-                      <div className='post-image w-[100%] mt-2 flex justify-center items-center'>
-                        <img
-                          src={post.url || ""}
-                          alt='this is post image'
-                          className={"w-[95%] max-h-[800px] rounded-md h-auto"}
-                        />
-                      </div>
-                    )}
 
-                    {post &&
-                      post.mediaUrls &&
+                    {post.mediaUrls &&
                       post.mediaUrls.length > 0 &&
                       post.mediaUrls.length === 1 && (
                         <div className='post-image w-[100%] mt-2 flex justify-center items-center'>
@@ -532,8 +551,7 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                         </div>
                       )}
 
-                    {post &&
-                      post.mediaUrls &&
+                    {post.mediaUrls &&
                       post.mediaUrls.length > 0 &&
                       post.mediaUrls.length === 2 && (
                         <div className='post-image w-[100%] mt-2 flex gap-1 justify-center items-center'>
@@ -561,8 +579,7 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                         </div>
                       )}
 
-                    {post &&
-                      post.mediaUrls &&
+                    {post.mediaUrls &&
                       post.mediaUrls.length > 0 &&
                       post.mediaUrls.length === 3 && (
                         <div className='post-image w-full mt-2 flex space-x-1'>
@@ -593,37 +610,35 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                               )}
                           </div>
                           <div className='  rounded-md'>
-                            {post &&
-                              post.mediaUrls
-                                .slice(2, 3)
-                                .map((mediaUrl, index) =>
-                                  mediaUrl.fileType.startsWith("video/") ? (
-                                    <video
-                                      key={index}
-                                      src={mediaUrl.url || ""}
-                                      ref={videoRef}
-                                      alt='this is post video'
-                                      className='w-[400px] min-h-[505px] h-[250px] rounded-md border border-gray-400 border-opacity-40'
-                                      width='100%'
-                                      controls
-                                      muted
-                                      preload='metadata'
-                                    />
-                                  ) : (
-                                    <img
-                                      key={index}
-                                      src={mediaUrl.url || ""}
-                                      alt='this is post image'
-                                      className='min-w-[250px] min-h-[505px] rounded-md border border-gray-400 border-opacity-40 '
-                                    />
-                                  )
-                                )}
+                            {post.mediaUrls
+                              .slice(2, 3)
+                              .map((mediaUrl, index) =>
+                                mediaUrl.fileType.startsWith("video/") ? (
+                                  <video
+                                    key={index}
+                                    src={mediaUrl.url || ""}
+                                    ref={videoRef}
+                                    alt='this is post video'
+                                    className='w-[400px] min-h-[505px] h-[250px] rounded-md border border-gray-400 border-opacity-40'
+                                    width='100%'
+                                    controls
+                                    muted
+                                    preload='metadata'
+                                  />
+                                ) : (
+                                  <img
+                                    key={index}
+                                    src={mediaUrl.url || ""}
+                                    alt='this is post image'
+                                    className='min-w-[250px] min-h-[505px] rounded-md border border-gray-400 border-opacity-40 '
+                                  />
+                                )
+                              )}
                           </div>
                         </div>
                       )}
 
-                    {post &&
-                      post.mediaUrls &&
+                    {post.mediaUrls &&
                       post.mediaUrls.length > 0 &&
                       post.mediaUrls.length >= 5 && (
                         <>
@@ -636,74 +651,70 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                               }}
                             >
                               <Slider {...settings}>
-                                {post &&
-                                  post.mediaUrls.map((mediaUrl, index) => (
-                                    <Card
-                                      className='border-2 rounded-md border-gray-400 border-opacity-40 shadow-md'
-                                      key={index}
-                                      style={{ width: "100%" }}
-                                    >
-                                      {mediaUrl.fileType.startsWith(
-                                        "image/"
-                                      ) ? (
-                                        <CardMedia
-                                          component='img'
-                                          alt={`Media ${index + 1}`}
-                                          image={mediaUrl.url}
-                                          sx={{
-                                            height: "480px",
-                                            width: "100%",
-                                            objectFit: "cover",
-                                          }}
-                                        />
-                                      ) : (
-                                        <video
-                                          width='100%'
-                                          ref={videoRef}
-                                          src={mediaUrl.url || ""}
-                                          className='h-[480px]'
-                                          controls
-                                          preload='metadata'
-                                          style={{ objectFit: "cover" }}
-                                        />
-                                      )}
-                                    </Card>
-                                  ))}
+                                {post.mediaUrls.map((mediaUrl, index) => (
+                                  <Card
+                                    className='border-2 rounded-md border-gray-400 border-opacity-40 shadow-md'
+                                    key={index}
+                                    style={{ width: "100%" }}
+                                  >
+                                    {mediaUrl.fileType.startsWith("image/") ? (
+                                      <CardMedia
+                                        component='img'
+                                        alt={`Media ${index + 1}`}
+                                        image={mediaUrl.url}
+                                        sx={{
+                                          height: "480px",
+                                          width: "100%",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                    ) : (
+                                      <video
+                                        width='100%'
+                                        ref={videoRef}
+                                        src={mediaUrl.url || ""}
+                                        className='h-[480px]'
+                                        controls
+                                        preload='metadata'
+                                        style={{ objectFit: "cover" }}
+                                      />
+                                    )}
+                                  </Card>
+                                ))}
                               </Slider>
                             </Box>
                           ) : (
                             <div className='post-image w-[100%] relative mt-2 flex flex-wrap gap-1 justify-center items-center'>
-                              {post &&
-                                post.mediaUrls
-                                  .slice(0, 4)
-                                  .map((mediaUrl, index) => {
-                                    const isLastMedia = index === 3; // Check if it's the last of the 4 items
-                                    const classNameOf = `w-[45%] max-h-[300px] min-h-[300px] rounded-md h-auto border border-gray-400 border-opacity-30 ${
-                                      isLastMedia ? "opacity-100 blur-sm" : ""
-                                    }`; // Adjust opacity and blur for the last media
+                              {post.mediaUrls
+                                .slice(0, 4)
+                                .map((mediaUrl, index) => {
+                                  const isLastMedia = index === 3; // Check if it's the last of the 4 items
+                                  const classNameOf = `w-[45%] max-h-[300px] min-h-[300px] rounded-md h-auto border border-gray-400 border-opacity-30 ${
+                                    isLastMedia ? "opacity-100 blur-sm" : ""
+                                  }`; // Adjust opacity and blur for the last media
 
-                                    return mediaUrl.fileType.startsWith(
-                                      "video/"
-                                    ) ? (
-                                      <video
-                                        key={index}
-                                        src={mediaUrl.url || ""}
-                                        ref={videoRef}
-                                        alt='this is post video'
-                                        className={classNameOf}
-                                        controls
-                                        muted
-                                        preload='metadata'
-                                      />
-                                    ) : (
-                                      <img
-                                        key={index}
-                                        src={mediaUrl.url || ""}
-                                        alt='this is post image'
-                                        className={classNameOf}
-                                      />
-                                    );
-                                  })}
+                                  return mediaUrl.fileType.startsWith(
+                                    "video/"
+                                  ) ? (
+                                    <video
+                                      key={index}
+                                      src={mediaUrl.url || ""}
+                                      ref={videoRef}
+                                      alt='this is post video'
+                                      className={classNameOf}
+                                      controls
+                                      muted
+                                      preload='metadata'
+                                    />
+                                  ) : (
+                                    <img
+                                      key={index}
+                                      src={mediaUrl.url || ""}
+                                      alt='this is post image'
+                                      className={classNameOf}
+                                    />
+                                  );
+                                })}
                               <div
                                 onClick={() => {
                                   setShowAllMedia((prev) => ({
@@ -711,13 +722,13 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                                     [post._id]: true,
                                   }));
                                 }}
-                                className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-80 absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
+                                className='max-h-[250px] min-w-[250px] right-[50px] top-[330px] opacity-90  absolute min-h-[250px] flex justify-center items-center z-50 cursor-pointer'
                               >
                                 <AddIcon
                                   fontSize='large'
-                                  className='text-[#000]'
+                                  className='text-[#fff]'
                                 />
-                                <p className='text-black text-2xl font-semibold'>
+                                <p className='text-white text-2xl font-semibold'>
                                   {post.mediaUrls.length - 4} More
                                 </p>
                               </div>
@@ -726,8 +737,7 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                         </>
                       )}
 
-                    {post &&
-                      post.mediaUrls &&
+                    {post.mediaUrls &&
                       post.mediaUrls.length > 0 &&
                       post.mediaUrls.length === 4 && (
                         <div className='post-image w-[100%] mt-2 flex flex-wrap gap-1 justify-center items-center'>
@@ -756,33 +766,68 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                       )}
 
                     <div className='flex justify-between'>
+                      <p className={"text-[#959799]"}>{post.likeCount} likes</p>
                       <p className={"text-[#959799]"}>
-                        {post && post.likeCount} likes
-                      </p>
-                      <p className={"text-[#959799]"}>
-                        {commentCount[post && post._id]
-                          ? commentCount[post && post._id]
-                          : "0"}{" "}
+                        {commentCount[post._id] ? commentCount[post._id] : "0"}{" "}
                         comments
                       </p>
                     </div>
                     <div className='divider'></div>
 
                     <div className='like-comment'>
+                      <ChangeAs
+                        actAs={actAs}
+                        setActAs={setActAs}
+                        setChangeAsDialog={setChangeAsDialog}
+                        currUserData={currUserData}
+                        changeAsDialog={changeAsDialog}
+                      />
                       <div className='like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2'>
+                        {currUserData &&
+                          currUserData.company &&
+                          currUserData.company.length > 0 && (
+                            <div
+                              onClick={() => {
+                                setChangeAsDialog(true);
+                              }}
+                              className='flex  min-w-[80px] cursor-pointer items-center space-x-2'
+                            >
+                              <img
+                                src={
+                                  (actAs.type === "company" &&
+                                    currUserData.company.find(
+                                      (company) => company._id === actAs.id
+                                    ).profilePicture) ||
+                                  (actAs.type === "user" &&
+                                    currUserData.profilePicture &&
+                                    currUserData.profilePicture) ||
+                                  "/blank.png"
+                                }
+                                alt='company logo'
+                                className='min-w-[50px] min-h-[50px] rounded-full'
+                              />
+                              <KeyboardArrowDownIcon className='text-[#959799]' />
+                            </div>
+                          )}
+
                         <div
-                          className={`like flex space-x-1 cursor-pointer ${
+                          className={`like flex mr-4 space-x-1 cursor-pointer ${
                             lightMode && "hover:bg-[#F4F2EE] "
                           }  hover:bg-[#293138] p-2 rounded-md`}
                           onClick={() => {
                             handleLike(
-                              post && post.user && post._id,
-                              post && post.user && post.user._id,
-                              post && post.likedBy
+                              post._id,
+                              post.createdBy?.id,
+                              post.likedBy
                             );
                           }}
                         >
-                          {likes && likes[post._id] ? (
+                          {(likes &&
+                            likes[post._id] &&
+                            likes[post._id][
+                              actAs.type === "company" ? "company" : "user"
+                            ]) ||
+                          likes[post._id] ? (
                             <FavoriteIcon className='text-red-500' />
                           ) : (
                             <FavoriteBorderIcon className='' />
@@ -795,10 +840,7 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                             lightMode && "hover:bg-[#F4F2EE] "
                           }  cursor-pointer hover:bg-[#293138] p-2 rounded-md`}
                           onClick={() => {
-                            setCommentBoxOpen((prev) => ({
-                              ...prev,
-                              [post._id]: !prev[post._id],
-                            }));
+                            handleCommentClick(post._id);
                             getAllCommentsFunc(post._id);
                           }}
                         >
@@ -815,17 +857,23 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                             commentBoxOpen[post._id] ? "active" : ""
                           }`}
                         >
-                          <div className='flex  items-center space-x-2'>
+                          <div className='flex items-center space-x-2'>
                             <img
-                              src={imgUrl || "/blank.png"}
-                              className='rounded-full  w-[7%] h-[40px] border border-gray-400 border-opacity-40'
+                              src={
+                                actAs.type === "user"
+                                  ? currUserData.profilePicture
+                                  : currUserData.company.find(
+                                      (com) => com._id === actAs.id
+                                    ).profilePicture || "/blank.png"
+                              }
+                              className='rounded-full w-[7%] h-[40px] border border-gray-400 border-opacity-40'
                               alt='your profile picture'
                             />
                             <div className='w-[100%]'>
                               <input
                                 type='text'
                                 name='comment'
-                                value={commentText} // imp for clearing the commentText
+                                value={commentText} // Important for clearing the commentText
                                 ref={commentInputRef}
                                 placeholder='Give Your Comment'
                                 id='comment'
@@ -837,15 +885,15 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                               />
                             </div>
                           </div>
-                          <div className='flex justify-end mt-2 '>
+                          <div className='flex justify-end mt-2'>
                             <button
-                              className={` text-sm ${
+                              className={`text-sm ${
                                 isDisabledPostBtn
                                   ? "bg-[#b5b5b5] text-black"
                                   : "bg-[#71B7FB] text-black"
                               } p-2 rounded-md`}
                               onClick={() => {
-                                handleCommentPost(post._id, post.user._id);
+                                handleCommentPost(post._id, post.createdBy?.id);
                               }}
                               disabled={isDisabledPostBtn}
                             >
@@ -854,52 +902,52 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                           </div>
                         </div>
                         {commentsByPost[post._id] && (
-                          <p className='mb-3 font-semibold '>All Comments</p>
+                          <p className='mb-3 font-semibold'>All Comments</p>
                         )}
-                        <div key={post._id} className='space-y-2'>
+                        <div className='space-y-2'>
                           {commentsByPost[post._id] ? (
                             commentsByPost[post._id].map((comment) => {
                               return (
-                                <>
-                                  <div
-                                    key={comment._id}
-                                    className='show-comments w-[100%]'
-                                  >
-                                    <div className='flex space-x-2'>
-                                      <img
-                                        src={
-                                          comment.user &&
-                                          comment.user.profilePicture
-                                        }
-                                        alt='who commented'
-                                        className='rounded-full border border-gray-400 border-opacity-40  w-[7%] h-[40px]'
-                                      />
-                                      <div className='commet-des heading-post p-2 w-[100%] pl-3 rounded-md bg-[#F4F2EE] border border-gray-400 border-opacity-40 flex-row space-y-[-5px]'>
-                                        <p className='hover:underline hover:text-blue-500 cursor-pointer'>
-                                          {comment.user && comment.user.name}
-                                        </p>
-                                        <p className=' text-[#959799] text-sm   '>
-                                          {comment.user &&
-                                            comment.user.city.toLowerCase()}
-                                        </p>
-                                        <p className='text-[#959799] text-sm    '>
-                                          {comment.user &&
-                                            moment(comment.createdAt).fromNow()}
-                                        </p>
-                                        <div className='comment-text'>
-                                          <p
-                                            dangerouslySetInnerHTML={{
-                                              __html: linkifyContent(
-                                                comment.user && comment.text
-                                              ),
-                                            }}
-                                            className='mt-2'
-                                          ></p>
-                                        </div>
+                                <div
+                                  key={comment._id}
+                                  className='show-comments w-[100%]'
+                                >
+                                  <div className='flex space-x-2'>
+                                    <img
+                                      src={
+                                        comment.createdBy &&
+                                        comment.createdBy.id.profilePicture
+                                      }
+                                      alt='who commented'
+                                      className='rounded-full border border-gray-400 border-opacity-40 w-[7%] h-[40px]'
+                                    />
+                                    <div className='commet-des heading-post p-2 w-[100%] pl-3 rounded-md bg-[#F4F2EE] border border-gray-400 border-opacity-40 flex-row space-y-[-5px]'>
+                                      <p className='hover:underline hover:text-blue-500 cursor-pointer'>
+                                        {comment.createdBy &&
+                                          comment.createdBy.id.name}
+                                      </p>
+                                      <p className='text-[#959799] text-sm'>
+                                        {comment.createdBy &&
+                                          comment.createdBy.id.city &&
+                                          comment.createdBy.id.city.toLowerCase()}
+                                      </p>
+                                      <p className='text-[#959799] text-sm'>
+                                        {comment.createdAt &&
+                                          moment(comment.createdAt).fromNow()}
+                                      </p>
+                                      <div className='comment-text'>
+                                        <p
+                                          dangerouslySetInnerHTML={{
+                                            __html: linkifyContent(
+                                              comment.text
+                                            ),
+                                          }}
+                                          className='mt-2'
+                                        ></p>
                                       </div>
                                     </div>
                                   </div>
-                                </>
+                                </div>
                               );
                             })
                           ) : (

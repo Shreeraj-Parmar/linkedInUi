@@ -118,11 +118,35 @@ const userSchema = new mongoose.Schema(
     ],
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
     followers: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Users who follow this user
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "followers.type", // Dynamically reference either 'User' or 'Company'
+        },
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the follower is a user or a company
+          required: true,
+        },
+      },
     ],
+
     following: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Users this user is following
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "following.type", // Dynamically reference either 'User' or 'Company'
+        },
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the follower is a user or a company
+          required: true,
+        },
+      },
     ],
+
     connections: [
       { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Mutual followers (Connections)
     ],

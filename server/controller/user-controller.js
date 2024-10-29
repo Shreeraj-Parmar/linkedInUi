@@ -1,4 +1,7 @@
 import User from "../model/user.js";
+import Post from "../model/post.js";
+import Comment from "../model/comment.js";
+import Company from "../model/company.js";
 import Notification from "../model/notification.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -208,7 +211,7 @@ export const sendDataAccCity = async (req, res) => {
       city: data.city,
       _id: { $ne: data._id }, // Exclude the current user
     })
-      .select("city pincode profilePicture name gender _id")
+      .select("city profilePicture name role  ")
       .skip((page - 1) * limit) // Skip documents based on the current page
       .limit(parseInt(limit)); // Limit the number of documents returned
 
@@ -228,14 +231,16 @@ export const sendDataAccCity = async (req, res) => {
 // save follow in db
 
 export const saveFollow = async (req, res) => {
-  let { receiverId } = req.body;
-  // console.log("reciever id is", receiverId);
-
+  let { receiverId, receverType, senderId, senderType } = req.body;
+  console.log(req.body);
   try {
-    const receiver = await User.findById(receiverId).select(
+    const ReceiverModel = receverType === "User" ? User : Company;
+    const SenderModel = senderType === "User" ? User : Company;
+
+    const receiver = await ReceiverModel.findOne({ _id: receiverId }).select(
       "followers following connections"
     );
-    const sender = await User.findOne({ email: req.user }).select(
+    const sender = await SenderModel.findOne({ _id: senderId }).select(
       "followers following connections"
     );
 
@@ -245,36 +250,49 @@ export const saveFollow = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Define objects for following and follower entries
+    const senderData = { id: sender._id, type: senderType };
+    const receiverData = { id: receiver._id, type: receverType };
+
+    // Check if the sender is already following the receiver
+    const isFollowing = receiver.followers?.some(
+      (follower) => follower?.id?.toString() === sender._id.toString()
+    );
+
     // Check if sender is already following the receiver
-    if (receiver.followers.includes(sender._id)) {
+    if (isFollowing) {
       // Unfollow logic
       receiver.followers = receiver.followers.filter(
-        (followerId) => followerId.toString() !== sender._id.toString()
+        (follower) => follower?.id?.toString() !== sender._id.toString()
       );
       sender.following = sender.following.filter(
-        (followingId) => followingId.toString() !== receiverId.toString()
+        (following) => following?.id?.toString() !== receiver._id.toString()
       );
       // Remove the connection if it exists
-      receiver.connections = receiver.connections.filter(
-        (connectionId) => connectionId.toString() !== sender._id.toString()
-      );
-      sender.connections = sender.connections.filter(
-        (connectionId) => connectionId.toString() !== receiverId.toString()
-      );
+
+      if (senderData.type === "User" && receiverData.type === "User") {
+        receiver.connections = receiver.connections.filter(
+          (connectionId) => connectionId.toString() !== sender._id.toString()
+        );
+        sender.connections = sender.connections.filter(
+          (connectionId) => connectionId.toString() !== receiverId.toString()
+        );
+      }
       await receiver.save();
       await sender.save();
-      return res.status(200).json({ message: "You have unfollowed the user!" });
+      return res
+        .status(200)
+        .json({ message: ` You are no longer following the ${receverType}` });
     } else {
       // Follow logic
-      receiver.followers.push(sender._id);
-      sender.following.push(receiverId);
-      // Add connection if both users are now following each other
+      receiver.followers.push(senderData);
+      sender.following.push(receiverData);
 
       await receiver.save();
       await sender.save();
       return res
         .status(200)
-        .json({ message: "Now you are following the user!" });
+        .json({ message: `Now you are following the ${receverType}` });
     }
   } catch (error) {
     console.error(`Error in saveFollow: ${error.message}`);
@@ -307,15 +325,15 @@ export const checkFollowOrNot = async (req, res) => {
 
 //send followers list || Following List
 export const sendFollowerOrFollowingList = async (req, res) => {
-  let { what } = req.query;
+  let { what } = req.query; // 'what' can be either 'followers' or 'following'
   const page = parseInt(req.query.page) || 1; // Default to page 1
   const limit = parseInt(req.query.limit) || 10; // Default to limit of 10
 
   try {
     let user = await User.findById(req._id).select(`${what}`);
 
-    // Fetch full details of the followers/following with user details like { id, name, profilePic, city }
-    let list = await User.find({ _id: { $in: user[what] } })
+    // Fetch full details of the followers/following
+    let list = await User.find({ _id: { $in: user[what].map((f) => f.id) } }) // Extracting ids
       .select("name profilePicture city gender")
       .skip((page - 1) * limit) // Skip records for pagination
       .limit(limit); // Limit records to fetch
@@ -324,7 +342,7 @@ export const sendFollowerOrFollowingList = async (req, res) => {
       list.map(async (userInList) => {
         let isFollowing = await User.exists({
           _id: req._id,
-          following: userInList._id,
+          following: { $elemMatch: { id: userInList._id, type: "User" } },
         });
         return {
           ...userInList.toObject(),
@@ -338,7 +356,7 @@ export const sendFollowerOrFollowingList = async (req, res) => {
     }
   } catch (error) {
     console.log(
-      `error while calling sendFollowerList API & error is ${error.message}`
+      `Error while calling sendFollowerOrFollowingList API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -412,6 +430,10 @@ export const updateConnectionInDB = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Define data objects for sender and receiver
+    const senderData = { id: sender._id, type: "User" };
+    const receiverData = { id: receiver._id, type: "User" };
+
     // Case 1: If reqStatus is true (accepted)
     if (reqStatus) {
       // Add receiverId to sender's connections if not included
@@ -424,13 +446,19 @@ export const updateConnectionInDB = async (req, res) => {
       }
 
       // Add receiverId to sender's following if not included
-      if (!sender.following.includes(receiverId)) {
-        sender.following.push(receiverId);
+      if (
+        !sender.following.some((follow) => follow.id.toString() === receiverId)
+      ) {
+        sender.following.push(receiverData);
       }
 
-      // Add receiverId to sender's followers if not included
-      if (!sender.followers.includes(receiverId)) {
-        sender.followers.push(receiverId);
+      // Add sender to receiver's followers list
+      if (
+        !receiver.followers.some(
+          (follower) => follower.id.toString() === sender._id
+        )
+      ) {
+        receiver.followers.push(senderData);
       }
 
       // Remove receiverId from sender's connectionRequests if included
@@ -438,11 +466,6 @@ export const updateConnectionInDB = async (req, res) => {
         sender.connectionRequests = sender.connectionRequests.filter(
           (id) => id.toString() !== receiverId.toString()
         );
-      }
-
-      // Add sender's id to receiver's following if not included
-      if (!receiver.following.includes(sender._id)) {
-        receiver.following.push(sender._id);
       }
 
       // Add sender's id to receiver's followers if not included
@@ -457,12 +480,10 @@ export const updateConnectionInDB = async (req, res) => {
         (req) => req.user.toString() !== receiverId.toString()
       );
 
-      // Remove receiverId from sender's following if included
-      if (sender.following.includes(receiverId)) {
-        sender.following = sender.following.filter(
-          (id) => id.toString() !== receiverId.toString()
-        );
-      }
+      // Remove receiver from sender's following list
+      sender.following = sender.following.filter(
+        (follow) => !(follow.id.toString() === receiverId)
+      );
 
       // Remove receiverId from sender's connections if included
       if (sender.connections.includes(receiverId)) {
@@ -506,6 +527,9 @@ export const sendConnectReq = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const senderData = { id: sender._id, type: "User" };
+    const receiverData = { id: receiver._id, type: "User" };
+
     // Check if connection request already exists
     const existingRequest = receiver.connectionRequests.some(
       (req) => req.user.toString() === sender._id.toString()
@@ -516,13 +540,19 @@ export const sendConnectReq = async (req, res) => {
       receiver.connectionRequests.push({ user: sender._id, isRead: false });
 
       // Add sender to receiver's followers if not already following
-      if (!receiver.followers.includes(sender._id)) {
-        receiver.followers.push(sender._id);
+      const isAlreadyFollowing = receiver.followers.some(
+        (follower) => follower.id.toString() === sender._id.toString()
+      );
+      if (!isAlreadyFollowing) {
+        receiver.followers.push(senderData);
       }
 
       // Add receiver to sender's following if not already followed
-      if (!sender.following.includes(receiverId)) {
-        sender.following.push(receiverId);
+      const isAlreadyFollowingReceiver = sender.following.some(
+        (following) => following.id.toString() === receiverId
+      );
+      if (!isAlreadyFollowingReceiver) {
+        sender.following.push(receiverData);
       }
 
       // Save the updated data for both sender and receiver

@@ -8,6 +8,7 @@ import { AllContext } from "../context/UserContext.jsx";
 import SnakBar from "../components/SnakBar.jsx";
 import Loader from "../components/Loader/Loader.jsx";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import IconButton from "@mui/material/IconButton";
 import ChangeAs from "./ChangeAs.jsx";
 // dialog style
 const dialogStyle = {
@@ -24,7 +25,7 @@ const dialogStyle = {
   maxHeight: "80vh",
 
   //   overflow: "hidden",
-  borderRadius: "20px",
+  borderRadius: "8px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -35,7 +36,6 @@ const PostDialog = ({
   setPostDialog,
   postDialog,
   setAllPost,
-
   imgUrl,
   currUserData,
   setShowAllMedia,
@@ -174,7 +174,7 @@ const PostDialog = ({
     setTimeout(() => {
       setLoading(false);
       setPostDialog(false);
-    }, 2000);
+    }, 1500);
     setIsSnakBar(true);
   };
 
@@ -339,7 +339,7 @@ const PostDialog = ({
       </div>
 
       <div
-        className='absolute top-[20px] right-[30px] text-2xl cursor-pointer'
+        className='absolute top-[15px] right-[20px] text-2xl cursor-pointer'
         onClick={() => {
           setPostFile([]);
           setPreviewUrl([]);
@@ -347,7 +347,9 @@ const PostDialog = ({
           setPostDialog(false);
         }}
       >
-        <CloseIcon />
+        <IconButton>
+          <CloseIcon />
+        </IconButton>
       </div>
     </Dialog>
   );

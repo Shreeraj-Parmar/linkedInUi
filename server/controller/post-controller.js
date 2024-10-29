@@ -82,7 +82,7 @@ export const sendAllPosts = async (req, res) => {
     let allPosts = await Post.find()
       .populate({
         path: "createdBy.id", // Use the dynamic reference
-        select: "name city profilePicture", // Specify fields to return
+        select: "name city role heading profilePicture", // Specify fields to return
       })
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the posts according to pagination
@@ -291,17 +291,12 @@ export const sendAllPostsAccUser = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     // Fetch posts with pagination
-    let allPosts = await Post.find({ user: userid })
-      .populate("user", "name city profilePicture") // Populate user information
+    let allPosts = await Post.find({ "createdBy.id": userid })
+      .populate("createdBy.id", "name city profilePicture") // Populate user information
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the posts according to pagination
       .limit(limitNumber); // Limit the number of posts fetched
 
-    // Get the total number of posts for further use (like checking if there are more posts)
-    // const totalPosts = await Post.countDocuments();
-
-    // Return posts and information about pagination
-    // console.log("all posts is for user perticular", allPosts);
     res.status(200).json({ allPosts });
   } catch (error) {
     console.log(

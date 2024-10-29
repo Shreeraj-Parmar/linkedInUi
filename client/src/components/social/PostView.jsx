@@ -168,12 +168,17 @@ const PostView = ({
   //   setFollowStatus(status);
   // };
 
-  const handleFollowClick = async (receiver) => {
+  const handleFollowClick = async (receiver, type) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
     }
-    let res = await sendFollowReq({ receiverId: receiver });
+    let res = await sendFollowReq({
+      receiverId: receiver,
+      receverType: type,
+      senderId: actAs && actAs.id,
+      senderType: actAs && actAs.type === "company" ? "Company" : "User",
+    });
     if (res.status === 200) {
       console.log(res.data.message);
       if (res.data.message === "Now you are following the user!") {
@@ -340,7 +345,7 @@ const PostView = ({
 
   // for like update
 
-  const handleLike = async (postId, likeArr) => {
+  const handleLike = async (postId) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
@@ -724,9 +729,13 @@ const PostView = ({
                           >
                             {post.createdBy?.id?.name || "Unknown"}
                           </p>
-                          <p className='text-[#959799] text-sm'>
-                            {post.createdBy?.id?.city?.toLowerCase() ||
-                              "Unknown City"}
+                          <p className='text-[#959799] text-[15px]'>
+                            {post.createdBy && post.createdBy.id.heading
+                              ? post.createdBy.id.heading.length > 70
+                                ? post.createdBy.id.heading.slice(0, 70) + "..."
+                                : post.createdBy.id.heading
+                              : post.createdBy?.id.city ||
+                                "No information available"}
                           </p>
                           <p className='text-[#959799] text-sm'>
                             {moment(post.createdAt).fromNow()}
@@ -737,7 +746,10 @@ const PostView = ({
                           <div className='follow-btn p-2 relative lg:left-[16rem]'>
                             <button
                               onClick={() => {
-                                handleFollowClick(post.createdBy?.id._id);
+                                handleFollowClick(
+                                  post.createdBy?.id._id,
+                                  post.createdBy?.type
+                                );
                               }}
                               className={`p-2 rounded-md ${
                                 lightMode &&
@@ -821,17 +833,6 @@ const PostView = ({
                           )}
                         </div>
                       </div>
-                      {post.url && (
-                        <div className='post-image w-[100%] mt-2 flex justify-center items-center'>
-                          <img
-                            src={post.url || ""}
-                            alt='this is post image'
-                            className={
-                              "w-[95%] max-h-[800px] rounded-md h-auto"
-                            }
-                          />
-                        </div>
-                      )}
 
                       {post.mediaUrls &&
                         post.mediaUrls.length > 0 &&
@@ -1116,7 +1117,7 @@ const PostView = ({
                                     "/blank.png"
                                   }
                                   alt='company logo'
-                                  className='min-w-[50px] min-h-[50px] rounded-full'
+                                  className='min-w-[50px] max-w-[50px] max-h-[50px] min-h-[50px] rounded-full'
                                 />
                                 <KeyboardArrowDownIcon className='text-[#959799]' />
                               </div>

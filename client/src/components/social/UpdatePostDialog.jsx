@@ -4,6 +4,8 @@ import Tostify from "../Tostify.jsx";
 import { toast } from "react-toastify";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { Dialog } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+
 import {
   getURLForPOST,
   uploadFileAWS,
@@ -24,7 +26,7 @@ const dialogStyle = {
   maxHeight: "75vh",
 
   //   overflow: "hidden",
-  borderRadius: "20px",
+  borderRadius: "8px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -316,14 +318,16 @@ const UpdatePostDialog = ({
       </div>
 
       <div
-        className='absolute top-[20px] right-[30px] text-2xl cursor-pointer'
+        className='absolute top-[15px] right-[20px] text-2xl cursor-pointer'
         onClick={() => {
           setPostFile([]);
           setPreviewUrl([]);
           setUpdatePostDialog(false);
         }}
       >
-        <CloseIcon />
+        <IconButton>
+          <CloseIcon />
+        </IconButton>
       </div>
     </Dialog>
   );

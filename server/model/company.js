@@ -23,8 +23,34 @@ const companySchema = new mongoose.Schema({
   },
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   followers: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Users who follow this user
+    {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "followers.type", // Dynamically reference either 'User' or 'Company'
+      },
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the follower is a user or a company
+        required: true,
+      },
+    },
   ],
+  following: [
+    {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "following.type", // Dynamically reference either 'User' or 'Company'
+      },
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the follower is a user or a company
+        required: true,
+      },
+    },
+  ],
+
   applications: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // The user reference

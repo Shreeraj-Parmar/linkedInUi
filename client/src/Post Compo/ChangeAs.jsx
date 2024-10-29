@@ -19,7 +19,7 @@ const dialogStyle = {
   maxHeight: "40vh",
 
   //   overflow: "hidden",
-  borderRadius: "20px",
+  borderRadius: "8px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -47,13 +47,21 @@ const ChangeAs = ({
         },
       }}
     >
-      <div className='p-2 w-[100%] h-[100%]'>
-        <div className='p-2'>
-          <p className='text-[#444444] font-semibold'>Choose As</p>
+      <div className=' w-[100%] relative h-[100%]'>
+        <div className='p-3 border-b-2 border-gray-400 border-opacity-40'>
+          <p className='text-[#272727] font-semibold'>Choose Account</p>
         </div>
+
+        <IconButton
+          style={{ position: "absolute", right: 10, top: 5 }}
+          onClick={() => setChangeAsDialog(false)}
+        >
+          <CloseIcon className='text-[#272727]' />
+        </IconButton>
+
         <div
           onClick={() => handleClick("user", currUserData?._id)}
-          className='flex hover:bg-[#DBDBDC] cursor-pointer rounded-md p-2 items-center space-x-2'
+          className='flex hover:bg-[#DBDBDC] border-b-2 border-gray-400 border-opacity-40 cursor-pointer rounded-md p-2 items-center space-x-2'
         >
           <div>
             <img
@@ -63,8 +71,9 @@ const ChangeAs = ({
             />
           </div>
           <div>
-            <p> {currUserData?.name}</p>
+            <p className=' font-semibold text-[16px]'> {currUserData?.name}</p>
           </div>
+          <p className='text-[#8e8e8e]'>As user</p>
         </div>
         {currUserData &&
           currUserData.company &&
@@ -74,7 +83,7 @@ const ChangeAs = ({
               <div
                 key={com._id}
                 onClick={() => handleClick("company", com._id)}
-                className='flex items-center cursor-pointer rounded-md p-2 mt-2 hover:bg-[#DBDBDC] space-x-2'
+                className='flex items-center border-b-2 border-gray-400 border-opacity-40 cursor-pointer rounded-md p-2    hover:bg-[#DBDBDC] space-x-2'
               >
                 <div>
                   <img
@@ -84,8 +93,9 @@ const ChangeAs = ({
                   />
                 </div>
                 <div>
-                  <p>{com.name}</p>
+                  <p className=' font-semibold text-[16px]'>{com.name}</p>
                 </div>
+                <p className='text-[#8e8e8e]'>As company</p>
               </div>
             );
           })}

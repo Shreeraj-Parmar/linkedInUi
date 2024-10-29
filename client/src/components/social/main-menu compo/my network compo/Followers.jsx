@@ -1,13 +1,15 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 
 import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
 import Tostify from "../../../Tostify.jsx";
+import { AllContext } from "../../../../context/UserContext.jsx";
 import { getMyFollowers, sendFollowReq } from "../../../../services/api.js";
 
 const Followers = ({ navigate, setCurrMenu }) => {
   const [followerList, setFollowerList] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
+  const { currUserData } = useContext(AllContext);
 
   const [followerSkeleton, setFollowerSkeleton] = useState(true);
   const [page, setPage] = useState(1);
@@ -62,7 +64,12 @@ const Followers = ({ navigate, setCurrMenu }) => {
   };
 
   const handleFollowClick = async (receiverId) => {
-    let res = await sendFollowReq({ receiverId }); // Call the follow/unfollow API
+    let res = await sendFollowReq({
+      receiverId: receiverId,
+      receverType: "User",
+      senderId: currUserData && currUserData._id,
+      senderType: "User",
+    }); // Call the follow/unfollow API
 
     if (res.status === 200) {
       console.log(res.data.message);
@@ -84,20 +91,20 @@ const Followers = ({ navigate, setCurrMenu }) => {
     <>
       <div
         onScroll={handleScroll}
-        className="flex-row justify-center mt-2 space-y-2 overflow-auto max-h-[70vh]  items-center"
+        className='flex-row justify-center mt-2 space-y-2 overflow-auto max-h-[70vh]  items-center'
       >
         {followerList.length > 0
           ? followerList.map((user) => {
               return (
                 <div
                   key={user._id}
-                  className="border-b border-gray-400 border-opacity-40 flex items-center max-w-[100%]  w-[100%] min-h-[10%] rounded-md "
+                  className='border-b border-gray-400 border-opacity-40 flex items-center max-w-[100%]  w-[100%] min-h-[10%] rounded-md '
                 >
                   <Tostify />
-                  <div className="w-[] p-1 ">
+                  <div className='w-[] p-1 '>
                     {followerSkeleton ? (
                       <Skeleton
-                        variant="circular"
+                        variant='circular'
                         style={{
                           width: "70px",
                           height: "70px",
@@ -107,12 +114,12 @@ const Followers = ({ navigate, setCurrMenu }) => {
                     ) : (
                       <img
                         src={user.profilePicture || "/blank.png"}
-                        alt=""
-                        className="min-w-[70px] max-w-[70px] border border-gray-400 border-opacity-40 h-[70px] rounded-full  "
+                        alt=''
+                        className='min-w-[70px] max-w-[70px] border border-gray-400 border-opacity-40 h-[70px] rounded-full  '
                       />
                     )}
                   </div>
-                  <div className=" flex-row ml-3 space-y-[-5px] lg:min-w-[200px]">
+                  <div className=' flex-row ml-3 space-y-[-5px] lg:min-w-[200px]'>
                     <p
                       onClick={() => {
                         setCurrMenu("");
@@ -120,11 +127,11 @@ const Followers = ({ navigate, setCurrMenu }) => {
                           navigate(`/user/${user._id}`);
                         }, 500);
                       }}
-                      className="text-[#000] hover:text-blue-500 hover:underline cursor-pointer"
+                      className='text-[#000] hover:text-blue-500 hover:underline cursor-pointer'
                     >
                       {followerSkeleton ? (
                         <Skeleton
-                          variant="text"
+                          variant='text'
                           style={{
                             width: "150px",
                             height: "15px",
@@ -139,7 +146,7 @@ const Followers = ({ navigate, setCurrMenu }) => {
                     {followerSkeleton ? (
                       <>
                         <Skeleton
-                          variant="text"
+                          variant='text'
                           style={{
                             width: "70px",
                             height: "15px",
@@ -150,16 +157,16 @@ const Followers = ({ navigate, setCurrMenu }) => {
                       </>
                     ) : (
                       <>
-                        <p className="text-[#959799]">{user.gender}</p>
-                        <p className="text-[#959799]"> {user.city}</p>
+                        <p className='text-[#959799]'>{user.gender}</p>
+                        <p className='text-[#959799]'> {user.city}</p>
                       </>
                     )}
                   </div>
-                  <div className="flex space-x-3 justify-end   p-2 lg:ml-[300px]">
-                    <div className="">
+                  <div className='flex space-x-3 justify-end   p-2 lg:ml-[300px]'>
+                    <div className=''>
                       {followerSkeleton ? (
                         <Skeleton
-                          variant="text"
+                          variant='text'
                           style={{
                             width: "120px",
                             height: "38px",
@@ -177,7 +184,7 @@ const Followers = ({ navigate, setCurrMenu }) => {
                       ) : (
                         <button
                           onClick={() => handleFollowClick(user._id)}
-                          className="text-[#71B7ED] p-2 border-2 w-[120px] hover:border-3 hover:border-[#AAD6FF] hover:text-[#AAD6FF] rounded-full border-[#71B7ED]"
+                          className='text-[#71B7ED] p-2 border-2 w-[120px] hover:border-3 hover:border-[#AAD6FF] hover:text-[#AAD6FF] rounded-full border-[#71B7ED]'
                         >
                           {followStatus[user._id] ? "Following" : "Follow Back"}
                         </button>
@@ -188,15 +195,15 @@ const Followers = ({ navigate, setCurrMenu }) => {
               );
             })
           : !followerSkeleton && (
-              <div className=" p-4">
-                <div className=" flex justify-center items-center">
+              <div className=' p-4'>
+                <div className=' flex justify-center items-center'>
                   <img
-                    src="/no-conn.jpg"
-                    alt=""
-                    className="w-[500px] h-[400px]"
+                    src='/no-conn.jpg'
+                    alt=''
+                    className='w-[500px] h-[400px]'
                   />
                 </div>
-                <p className=" text-center">
+                <p className=' text-center'>
                   Not Found Please Explore & Connect To Get Followers
                 </p>
               </div>

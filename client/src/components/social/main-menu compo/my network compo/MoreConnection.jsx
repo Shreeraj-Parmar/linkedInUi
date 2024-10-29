@@ -97,7 +97,7 @@ const MoreConnection = ({ connectionReqLength, user_id }) => {
       <Tostify />
       <div
         onScroll={handleScroll}
-        className='border-2 border-opacity-40 border-gray-400 overflow-auto bg-[#fff] rounded-md  min-h-[80vh] max-h-[80vh]  max-w-[64.5%]'
+        className='border-2 border-opacity-40 border-gray-400 overflow-auto bg-[#fff] rounded-md  min-h-[80vh] max-h-[80vh] min-w-[64.5%]  max-w-[64.5%]'
       >
         <p className=' text-md p-2 pl-4'>Connect more people</p>
         <div className='  pl-3 pr-3 pb-3 flex flex-wrap relative left-3 items-center gap-3'>

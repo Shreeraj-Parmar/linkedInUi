@@ -124,9 +124,8 @@ const Suggest = ({
                         {data.name}
                       </p>
                       <p className=' text-[#959799] text-sm'>
-                        {data.city.toLowerCase()}
+                        {data.role || data.city}
                       </p>
-                      <p className='text-[#959799] text-sm'>{data.gender}</p>
                     </div>
                   </div>
                 </div>
