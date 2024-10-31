@@ -61,7 +61,7 @@ const ChangeAs = ({
 
         <div
           onClick={() => handleClick("user", currUserData?._id)}
-          className='flex hover:bg-[#DBDBDC] border-b-2 border-gray-400 border-opacity-40 cursor-pointer rounded-md p-2 items-center space-x-2'
+          className='flex hover:bg-[#DBDBDC] border-b-2  border-gray-400 border-opacity-40 cursor-pointer rounded-md p-3 items-center space-x-2'
         >
           <div>
             <img
@@ -83,7 +83,7 @@ const ChangeAs = ({
               <div
                 key={com._id}
                 onClick={() => handleClick("company", com._id)}
-                className='flex items-center border-b-2 border-gray-400 border-opacity-40 cursor-pointer rounded-md p-2    hover:bg-[#DBDBDC] space-x-2'
+                className='flex items-center border-b-2 border-gray-400 border-opacity-40 cursor-pointer rounded-md p-3    hover:bg-[#DBDBDC] space-x-2'
               >
                 <div>
                   <img

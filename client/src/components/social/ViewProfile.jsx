@@ -22,6 +22,8 @@ const ViewProfile = () => {
   const [editProfildialog, setEditProfildialog] = useState(false);
   const [profileData, setProfileData] = useState();
   const [showMore, setShowMore] = useState(false);
+  const [allPost, setAllPost] = useState([]);
+
   const maxLength = 250;
 
   useEffect(() => {
@@ -291,7 +293,12 @@ const ViewProfile = () => {
               >
                 <div className=' w-[100%]'>
                   <p className='text-[#000] text-xl font-semibold'>Posts</p>
-                  <UserPosts userData={currUserData} what={"me"} />
+                  <UserPosts
+                    userData={currUserData}
+                    what={"me"}
+                    allPost={allPost}
+                    setAllPost={setAllPost}
+                  />
                 </div>
               </div>
               <div>

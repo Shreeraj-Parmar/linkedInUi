@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useContext, useRef } from "react";
 import { AllContext } from "../../context/UserContext";
 import UpdatePostDialog from "./UpdatePostDialog";
@@ -28,7 +28,14 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
 import AddIcon from "@mui/icons-material/Add";
 
-const UserPosts = ({ userData, setFollow, follow, what }) => {
+const UserPosts = ({
+  userData,
+  setFollow,
+  follow,
+  what,
+  allPost,
+  setAllPost,
+}) => {
   const navigate = useNavigate();
   const {
     setCurrMenu,
@@ -43,9 +50,10 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
     imgUrl,
   } = useContext(AllContext);
   const [page, setPage] = useState(1);
+  const companyId = useParams();
   const [hasMore, setHasMore] = useState(true);
   const [commentBoxOpen, setCommentBoxOpen] = useState({});
-  const [allPost, setAllPost] = useState([]);
+
   const [likes, setLikes] = useState({});
   const [isDisabledPostBtn, setIsDisabledPostBtn] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -105,8 +113,13 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
     }
   };
 
-  const postFunc = async (id) => {
-    let res = await getAllPostAccUser({ page: page, limit: limit, userId: id });
+  const postFunc = async (id, type) => {
+    let res = await getAllPostAccUser({
+      page: page,
+      limit: limit,
+      userId: id,
+      type: type,
+    });
 
     if (res.status === 200) {
       // Check if the response is successful
@@ -412,8 +425,21 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
   }, [allPost]);
 
   useEffect(() => {
+    console.log("actAs is here", actAs);
     if (hasMore && userData) {
       postFunc(userData._id);
+    }
+    if (
+      companyId &&
+      companyId.companyId &&
+      currUserData &&
+      currUserData.company &&
+      currUserData.company.length > 0 &&
+      currUserData.company.map(
+        (com) => com._id === companyId && companyId.companyId
+      )
+    ) {
+      setActAs({ type: "company", id: companyId.companyId });
     }
   }, [page, userData]); // Add page as a dependency
 
@@ -444,7 +470,7 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                       <img
                         src={post.createdBy?.id?.profilePicture || "/blank.png"}
                         alt='who posted this post'
-                        className='w-[9%] h-[55px] rounded-full'
+                        className='min-w-[55px] min-h-[55px] max-w-[55px] max-h-[55px] rounded-full'
                       />
                       <div className='heading-post lg:min-w-[200px] flex-row space-y-[-5px]'>
                         <p
@@ -462,41 +488,46 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                         >
                           {post.createdBy?.id?.name || "Unknown"}
                         </p>
-                        <p className='text-[#959799] text-sm'>
-                          {post.createdBy?.id?.city?.toLowerCase() ||
-                            "Unknown City"}
+                        <p className='text-[#959799] text-[15px]'>
+                          {post.createdBy && post.createdBy.id.heading
+                            ? post.createdBy.id.heading.length > 70
+                              ? post.createdBy.id.heading.slice(0, 70) + "..."
+                              : post.createdBy.id.heading
+                            : post.createdBy?.id.city ||
+                              "No information available"}
                         </p>
                         <p className='text-[#959799] text-sm'>
                           {moment(post.createdAt).fromNow()}
                         </p>
                       </div>
 
-                      {currUserData &&
-                        post.createdBy?.id._id === currUserData._id && (
-                          <div className='follow-btn p-2 relative lg:left-[300px] '>
-                            {updatePostDialog && (
-                              <UpdatePostDialog
-                                setUpdatePostDialog={setUpdatePostDialog}
-                                setShowAllMedia={setShowAllMedia}
-                                setAllPost={setAllPost}
-                                updatePostDialog={updatePostDialog}
-                                selectedPostForUpdate={selectedPostForUpdate}
-                                setSelectedPostForUpdate={
-                                  setSelectedPostForUpdate
-                                }
-                                actAs={actAs}
-                              />
-                            )}
-                            <EditIcon
-                              onClick={() => {
-                                setUpdatePostDialog(true);
-                                setSelectedPostForUpdate(post);
-                              }}
-                              fontSize='medium'
-                              className='text-[#3c3c3c] hover:text-blue-500 cursor-pointer'
+                      {(currUserData &&
+                        post.createdBy?.id._id === currUserData._id) ||
+                      post.createdBy?.id._id === companyId.companyId ? (
+                        <div className='follow-btn p-2 relative lg:left-[300px]'>
+                          {updatePostDialog && (
+                            <UpdatePostDialog
+                              setUpdatePostDialog={setUpdatePostDialog}
+                              setShowAllMedia={setShowAllMedia}
+                              setAllPost={setAllPost}
+                              updatePostDialog={updatePostDialog}
+                              selectedPostForUpdate={selectedPostForUpdate}
+                              setSelectedPostForUpdate={
+                                setSelectedPostForUpdate
+                              }
+                              actAs={actAs}
                             />
-                          </div>
-                        )}
+                          )}
+                          <EditIcon
+                            onClick={() => {
+                              setUpdatePostDialog(true);
+                              setSelectedPostForUpdate(post);
+                            }}
+                            fontSize='medium'
+                            className='text-[#3c3c3c] hover:text-blue-500 cursor-pointer'
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     <div className='post-text w-[100%]'>
                       <div className=''>
@@ -797,14 +828,14 @@ const UserPosts = ({ userData, setFollow, follow, what }) => {
                                   (actAs.type === "company" &&
                                     currUserData.company.find(
                                       (company) => company._id === actAs.id
-                                    ).profilePicture) ||
+                                    )?.profilePicture) ||
                                   (actAs.type === "user" &&
                                     currUserData.profilePicture &&
                                     currUserData.profilePicture) ||
                                   "/blank.png"
                                 }
                                 alt='company logo'
-                                className='min-w-[50px] min-h-[50px] rounded-full'
+                                className='min-w-[50px] min-h-[50px] max-w-[50px] max-h-[50px] rounded-full'
                               />
                               <KeyboardArrowDownIcon className='text-[#959799]' />
                             </div>

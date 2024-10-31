@@ -149,6 +149,8 @@ const UpdatePostDialog = ({
         postId: selectedPostForUpdate._id,
         mediaUrls: newUploadUrl,
         text: postText,
+        who: actAs.id,
+        helo: "asdsd",
       });
 
       if (res.status === 200) {
@@ -192,6 +194,7 @@ const UpdatePostDialog = ({
         postId: selectedPostForUpdate._id,
         mediaUrls: uploadedUrls,
         text: postText,
+        createdId: actAs.id,
       });
       if (res.status === 200) {
         setAllPost((prev) =>

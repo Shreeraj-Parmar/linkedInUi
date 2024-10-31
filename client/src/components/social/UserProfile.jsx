@@ -42,6 +42,7 @@ const UserProfile = () => {
   const [connection, setConnection] = useState(false);
   const [pendinConnection, setPendingConnection] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [allPost, setAllPost] = useState([]);
   const maxLength = 100;
   const getUserDataFunc = async () => {
     console.log("use trigger");
@@ -400,6 +401,8 @@ const UserProfile = () => {
               <div className=' w-[100%]'>
                 <p className='text-[#000] text-xl font-semibold'>Posts</p>
                 <UserPosts
+                  allPost={allPost}
+                  setAllPost={setAllPost}
                   userData={userData}
                   setFollow={setFollow}
                   follow={follow}

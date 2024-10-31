@@ -7,6 +7,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { AllContext } from "../context/UserContext.jsx";
 import SnakBar from "../components/SnakBar.jsx";
 import Loader from "../components/Loader/Loader.jsx";
+import { useParams } from "react-router-dom";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import IconButton from "@mui/material/IconButton";
 import ChangeAs from "./ChangeAs.jsx";
@@ -37,11 +38,12 @@ const PostDialog = ({
   postDialog,
   setAllPost,
   imgUrl,
-  currUserData,
+
   setShowAllMedia,
 }) => {
   const {
     setLoading,
+    currUserData,
     setIsSnakBar,
     actAs,
     setActAs,
@@ -54,6 +56,7 @@ const PostDialog = ({
   const [generatedfileName, setGeneratedFileName] = useState([]);
   const [generatedURL, setGeneratedURL] = useState([]);
   const [snak, setSnak] = useState({ type: null, text: null });
+  const { companyId } = useParams();
 
   const postPhotoRef = useRef();
 
@@ -218,8 +221,11 @@ const PostDialog = ({
               <div>
                 <img
                   src={
-                    currUserData.company.find((comp) => comp._id === actAs.id)
-                      ?.profilePicture || "/blank.png"
+                    (currUserData &&
+                      currUserData.company &&
+                      currUserData.company.find((comp) => comp._id === actAs.id)
+                        ?.profilePicture) ||
+                    "/blank.png"
                   }
                   className='w-[60px] shadow-md rounded-full h-[60px]'
                   alt=''
@@ -227,10 +233,10 @@ const PostDialog = ({
               </div>
               <div className='min-w-[100px]'>
                 <p>
-                  {
+                  {currUserData &&
+                    currUserData.company &&
                     currUserData.company.find((comp) => comp._id === actAs.id)
-                      ?.name
-                  }
+                      ?.name}
                 </p>
               </div>
             </>
@@ -238,7 +244,8 @@ const PostDialog = ({
 
           {currUserData &&
             currUserData.company &&
-            currUserData.company.length > 0 && (
+            currUserData.company.length > 0 &&
+            !companyId && (
               <div>
                 <button
                   onClick={() => {

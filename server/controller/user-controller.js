@@ -211,7 +211,7 @@ export const sendDataAccCity = async (req, res) => {
       city: data.city,
       _id: { $ne: data._id }, // Exclude the current user
     })
-      .select("city profilePicture name role  ")
+      .select("city profilePicture name role ")
       .skip((page - 1) * limit) // Skip documents based on the current page
       .limit(parseInt(limit)); // Limit the number of documents returned
 

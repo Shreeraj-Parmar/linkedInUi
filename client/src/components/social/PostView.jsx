@@ -713,7 +713,7 @@ const PostView = ({
                           alt='who posted this post'
                           className='w-[9%] h-[55px] rounded-full'
                         />
-                        <div className='heading-post lg:min-w-[200px] flex-row space-y-[-5px]'>
+                        <div className='heading-post lg:min-w-[400px]  flex-row space-y-[-5px]'>
                           <p
                             onClick={() => {
                               setCurrMenu("");
@@ -729,10 +729,10 @@ const PostView = ({
                           >
                             {post.createdBy?.id?.name || "Unknown"}
                           </p>
-                          <p className='text-[#959799] text-[15px]'>
+                          <p className='text-[#959799]  text-[15px]'>
                             {post.createdBy && post.createdBy.id.heading
-                              ? post.createdBy.id.heading.length > 70
-                                ? post.createdBy.id.heading.slice(0, 70) + "..."
+                              ? post.createdBy.id.heading.length > 60
+                                ? post.createdBy.id.heading.slice(0, 60) + "..."
                                 : post.createdBy.id.heading
                               : post.createdBy?.id.city ||
                                 "No information available"}
@@ -743,7 +743,7 @@ const PostView = ({
                         </div>
                         {currUserData &&
                         post.createdBy?.id._id !== currUserData._id ? (
-                          <div className='follow-btn p-2 relative lg:left-[16rem]'>
+                          <div className='follow-btn min-w-[100px] p-2 relative lg:left-[4rem]'>
                             <button
                               onClick={() => {
                                 handleFollowClick(
@@ -1095,7 +1095,7 @@ const PostView = ({
                           currUserData={currUserData}
                           changeAsDialog={changeAsDialog}
                         />
-                        <div className='like-comment-wrapper flex w-[50%]  items-center space-x-5 p-2'>
+                        <div className='like-comment-wrapper flex w-[50%]  items-center space-x-5 p-'>
                           {currUserData &&
                             currUserData.company &&
                             currUserData.company.length > 0 && (
@@ -1117,7 +1117,7 @@ const PostView = ({
                                     "/blank.png"
                                   }
                                   alt='company logo'
-                                  className='min-w-[50px] max-w-[50px] max-h-[50px] min-h-[50px] rounded-full'
+                                  className='rounded-full border border-gray-400 border-opacity-40 min-w-[55px] max-w-[55px] min-h-[55px] max-h-[55px]'
                                 />
                                 <KeyboardArrowDownIcon className='text-[#959799]' />
                               </div>

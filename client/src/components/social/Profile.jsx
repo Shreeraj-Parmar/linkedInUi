@@ -85,7 +85,7 @@ const Profile = ({
       >
         <img
           src={imgUrl || "/blank.png"} // Show profile image if imgUrl exists, else show dummy image
-          alt="profile or upload image"
+          alt='profile or upload image'
           className={`profile-img cursor-pointer rounded-full lg:min-w-[170px] lg:min-h-[170px]  lg:max-w-[170px] lg:max-h-[170px] mt-5 ${
             lightMode && "border-2 border-gray-400 border-opacity-40"
           }`}
@@ -94,18 +94,18 @@ const Profile = ({
         {isLogin &&
           (imgUrl ? (
             <span className={`${lightMode && " text-black"}  `}>
-              <p className="text-black"> Change Photo</p>
+              <p className='text-black'> Change Photo</p>
             </span>
           ) : (
             <span className={`${lightMode && " text-black"}`}>
-              <p className="text-black"> Upload Photo</p>
+              <p className='text-black'> Upload Photo</p>
             </span>
           ))}
       </div>
 
       {isLogin && (
         <>
-          <div className="mt-4">
+          <div className='mt-4'>
             <p
               className={`hover:underline cursor-pointer text-center ${
                 lightMode && "text-[#000]"
@@ -116,9 +116,16 @@ const Profile = ({
                 : "No Name"}
             </p>
           </div>
+          <div>
+            <p className='text-center text-sm'>
+              {(currUserData && currUserData.heading && currUserData.heading) ||
+                (currUserData && currUserData.role && currUserData.role) ||
+                (currUserData && currUserData.state && currUserData.state)}
+            </p>
+          </div>
 
           <div
-            className=" mt-2 hover:underline cursor-pointer  flex justify-center items-center"
+            className=' mt-2 hover:underline cursor-pointer  flex justify-center items-center'
             onClick={(e) => handleViewProfileClick(e)}
           >
             <p
@@ -128,34 +135,34 @@ const Profile = ({
             >
               View My Profile
             </p>
-            <LaunchIcon fontSize="small" />
+            <LaunchIcon fontSize='small' />
           </div>
         </>
       )}
       {!isLogin && (
-        <div className="mt-5 flex justify-center items-center">
+        <div className='mt-5 flex justify-center items-center'>
           <button
-            type="button"
+            type='button'
             onClick={() => setLoginDialog(true)}
-            className="bg-[#2563EB] hover:bg-[#3374ff] text-white font-bold py-2 px-4 rounded"
+            className='bg-[#2563EB] hover:bg-[#3374ff] text-white font-bold py-2 px-4 rounded'
           >
             Login
           </button>
         </div>
       )}
-      <div className="text-[#E2E0DD] w-[100%] flex-row items-center profile-file-form">
+      <div className='text-[#E2E0DD] w-[100%] flex-row items-center profile-file-form'>
         <div>
           <form
             onSubmit={(e) => {
               handleSubmitFile(e);
             }}
-            className="bg-[#1B1F23] mt-5 w-[100%]"
+            className='bg-[#1B1F23] mt-5 w-[100%]'
           >
             <input
-              type="file"
+              type='file'
               ref={chooseFileRef}
               onChange={handleFileSelection} // Trigger file selection and submit
-              className=""
+              className=''
             />
           </form>
         </div>
