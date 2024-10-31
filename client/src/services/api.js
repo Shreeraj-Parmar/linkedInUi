@@ -990,3 +990,22 @@ export const deleteAdminFromCompany = async (data) => {
     );
   }
 };
+
+// company followers & following func
+
+export const getCompanyFollowers = async (what, page, companyId) => {
+  try {
+    const url = `${API}/company/follow?what=${what}&page=${page}&limit=7&companyId=${companyId}`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getCompanyFollowers & error is: ${error.message}`
+    );
+    console.error(`Error while calling getCompanyFollowers: ${error.message}`);
+  }
+};

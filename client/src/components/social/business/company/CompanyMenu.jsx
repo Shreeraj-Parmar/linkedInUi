@@ -45,7 +45,7 @@ const CompanyMenu = ({ setCompanyMenu, companyMenu, setEditCompanyDialog }) => {
           "border-l-4 border-green-700 text-green-700 pl-3"
         } menu-btn-wrapper p-4 hover:bg-[#F3F3F3] font-semibold text-[#444444] cursor-pointer text-[17px]`}
       >
-        <p>Followers</p>
+        <p>Followers & Following</p>
       </div>
       <div
         onClick={() => {

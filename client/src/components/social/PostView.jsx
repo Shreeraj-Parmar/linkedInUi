@@ -763,7 +763,7 @@ const PostView = ({
                           </div>
                         ) : (
                           !isLogin && (
-                            <div className='follow-btn p-2 relative lg:left-[280px]'>
+                            <div className='follow-btn p-2 relative lg:left-[70px]'>
                               <button
                                 onClick={() => {
                                   setLoginDialog(true);
@@ -780,7 +780,7 @@ const PostView = ({
                         )}
                         {currUserData &&
                           post.createdBy?.id._id === currUserData._id && (
-                            <div className='follow-btn p-2 relative lg:left-[300px] '>
+                            <div className='follow-btn p-2 relative lg:left-[100px] '>
                               {updatePostDialog && (
                                 <UpdatePostDialog
                                   setUpdatePostDialog={setUpdatePostDialog}
@@ -1174,7 +1174,8 @@ const PostView = ({
                               <img
                                 src={
                                   actAs.type === "user"
-                                    ? currUserData.profilePicture
+                                    ? currUserData?.profilePicture &&
+                                      currUserData?.profilePicture
                                     : currUserData.company.find(
                                         (com) => com._id === actAs.id
                                       ).profilePicture || "/blank.png"

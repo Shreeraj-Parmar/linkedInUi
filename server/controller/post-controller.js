@@ -251,10 +251,12 @@ export const sendCommentCount = async (req, res) => {
 // update post
 export const updatePostDataInDB = async (req, res) => {
   console.log(req.body);
-  let { postId, text, mediaUrls, createdId } = req.body;
+  let { postId, text, mediaUrls, who, createdId } = req.body;
+
+  let whoIs = who || createdId;
   try {
     const post = await Post.findById(postId);
-    if (post.createdBy.id.toString() !== createdId.toString()) {
+    if (post.createdBy.id.toString() !== whoIs.toString()) {
       return res.status(401).json({
         success: false,
         message: "you are not authorized to update this post",

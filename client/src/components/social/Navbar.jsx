@@ -334,7 +334,7 @@ const Navbar = () => {
                           "/blank.png"
                         }
                         alt=''
-                        className='rounded-full w-[20px] h-[20px]'
+                        className='rounded-full mt-1 w-[20px] h-[20px]'
                       />
                     ) : (
                       <img

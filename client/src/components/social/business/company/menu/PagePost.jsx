@@ -11,7 +11,7 @@ const PagePost = ({ companyDetails }) => {
   const [allPost, setAllPost] = useState([]);
   const [showAllMedia, setShowAllMedia] = useState();
   return (
-    <div className='w-[70.5%]'>
+    <div className='w-[75.5%]'>
       <PostDialog
         setPostDialog={setPostDialog}
         setShowAllMedia={setShowAllMedia}
@@ -19,7 +19,7 @@ const PagePost = ({ companyDetails }) => {
         allPost={allPost}
         postDialog={postDialog}
       />
-      <div className='p-2  border-2 border-gray-400  bg-white border-opacity-40 rounded-lg'>
+      <div className='p-2  border-2 border-gray-400 w-[100%]  bg-white border-opacity-40 rounded-lg'>
         <div
           className={`write-post-wrapper  p-2 h-[100%] space-x-3 flex justify-center items-center `}
         >
@@ -45,11 +45,13 @@ const PagePost = ({ companyDetails }) => {
         </div>
       </div>
       {/* posts here */}
-      <UserPosts
-        userData={companyDetails && companyDetails}
-        setAllPost={setAllPost}
-        allPost={allPost}
-      />
+      <div className='w-[100%]  '>
+        <UserPosts
+          userData={companyDetails && companyDetails}
+          setAllPost={setAllPost}
+          allPost={allPost}
+        />
+      </div>
     </div>
   );
 };

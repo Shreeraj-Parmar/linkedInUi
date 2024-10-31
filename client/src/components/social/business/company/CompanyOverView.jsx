@@ -70,7 +70,7 @@ const CompanyOverView = () => {
                 onClick={() => {
                   setEditCompanyDialog(true);
                 }}
-                className='absolute right-[20px] top-4'
+                className='absolute right-[15px] top-4'
               >
                 <IconButton>
                   <EditIcon fontSize='medium' className='text-[#444444]' />
@@ -95,7 +95,8 @@ const CompanyOverView = () => {
                 <p className='text-[15px]  text-[#444444] font-semibold'>
                   {companyDetails &&
                     companyDetails.followers &&
-                    companyDetails.followers.length}
+                    companyDetails.followers.length}{" "}
+                  {" Followers"}
                 </p>
                 <div className='space-y-3'>
                   <button
@@ -166,7 +167,9 @@ const CompanyOverView = () => {
           </div>
           {/* Right side */}
           <div className='right-company-dash  w-[75%] '>
-            {companyMenu === "dashboard" && <Dashboard />}
+            {companyMenu === "dashboard" && (
+              <Dashboard companyDetails={companyDetails} />
+            )}
             {companyMenu === "posts" && (
               <PagePost companyDetails={companyDetails} />
             )}

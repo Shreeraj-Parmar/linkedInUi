@@ -139,3 +139,67 @@ export const deleteAdminFromDB = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// send followers or following list
+export const sendFolllowerOrFollowingListOfCompany = async (req, res) => {
+  const { what, page = 1, limit = 10, companyId } = req.query;
+
+  try {
+    // Validate the `what` parameter
+    if (!["followers", "following"].includes(what)) {
+      return res.status(400).json({ message: "Invalid 'what' parameter" });
+    }
+
+    // Find the company and select either followers or following based on the `what` parameter
+    const company = await Company.findById(companyId).select(`${what}`);
+
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    // Extract the list of followers or following
+    const list = company[what] || [];
+
+    // Separate User and Company references for efficient querying
+    const userIds = list
+      .filter((item) => item.type === "User")
+      .map((item) => item.id);
+    const companyIds = list
+      .filter((item) => item.type === "Company")
+      .map((item) => item.id);
+
+    // Fetch details from User and Company collections
+    const users = await User.find({ _id: { $in: userIds } })
+      .select("name profilePicture city gender")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean()
+      .exec();
+
+    const companies = await Company.find({ _id: { $in: companyIds } })
+      .select("name profilePicture city industry")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean()
+      .exec();
+
+    // Combine users and companies with the `type` field
+    const modifiedList = [
+      ...users.map((user) => ({
+        ...user,
+        type: "User",
+      })),
+      ...companies.map((company) => ({
+        ...company,
+        type: "Company",
+      })),
+    ];
+
+    res.status(200).json({ list: modifiedList });
+  } catch (error) {
+    console.log(
+      `Error while calling sendFolllowerOrFollowingListOfCompany API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
