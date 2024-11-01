@@ -34,6 +34,7 @@ const companySchema = new mongoose.Schema({
         enum: ["User", "Company"], // Specifies if the follower is a user or a company
         required: true,
       },
+      _id: false,
     },
   ],
   following: [
@@ -48,6 +49,7 @@ const companySchema = new mongoose.Schema({
         enum: ["User", "Company"], // Specifies if the follower is a user or a company
         required: true,
       },
+      _id: false,
     },
   ],
 

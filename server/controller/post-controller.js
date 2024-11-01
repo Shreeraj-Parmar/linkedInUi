@@ -82,7 +82,7 @@ export const sendAllPosts = async (req, res) => {
     let allPosts = await Post.find()
       .populate({
         path: "createdBy.id", // Use the dynamic reference
-        select: "name city role heading profilePicture", // Specify fields to return
+        select: "name city role followers heading profilePicture", // Specify fields to return
       })
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the posts according to pagination

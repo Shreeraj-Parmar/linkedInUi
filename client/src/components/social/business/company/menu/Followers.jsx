@@ -1,15 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import FollowersOfCompany from "./FollowersOfCompany";
+import { AllContext } from "../../../../../context/UserContext";
 import FollowingOfCompany from "./FollowingOfCompany";
 
 const Followers = () => {
+  const { companyId } = useParams();
+  const { setActAs } = useContext(AllContext);
   const [follow, setFollow] = useState("followers");
+
+  useEffect(() => {
+    setActAs({ type: "company", id: companyId });
+  }, []);
+
   return (
-    <div className='p-2 border-2 border-gray-400 bg-white border-opacity-40 rounded-lg'>
-      <div className='p-2'>
-        <p className=' font-semibold text-xl'>Followers & Following</p>
-      </div>
-      <div className='flex space-x-2 '>
+    <div className=' border-2 border-gray-400 bg-white w-[70%] border-opacity-40 rounded-lg'>
+      <div className='flex space-x-2 p-4 border-b-2 border-gray-400 border-opacity-40  '>
         <div
           onClick={() => setFollow("followers")}
           className={`p-2 cursor-pointer ${
@@ -27,7 +33,7 @@ const Followers = () => {
           <button>Following</button>
         </div>
       </div>
-      <div className='mt-2 min-h-[50vh] p-2'>
+      <div className=' min-h-[50vh] '>
         {follow === "followers" ? (
           <FollowersOfCompany />
         ) : (

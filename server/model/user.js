@@ -129,6 +129,7 @@ const userSchema = new mongoose.Schema(
           enum: ["User", "Company"], // Specifies if the follower is a user or a company
           required: true,
         },
+        _id: false,
       },
     ],
 
@@ -144,6 +145,7 @@ const userSchema = new mongoose.Schema(
           enum: ["User", "Company"], // Specifies if the follower is a user or a company
           required: true,
         },
+        _id: false,
       },
     ],
 

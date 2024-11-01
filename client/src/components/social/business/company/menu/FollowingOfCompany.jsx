@@ -1,15 +1,17 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AllContext } from "../../../../../context/UserContext";
-import { getCompanyFollowers } from "../../../../../services/api.js";
-
+import {
+  getCompanyFollowers,
+  sendFollowReq,
+} from "../../../../../services/api.js";
 const FollowingOfCompany = () => {
   const { companyId } = useParams();
   const [followingList, setFollowingList] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const { actAs } = useContext(AllContext);
-
+  const navigate = useNavigate();
   console.log("ccccccc", companyId);
 
   const getAllFollowingDataFunc = async () => {
@@ -42,6 +44,22 @@ const FollowingOfCompany = () => {
     }
   };
 
+  const handleFollowClick = async (receiver, type) => {
+    let res = await sendFollowReq({
+      receiverId: receiver,
+      receverType: type,
+      senderId: actAs && actAs.id,
+      senderType: actAs && actAs.type === "company" ? "Company" : "User",
+    });
+    if (res.status === 200) {
+      console.log(res.data.message);
+
+      // Toggle the follow status locally
+    } else {
+      console.error("Error while following/unfollowing:", res.data.message);
+    }
+  };
+
   useEffect(() => {
     getAllFollowingDataFunc();
   }, [page]);
@@ -50,20 +68,51 @@ const FollowingOfCompany = () => {
     <>
       <div
         onScroll={handleScroll}
-        className='flex-row justify-center mt-2 space-y-2 overflow-auto max-h-[70vh]  items-center'
+        className='flex-row justify-center   overflow-auto max-h-[70vh]  items-center'
       >
         {followingList &&
+          followingList.length > 0 &&
           followingList.map((following) => (
             <div
               key={following._id}
-              className='w-[100%] flex justify-start items-center space-x-2'
+              className='w-[100%] flex hover:bg-[#f5f5f5] pl-4 pr-4 cursor-pointer border-b-2 p-2 border-gray-400 border-opacity-40 justify-between items-center '
             >
-              <img
-                src={following.profilePic}
-                alt=''
-                className='w-10 h-10 rounded-full'
-              />
-              <p>{following.name}</p>
+              <div
+                className='flex items-center space-x-3'
+                onClick={() => {
+                  if (following.type === "Company") {
+                    navigate(`/company/${following._id}`);
+                  } else {
+                    navigate(`/user/${following._id}`);
+                  }
+                }}
+              >
+                <div className=''>
+                  <img
+                    src={following.profilePicture || "/blank.png"}
+                    alt=''
+                    className=' rounded-full h-[70px] shadow-sm w-[70px] border border-gray-400 bor-der-opacity-40 max-h-[70px] max-w-[70px] min-h-[70px] min-w-[70px]'
+                  />
+                </div>
+                <div>
+                  <p className='font-semibold'>{following.name}</p>
+                  <span className='text-gray-500'>
+                    {following.type === "Company" ? "Company" : "User"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  onClick={() => {
+                    handleFollowClick(following._id, following.type);
+                    console.log("unfollow button clicked");
+                  }}
+                  className='bg-white border-[3px] border-gray-700 text-gray-700 font-semibold p-2 pl-3 pr-3 rounded-full hover:bg-gray-700 hover:text-white transition duration-300 ease-in-out'
+                >
+                  Unfollow
+                </button>
+              </div>
             </div>
           ))}
       </div>
