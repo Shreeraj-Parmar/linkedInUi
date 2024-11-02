@@ -295,7 +295,7 @@ export const sendAllPostsAccUser = async (req, res) => {
 
     // Fetch posts with pagination
     let allPosts = await Post.find({ "createdBy.id": userid })
-      .populate("createdBy.id", "name city profilePicture") // Populate user information
+      .populate("createdBy.id", "name city followers profilePicture") // Populate user information
       .sort({ createdAt: -1 }) // Sort by creation date, latest first
       .skip(skip) // Skip the posts according to pagination
       .limit(limitNumber); // Limit the number of posts fetched

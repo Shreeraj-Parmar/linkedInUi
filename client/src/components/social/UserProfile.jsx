@@ -57,7 +57,9 @@ const UserProfile = () => {
         // follow
         if (
           res.data.user &&
-          res.data.user.followers.includes(currUserData._id)
+          res.data.user.followers.find(
+            (follower) => follower.id.toString() === currUserData._id.toString()
+          )
         ) {
           setFollow(true);
         } else {
@@ -300,6 +302,7 @@ const UserProfile = () => {
                             senderId: currUserData._id,
                             senderType: "User",
                           });
+                          setFollow(!follow);
 
                           console.log(res.data);
                         } else {

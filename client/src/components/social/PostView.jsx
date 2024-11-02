@@ -192,9 +192,12 @@ const PostView = ({
         });
       }
       // Toggle the follow status locally
-      setFollowStatus((prevStatus) => ({
-        ...prevStatus,
-        [receiver]: !prevStatus[receiver],
+      setFollowStatus((prev) => ({
+        ...prev,
+        [receiver]: {
+          ...prev[receiver],
+          [actAs.id]: !prev[receiver][actAs.id], // Set the like status to true for the current user or company
+        },
       }));
     } else {
       toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
@@ -336,7 +339,7 @@ const PostView = ({
         );
 
         // Initialize likes for this post
-        newFollows[post._id] = {
+        newFollows[post.createdBy.id._id] = {
           [currUserData._id]: userFollowStatus,
         };
 
@@ -348,22 +351,31 @@ const PostView = ({
             );
             return acc;
           }, {});
-          newFollows[post._id] = {
-            ...newFollows[post._id],
+          newFollows[post.createdBy.id._id] = {
+            ...newFollows[post.createdBy.id._id],
             ...companyFollows,
           };
         }
       });
 
       // Use functional setLikes to merge with the existing likes state
-      setFollowStatus((prevLikes) => ({
-        ...prevLikes, // Spread the previous likes to keep them
-        ...newFollows, // Add the new likes from the newly fetched posts
-      }));
+      setFollowStatus((prevLikes) => {
+        const newFollowStatus = { ...prevLikes }; // Start with the previous likes
+        Object.keys(newFollows).forEach((postId) => {
+          if (!newFollowStatus[postId]) {
+            newFollowStatus[postId] = newFollows[postId];
+          }
+        });
+        return newFollowStatus;
+      });
     } else {
       setFollowStatus({}); // User is not logged in
     }
   };
+
+  useEffect(() => {
+    console.log("followed status", followStatus);
+  }, [followStatus]);
 
   useEffect(() => {
     if (isStatus === true) {
@@ -793,7 +805,9 @@ const PostView = ({
                                 "text-[#004182] font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
                               }`}
                             >
-                              {followStatus[post.createdBy?.id._id]
+                              {actAs &&
+                              followStatus[post.createdBy?.id._id] &&
+                              followStatus[post.createdBy?.id._id][actAs.id]
                                 ? "Following"
                                 : "+ Follow"}
                             </button>

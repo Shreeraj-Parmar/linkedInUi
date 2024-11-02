@@ -154,6 +154,16 @@ const PostDialog = ({
                 ? currUserData.profilePicture || imgUrl || "/blank.png"
                 : currUserData.company.find((comp) => comp._id === actAs.id)
                     ?.profilePicture || "/blank.png",
+            city:
+              actAs.type === "user"
+                ? currUserData.city
+                : currUserData.company.find((comp) => comp._id === actAs.id)
+                    ?.city,
+            followers:
+              actAs.type === "user"
+                ? currUserData.followers
+                : currUserData.company.find((comp) => comp._id === actAs.id)
+                    ?.followers,
           },
         },
       };

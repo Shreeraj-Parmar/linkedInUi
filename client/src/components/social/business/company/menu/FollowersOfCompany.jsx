@@ -12,6 +12,7 @@ const FollowersOfCompany = () => {
   const [followersList, setFollowersList] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [isFollowing, setIsFollowing] = useState({});
   const { actAs } = useContext(AllContext);
 
   console.log("ccccccc", companyId);
@@ -25,6 +26,17 @@ const FollowersOfCompany = () => {
       const followings = res.data.list;
       console.log("followings", followings);
       setFollowersList((prev) => [...prev, ...followings]); // Append new followings
+
+      let statusOfFollowing = {};
+
+      followings.forEach((following) => {
+        statusOfFollowing[following._id] = following.followers.some(
+          (follower) => follower.id === actAs.id
+        );
+      });
+
+      console.log("statusOfFollowing", statusOfFollowing);
+      setIsFollowing((prev) => ({ ...prev, ...statusOfFollowing }));
 
       // Initialize follow status for each following (using 'isFollowing' from API response)
 
@@ -109,10 +121,14 @@ const FollowersOfCompany = () => {
                   onClick={() => {
                     handleFollowClick(following._id, following.type);
                     console.log("unfollow button clicked");
+                    setIsFollowing((prev) => ({
+                      ...prev,
+                      [following._id]: !prev[following._id],
+                    }));
                   }}
                   className='bg-white border-[3px] border-gray-700 text-gray-700 font-semibold p-2 pl-3 pr-3 rounded-full hover:bg-gray-700 hover:text-white transition duration-300 ease-in-out'
                 >
-                  Follow back
+                  {isFollowing[following._id] ? "Unfollow" : "Follow Back"}
                 </button>
               </div>
             </div>

@@ -170,14 +170,14 @@ export const sendFolllowerOrFollowingListOfCompany = async (req, res) => {
 
     // Fetch details from User and Company collections
     const users = await User.find({ _id: { $in: userIds } })
-      .select("name profilePicture city gender")
+      .select("name profilePicture city followers gender")
       .skip((page - 1) * limit)
       .limit(limit)
       .lean()
       .exec();
 
     const companies = await Company.find({ _id: { $in: companyIds } })
-      .select("name profilePicture city industry")
+      .select("name profilePicture city followers industry")
       .skip((page - 1) * limit)
       .limit(limit)
       .lean()

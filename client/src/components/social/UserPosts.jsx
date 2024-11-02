@@ -61,6 +61,10 @@ const UserPosts = ({
   const commentInputRef = useRef();
   const [commentCount, setCommentCount] = useState({});
   const [selectedPostForUpdate, setSelectedPostForUpdate] = useState(null);
+  const [isStatus, setIsStatus] = useState(false);
+  const [isFollowStatus, setIsFollowStatus] = useState(false);
+  const [followStatus, setFollowStatus] = useState({});
+
   // For checking if there are more notifications to load
   const limit = 3; // Number of notifications to load at a time
   const videoRef = useRef(null);
@@ -114,6 +118,9 @@ const UserPosts = ({
   };
 
   const postFunc = async (id, type) => {
+    setIsStatus(true);
+    setIsFollowStatus(true);
+
     let res = await getAllPostAccUser({
       page: page,
       limit: limit,
@@ -165,40 +172,6 @@ const UserPosts = ({
         setHasMore(false); // No more posts to load
       }
 
-      if (currUserData) {
-        const newLikes = {}; // Store the likes for the newly loaded posts
-        res.data.allPosts.forEach((post) => {
-          // Check if the current user has liked the post
-
-          if (
-            currUserData &&
-            currUserData.company &&
-            currUserData.company.length > 0
-          ) {
-            newLikes[post._id] = {
-              user: post.likedBy.some(
-                (like) => like.type === "User" && like.id === currUserData._id
-              ),
-              company: post.likedBy.some(
-                (like) =>
-                  like.type === "Company" && like.id === currUserData._id
-              ),
-            };
-          } else {
-            newLikes[post._id] = post.likedBy.includes(currUserData._id);
-          }
-        });
-
-        // Use functional setLikes to merge with the existing likes state
-        setLikes((prevLikes) => ({
-          ...prevLikes, // Spread the previous likes to keep them
-          ...newLikes, // Add the new likes from the newly fetched posts
-        }));
-        console.log("Likes initialized here please check it:", newLikes);
-      } else {
-        setLikes({}); // User is not logged in
-      }
-
       // checkFollowStatus(); // Check follow status
     } else {
       console.error("Failed to fetch posts:", res); // Handle error
@@ -211,8 +184,12 @@ const UserPosts = ({
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
     }
-    console.log("curr id is", currUserData);
-    console.log("act as is", actAs);
+    setIsStatus(false);
+
+    console.log("Current user data:", currUserData);
+    console.log("Acting as:", actAs);
+
+    // Send request to toggle like on the post
     let res = await toggleLikeOnPost({
       postId: postId,
       whoLiked: actAs.id,
@@ -220,21 +197,11 @@ const UserPosts = ({
     });
 
     if (res.status === 200) {
-      const isUserLike = actAs.type === "user";
-
       console.log(res.data.message);
 
-      if (
-        currUserData &&
-        currUserData.company &&
-        currUserData.company.length > 0
-      ) {
-        if (!likes[postId]) {
-          likes[postId] = { user: false, company: false };
-        }
-      }
-
+      // Check if the post is now liked or unliked (FinalLikeStatus from server)
       if (res.data.FinalLikeStatus) {
+        // Increment like count on the post
         setAllPost((prevPosts) =>
           prevPosts.map((post) =>
             post._id === postId
@@ -243,20 +210,16 @@ const UserPosts = ({
           )
         );
 
-        if (
-          currUserData &&
-          currUserData.company &&
-          currUserData.company.length > 0
-        ) {
-          likes[postId][isUserLike ? "user" : "company"] = true;
-          setLikes({ ...likes });
-        } else {
-          setLikes((prev) => ({
-            ...prev,
-            [postId]: true, // Toggle like status
-          }));
-        }
+        // Update likes state
+        setLikes((prevLikes) => ({
+          ...prevLikes,
+          [postId]: {
+            ...prevLikes[postId],
+            [actAs.id]: true, // Set the like status to true for the current user or company
+          },
+        }));
       } else {
+        // Decrement like count on the post
         setAllPost((prevPosts) =>
           prevPosts.map((post) =>
             post._id === postId
@@ -264,25 +227,116 @@ const UserPosts = ({
               : post
           )
         );
-        if (
-          currUserData &&
-          currUserData.company &&
-          currUserData.company.length > 0
-        ) {
-          likes[postId][isUserLike ? "user" : "company"] = false;
-          setLikes({ ...likes });
-        } else {
-          setLikes((prev) => ({
-            ...prev,
-            [postId]: false, // Toggle like status
-          }));
-        }
+
+        // Update likes state
+        setLikes((prevLikes) => ({
+          ...prevLikes,
+          [postId]: {
+            ...prevLikes[postId],
+            [actAs.id]: false, // Set the like status to false for the current user or company
+          },
+        }));
       }
-      // notification here
+
+      // You can add a notification here if needed
     } else {
       console.error("Error updating like status on server", res.data.message);
     }
   };
+
+  const likeUpdateStatus = () => {
+    if (currUserData) {
+      const newLikes = {}; // Store the likes for the newly loaded posts
+      allPost.forEach((post) => {
+        // Check if the current user has liked the post
+        const userLikeStatus = post.likedBy.some(
+          (like) => like.type === "User" && like.id === currUserData._id
+        );
+
+        // Initialize likes for this post
+        newLikes[post._id] = {
+          [currUserData._id]: userLikeStatus,
+        };
+
+        if (currUserData.company && currUserData.company.length > 0) {
+          // Add likes for each company the user represents
+          const companyLikes = currUserData.company.reduce((acc, company) => {
+            acc[company._id] = post.likedBy.some(
+              (like) => like.type === "Company" && like.id === company._id
+            );
+            return acc;
+          }, {});
+          newLikes[post._id] = {
+            ...newLikes[post._id],
+            ...companyLikes,
+          };
+        }
+      });
+
+      // Use functional setLikes to merge with the existing likes state
+      setLikes((prevLikes) => ({
+        ...prevLikes, // Spread the previous likes to keep them
+        ...newLikes, // Add the new likes from the newly fetched posts
+      }));
+      console.log("Likes initialized here please check it:", newLikes);
+    } else {
+      setLikes({}); // User is not logged in
+    }
+  };
+
+  const folowStatusUpdate = () => {
+    if (currUserData) {
+      const newFollows = {}; // Store the likes for the newly loaded posts
+      allPost.forEach((post) => {
+        // Check if the current user has liked the post
+        const userFollowStatus = post.createdBy.id.followers?.some(
+          (like) => like.type === "User" && like.id === currUserData._id
+        );
+
+        // Initialize likes for this post
+        newFollows[post.createdBy.id._id] = {
+          [currUserData._id]: userFollowStatus,
+        };
+
+        if (currUserData.company && currUserData.company.length > 0) {
+          // Add likes for each company the user represents
+          const companyFollows = currUserData.company.reduce((acc, company) => {
+            acc[company._id] = post.createdBy.id.followers?.some(
+              (like) => like.type === "Company" && like.id === company._id
+            );
+            return acc;
+          }, {});
+          newFollows[post.createdBy.id._id] = {
+            ...newFollows[post.createdBy.id._id],
+            ...companyFollows,
+          };
+        }
+      });
+
+      // Use functional setLikes to merge with the existing likes state
+      setFollowStatus((prevLikes) => {
+        const newFollowStatus = { ...prevLikes }; // Start with the previous likes
+        Object.keys(newFollows).forEach((postId) => {
+          if (!newFollowStatus[postId]) {
+            newFollowStatus[postId] = newFollows[postId];
+          }
+        });
+        return newFollowStatus;
+      });
+    } else {
+      setFollowStatus({}); // User is not logged in
+    }
+  };
+
+  useEffect(() => {
+    if (isStatus === true) {
+      likeUpdateStatus();
+    }
+
+    if (isFollowStatus === true) {
+      folowStatusUpdate();
+    }
+  }, [allPost, isStatus, isFollowStatus]);
 
   const handleCommentPost = async (id, userId) => {
     if (!isLogin) {
@@ -370,38 +424,40 @@ const UserPosts = ({
   };
 
   // foloow
-  // const handleFollowClick = async (receiver) => {
-  //   if (!isLogin) {
-  //     setLoginDialog(true); // Show login dialog if user is not logged in
-  //     return;
-  //   }
-  //   let res = await sendFollowReq({ receiverId: receiver });
-  //   if (res.status === 200) {
-  //     setFollow(true);
-  //     console.log(res.data.message);
-  //     if (res.data.message === "Now you are following the user!") {
-  //       await sendNotification({
-  //         recipient: receiver,
-
-  //         sender: currUserData._id,
-  //         type: "follow",
-  //         message: "you have new follower",
-  //       });
-  //     }
-  //   } else {
-  //     toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
-  //       position: "top-right",
-  //       autoClose: 4000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //       theme: "light",
-  //     });
-  //     console.error("Error while following/unfollowing:", res.data.message);
-  //   }
-  // };
+  const handleFollowClick = async (receiver, type) => {
+    if (!isLogin) {
+      setLoginDialog(true); // Show login dialog if user is not logged in
+      return;
+    }
+    setIsFollowStatus(false);
+    let res = await sendFollowReq({
+      receiverId: receiver,
+      receverType: type,
+      senderId: actAs && actAs.id,
+      senderType: actAs && actAs.type === "company" ? "Company" : "User",
+    });
+    if (res.status === 200) {
+      console.log(res.data.message);
+      if (res.data.message === "Now you are following the user!") {
+        await sendNotification({
+          recipient: receiver,
+          sender: currUserData._id,
+          type: "follow",
+          message: "you have new follower",
+        });
+      }
+      // Toggle the follow status locally
+      setFollowStatus((prev) => ({
+        ...prev,
+        [receiver]: {
+          ...prev[receiver],
+          [actAs.id]: !prev[receiver][actAs.id], // Set the like status to true for the current user or company
+        },
+      }));
+    } else {
+      console.error("Error while following/unfollowing:", res.data.message);
+    }
+  };
 
   const enableDisableCommentPostBtn = () => {
     // move to onChange function
@@ -421,14 +477,6 @@ const UserPosts = ({
   };
 
   useEffect(() => {
-    console.log("all post here inside useeffecti ", allPost);
-  }, [allPost]);
-
-  useEffect(() => {
-    console.log("actAs is here", actAs);
-    if (hasMore && userData) {
-      postFunc(userData._id);
-    }
     if (
       companyId &&
       companyId.companyId &&
@@ -440,6 +488,13 @@ const UserPosts = ({
       )
     ) {
       setActAs({ type: "company", id: companyId.companyId });
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("actAs is here", actAs);
+    if (hasMore && userData) {
+      postFunc(userData._id);
     }
   }, [page, userData]); // Add page as a dependency
 
@@ -500,6 +555,46 @@ const UserPosts = ({
                           {moment(post.createdAt).fromNow()}
                         </p>
                       </div>
+
+                      {currUserData &&
+                      post.createdBy?.id._id !== currUserData._id ? (
+                        <div className='follow-btn min-w-[100px] p-2 relative lg:left-[4rem]'>
+                          <button
+                            onClick={() => {
+                              handleFollowClick(
+                                post.createdBy?.id._id,
+                                post.createdBy?.type
+                              );
+                            }}
+                            className={`p-2 rounded-md ${
+                              lightMode &&
+                              "text-[#004182] font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
+                            }`}
+                          >
+                            {actAs &&
+                            followStatus[post.createdBy?.id._id] &&
+                            followStatus[post.createdBy?.id._id][actAs.id]
+                              ? "Following"
+                              : "+ Follow"}
+                          </button>
+                        </div>
+                      ) : (
+                        !isLogin && (
+                          <div className='follow-btn p-2 relative lg:left-[70px]'>
+                            <button
+                              onClick={() => {
+                                setLoginDialog(true);
+                              }}
+                              className={`p-2 rounded-md text-[#AAD6FF] hover:bg-[#1F2F41] ${
+                                lightMode &&
+                                "text-[#004182] font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
+                              }`}
+                            >
+                              +Follow
+                            </button>
+                          </div>
+                        )
+                      )}
 
                       {(currUserData &&
                         post.createdBy?.id._id === currUserData._id) ||
@@ -853,12 +948,10 @@ const UserPosts = ({
                             );
                           }}
                         >
-                          {(likes &&
-                            likes[post._id] &&
-                            likes[post._id][
-                              actAs.type === "company" ? "company" : "user"
-                            ]) ||
-                          likes[post._id] ? (
+                          {likes &&
+                          actAs &&
+                          likes[post._id] &&
+                          likes[post._id][actAs.id] ? (
                             <FavoriteIcon className='text-red-500' />
                           ) : (
                             <FavoriteBorderIcon className='' />
