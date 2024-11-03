@@ -109,6 +109,10 @@
   border-bottom: 3px solid #000;
 }
 
+.bg-www {
+  background-color: white !important;
+}
+
 .slick-slider {
   width: 80%; /* Set a specific width */
   margin: 0 auto; /* Center the slider */

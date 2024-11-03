@@ -63,6 +63,31 @@ export const getDataViaAdmin = async (req, res) => {
 
 // get data without admin
 
+export const sendCompanyDataAccID = async (req, res) => {
+  const { companyId } = req.params;
+  try {
+    let company = await Company.findById(companyId).populate({
+      path: "user",
+      select: "name profilePicture followers city role heading",
+    });
+
+    if (!company) {
+      return res.status(400).json({ message: "Company not available" });
+    }
+
+    if (company) {
+      res.status(200).json({ message: "success", allData: company });
+    } else {
+      res.status(400).json({ message: "Company not available" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling sendCompanyDataAccID API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 // update company
 
 export const updateCompanyInDB = async (req, res) => {

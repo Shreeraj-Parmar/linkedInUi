@@ -78,6 +78,7 @@ import {
   addAdminOfCompanyInDB,
   deleteAdminFromDB,
   sendFolllowerOrFollowingListOfCompany,
+  sendCompanyDataAccID,
 } from "../controller/company-controller.js";
 
 // company routs:
@@ -85,6 +86,7 @@ import {
 router.post("/company", jwtMiddle, saveNewCompanyInDB);
 router.put("/company", jwtMiddle, updateCompanyInDB);
 router.get("/company/:companyId/admin", jwtMiddle, getDataViaAdmin);
+router.get("/company/:companyId", sendCompanyDataAccID);
 router.put("/company/admin/add", jwtMiddle, addAdminOfCompanyInDB);
 router.delete("/company/admin", jwtMiddle, deleteAdminFromDB);
 router.get("/company/follow", jwtMiddle, sendFolllowerOrFollowingListOfCompany);

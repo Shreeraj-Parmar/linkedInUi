@@ -24,6 +24,7 @@ import Business from "./components/social/business/Business";
 import NewCompany from "./components/social/business/company/NewCompany";
 import CompanyOverView from "./components/social/business/company/CompanyOverView";
 import { verifyTokenFunc } from "./utils/token-verification-func.js";
+import ViewCompany from "./components/social/business/company/ViewCompany.jsx";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -91,6 +92,10 @@ function App() {
     {
       path: "/company/:companyId/admin",
       element: <CompanyOverView />,
+    },
+    {
+      path: "/company/:companyId",
+      element: <ViewCompany />,
     },
   ]);
 

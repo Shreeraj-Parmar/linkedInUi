@@ -892,7 +892,7 @@ export const saveNewCompanyData = async (data) => {
   }
 };
 
-// get company Data
+// get company Data via admin
 
 export const getCompanyData = async (data) => {
   try {
@@ -908,6 +908,27 @@ export const getCompanyData = async (data) => {
       `Error while calling getCompanyData & error is: ${error.message}`
     );
     console.error(`Error while calling getCompanyData: ${error.message}`);
+  }
+};
+
+// get company Data without admin
+
+export const getCompanyDataWithoutAuth = async (data) => {
+  try {
+    const url = `${API}/company/${data}`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getCompanyDataWithoutAuth & error is: ${error.message}`
+    );
+    console.error(
+      `Error while calling getCompanyDataWithoutAuth: ${error.message}`
+    );
   }
 };
 

@@ -336,6 +336,8 @@ const UserPosts = ({
     if (isFollowStatus === true) {
       folowStatusUpdate();
     }
+
+    console.log("company id is inside UserPosts", companyId);
   }, [allPost, isStatus, isFollowStatus]);
 
   const handleCommentPost = async (id, userId) => {
@@ -508,7 +510,6 @@ const UserPosts = ({
       <div className=' h-[100%]  p-2  flex-row space-y-3  '>
         {allPost && allPost.length > 0
           ? allPost.map((post) => {
-              console.log("post is here", post);
               const truncatedContent =
                 post && post.text && post.text.length > 100
                   ? post.text.substring(0, 100) + "..."
@@ -556,49 +557,54 @@ const UserPosts = ({
                         </p>
                       </div>
 
-                      {currUserData &&
-                      post.createdBy?.id._id !== currUserData._id ? (
-                        <div className='follow-btn min-w-[100px] p-2 relative lg:left-[4rem]'>
-                          <button
-                            onClick={() => {
-                              handleFollowClick(
-                                post.createdBy?.id._id,
-                                post.createdBy?.type
-                              );
-                            }}
-                            className={`p-2 rounded-md ${
-                              lightMode &&
-                              "text-[#004182] font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
-                            }`}
-                          >
-                            {actAs &&
-                            followStatus[post.createdBy?.id._id] &&
-                            followStatus[post.createdBy?.id._id][actAs.id]
-                              ? "Following"
-                              : "+ Follow"}
-                          </button>
-                        </div>
-                      ) : (
-                        !isLogin && (
-                          <div className='follow-btn p-2 relative lg:left-[70px]'>
+                      {post.createdBy?.id._id !== currUserData._id &&
+                        !currUserData?.company?.some(
+                          (com) => com._id === post.createdBy?.id._id
+                        ) && (
+                          <div className='follow-btn min-w-[100px] p-2 relative lg:left-[4rem]'>
                             <button
                               onClick={() => {
-                                setLoginDialog(true);
+                                handleFollowClick(
+                                  post.createdBy?.id._id,
+                                  post.createdBy?.type
+                                );
                               }}
-                              className={`p-2 rounded-md text-[#AAD6FF] hover:bg-[#1F2F41] ${
+                              className={`p-2 rounded-md ${
                                 lightMode &&
                                 "text-[#004182] font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
                               }`}
                             >
-                              +Follow
+                              {actAs &&
+                              followStatus[post.createdBy?.id._id] &&
+                              followStatus[post.createdBy?.id._id][actAs.id]
+                                ? "Following"
+                                : "+ Follow"}
                             </button>
                           </div>
-                        )
+                        )}
+
+                      {!isLogin && (
+                        <div className='follow-btn p-2 relative lg:left-[70px]'>
+                          <button
+                            onClick={() => {
+                              setLoginDialog(true);
+                            }}
+                            className={`p-2 rounded-md text-[#AAD6FF] hover:bg-[#1F2F41] ${
+                              lightMode &&
+                              "text-[#004182] font-semibold bg-[#fff] hover:bg-[#EBF4FD]"
+                            }`}
+                          >
+                            +Follow
+                          </button>
+                        </div>
                       )}
 
                       {(currUserData &&
                         post.createdBy?.id._id === currUserData._id) ||
-                      post.createdBy?.id._id === companyId.companyId ? (
+                      (currUserData &&
+                        currUserData?.company?.some(
+                          (com) => com._id === post.createdBy?.id._id
+                        )) ? (
                         <div className='follow-btn p-2 relative lg:left-[300px]'>
                           {updatePostDialog && (
                             <UpdatePostDialog
