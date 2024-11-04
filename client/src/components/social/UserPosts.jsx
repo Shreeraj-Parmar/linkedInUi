@@ -557,7 +557,7 @@ const UserPosts = ({
                         </p>
                       </div>
 
-                      {post.createdBy?.id._id !== currUserData._id &&
+                      {post.createdBy?.id._id !== currUserData?._id &&
                         !currUserData?.company?.some(
                           (com) => com._id === post.createdBy?.id._id
                         ) && (

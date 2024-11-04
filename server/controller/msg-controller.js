@@ -2,77 +2,82 @@ import Message from "../model/message.js";
 import Conversation from "../model/conversation.js";
 import User from "../model/user.js";
 import { io, socketClient } from "../index.js";
+import mongoose from "mongoose";
 
 export const saveMSGInDB = async (req, res) => {
-  let { receiverId, conversationId, text, mediaUrl } = req.body;
+  const {
+    receiverId,
+    receiverType,
+    senderId,
+    senderType,
+    conversationId,
+    text,
+    mediaUrl,
+  } = req.body;
+
   try {
-    const newMessage = mediaUrl
-      ? new Message({
-          receiverId: receiverId,
-          conversationId: conversationId,
-          senderId: req._id,
-          text: text,
-          mediaUrl: mediaUrl && mediaUrl,
-        })
-      : new Message({
-          receiverId: receiverId,
-          conversationId: conversationId,
-          senderId: req._id,
-          text: text,
-        });
-    let result = await newMessage.save();
-    console.log(result);
-    const conver = await Conversation.findByIdAndUpdate(conversationId, {
+    // Construct the new message object based on the presence of mediaUrl
+    const newMessageData = {
+      conversationId,
+      sender: {
+        id: senderId,
+        type: senderType,
+      },
+      receiver: {
+        id: receiverId,
+        type: receiverType,
+      },
+      text,
+    };
+
+    // If mediaUrl is provided, add it to the message object
+    if (mediaUrl) {
+      newMessageData.mediaUrl = {
+        url: mediaUrl.url,
+        fileType: mediaUrl.fileType,
+      };
+    }
+
+    // Save the new message
+    const newMessage = new Message(newMessageData);
+    const result = await newMessage.save();
+
+    // Update the conversation's lastMessage field
+    const conversation = await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: result._id,
     });
 
-    const message = mediaUrl
-      ? {
-          senderId: req._id,
-          receiverId: receiverId,
-          text: text,
-          conversationId: conversationId,
-          _id: result._id,
-          mediaUrl: mediaUrl && mediaUrl,
-
-          createdAt: new Date(),
-        }
-      : {
-          senderId: req._id,
-          receiverId: receiverId,
-          text: text,
-          conversationId: conversationId,
-          _id: result._id,
-
-          createdAt: new Date(),
-        };
+    // Emit the message to the conversation room
+    const message = {
+      ...newMessageData,
+      _id: result._id,
+      createdAt: new Date(),
+    };
 
     io.to(conversationId).emit("receive_message", message);
 
-    // update unreade messsssssage
-
-    if (conver.unreadMessages.has(receiverId)) {
-      conver.unreadMessages.set(
+    // Update unread messages count
+    if (conversation.unreadMessages.has(receiverId)) {
+      conversation.unreadMessages.set(
         receiverId,
-        conver.unreadMessages.get(receiverId) + 1
+        conversation.unreadMessages.get(receiverId) + 1
       );
     } else {
-      conver.unreadMessages.set(receiverId, 1);
+      conversation.unreadMessages.set(receiverId, 1);
     }
 
-    // live update badge notification
-
-    let liveBadge = {
-      receiverId: receiverId,
-      count: conver.unreadMessages.get(receiverId),
-      conversationId: conversationId,
+    // Live update badge notification for receiver
+    const liveBadge = {
+      receiverId,
+      count: conversation.unreadMessages.get(receiverId),
+      conversationId,
     };
     io.emit(`unread_messages_${receiverId}`, liveBadge);
     io.emit(`unread_messages_nav_${receiverId}`, "add please");
 
-    await conver.save();
+    await conversation.save();
 
-    return res.status(200).json("message sent succcessfully");
+    return res.status(200).json("message sent successfully");
   } catch (error) {
     console.error(error.message);
     return res.status(500).json(error.message);
@@ -80,22 +85,24 @@ export const saveMSGInDB = async (req, res) => {
 };
 
 export const sendALlMsgAccConvId = async (req, res) => {
+  const { convId, limit, page, whoId, whoType } = req.query;
+  console.log("req qurey is the for the message", req.query);
+
   try {
     // Get page and limit from query parameters, with defaults
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const limit = parseInt(req.query.limit) || 20; // Default limit to 20 if not provided
-
     // Calculate how many documents to skip based on the page number
     const skip = (page - 1) * limit;
 
     // Find messages for the specific conversation and apply pagination
     const messages = await Message.find({
-      conversationId: req.params.convId,
-      deletedBy: { $ne: req._id },
+      conversationId: convId,
+      deletedBy: { $not: { $elemMatch: { id: whoId, type: whoType } } },
     })
       .sort({ createdAt: -1 }) // Sort by most recent messages first
       .skip(skip) // Skip the documents for previous pages
       .limit(limit); // Limit the number of documents returned
+
+    console.log("messages are", messages);
 
     return res.status(200).json(messages);
   } catch (error) {
@@ -139,41 +146,42 @@ export const markAsReadUpdate = async (req, res) => {
 };
 
 // send all unread msg for show in navbar
+
 export const sendAllUnreadMSG = async (req, res) => {
-  // console.log(`Naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  const { reqId, reqIdType } = req.query; // Company or User ID and type
 
-  //  s`);
   try {
-    const userId = req._id;
+    // Convert reqId to ObjectId before using it in the aggregation
+    const objectIdReqId = new mongoose.Types.ObjectId(reqId);
 
-    // Query to find all conversations where the user is a member and has unread messages
+    // Query to find all conversations where the user/company is a member and has unread messages
     const allUnreadConversations = await Conversation.aggregate([
       {
         $match: {
-          members: { $in: [userId] }, // Find conversations where the user is a member
-          [`unreadMessages.${userId}`]: { $gt: 0 }, // Only return conversations where the user has unread messages
+          members: {
+            $elemMatch: { id: objectIdReqId, type: reqIdType }, // Check membership with both id and type
+          },
+          [`unreadMessages.${reqId}`]: { $gt: 0 }, // Filter by conversations with unread messages for reqId
         },
       },
       {
         $group: {
-          _id: null, // Group all conversations together to calculate the total
-          totalUnread: { $sum: { $toInt: `$unreadMessages.${userId}` } }, // Sum the unread message count for the user
+          _id: null, // Group all conversations together to calculate the total unread count
+          totalUnread: { $sum: { $toInt: `$unreadMessages.${reqId}` } }, // Sum the unread message count for reqId
         },
       },
     ]);
 
-    // If there are unread messages, return the count, otherwise return 0
+    // Determine the total unread count, defaulting to 0 if there are no unread messages
     const unreadCount =
       allUnreadConversations.length > 0
         ? allUnreadConversations[0].totalUnread
         : 0;
 
-    // console.log(`User hello ${userId} has ${unreadCount} unread messages.`);
-
     return res.status(200).json(unreadCount);
   } catch (error) {
     console.log(
-      `error while calling sendAllUnreadMSG & error is : ${error.message}`
+      `Error while calling sendAllUnreadMSG & error is: ${error.message}`
     );
     return res.status(500).json(error.message);
   }

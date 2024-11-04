@@ -63,9 +63,12 @@ const Message = () => {
     setAllOnlineUsers,
     unreadMSG,
     setUnreadMSG,
+    actAs,
+    setActAs,
   } = useContext(AllContext);
   const [receiverName, setReceiverName] = useState();
   const [receiverId, setReceiverId] = useState();
+  const [typeOfReceiver, setTypeOfReceiver] = useState();
   const [conversations, setConversations] = useState([]);
   const [page, setPage] = useState(1); // State to keep track of the current page
   const [hasMore, setHasMore] = useState(true); // State to check if more messages are available
@@ -77,7 +80,7 @@ const Message = () => {
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
   console.log("receevier id is", receiverId);
-  const [favList, setFavList] = useState(currUserData?.favorites || []);
+  const [favList, setFavList] = useState([]);
   const postPhotoRef = useRef();
   const inputRef = useRef(null);
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
@@ -97,6 +100,13 @@ const Message = () => {
     console.log("curruntConvId is", currConversationId);
   }, [unreadMSG]);
 
+  // for fav or not!
+  useEffect(() => {
+    if (currUserData) {
+      setFavList(currUserData.favorites);
+    }
+  }, [currUserData]);
+
   const socketMessageFunction = async () => {
     socket.on("online_users", handleOnlineUsers);
     // Join the conversation room
@@ -106,7 +116,7 @@ const Message = () => {
 
     socket.emit("join_conversation", currConversationId && currConversationId);
 
-    socket.on(`unread_messages_${currUserData._id}`, (data) => {
+    socket.on(`unread_messages_${currUserData && currUserData._id}`, (data) => {
       console.log("unread triggerd and data is", data);
       if (currConversationId.toString() !== data.conversationId.toString()) {
         console.log(
@@ -137,10 +147,10 @@ const Message = () => {
       }));
       if (message.conversationId === currConversationId) {
         // Mark message as read if conversation is active
-        markAsReadFunction(currConversationId, currUserData._id);
+        markAsReadFunction(currConversationId, actAs?.id);
         console.log("this is last msg", lastMsg);
       }
-      if (message.senderId !== currUserData._id) {
+      if (message.sender.id !== actAs?.id) {
         let check = messages.find((msg) => msg._id === message._id);
         if (!check) {
           setMessages((prevMessages) => [...prevMessages, message]);
@@ -160,7 +170,7 @@ const Message = () => {
 
   useEffect(() => {
     console.log("is login is :", isLogin);
-    socketMessageFunction();
+    if (socket) socketMessageFunction();
 
     return () => {
       if (socket !== null) {
@@ -179,22 +189,26 @@ const Message = () => {
     if (currConversationId) {
       handleConversationSelect(currConversationId);
     }
-  }, []);
+  }, [actAs]);
 
   const findReceiverData = async () => {
     let res = await getReceiverData({ convId: currConversationId });
     console.log(res.data);
     if (res.status === 200) {
-      const { receiverId, receiverName } = res.data;
+      const { receiverId, receiverName, receiverType } = res.data;
 
-      console.log("Receiver Data:", receiverId, receiverName);
+      console.log("Receiver Data:", receiverId, receiverName, receiverType);
       setReceiverId(receiverId);
+      setTypeOfReceiver(receiverType);
       setReceiverName(receiverName);
     }
   };
 
   const findAllConversationsFunc = async () => {
-    let res = await getAllConversations();
+    let res = await getAllConversations({
+      reqId: actAs?.id,
+      reqIdType: actAs?.type,
+    });
     if (res.status === 200) {
       console.log("all conv", res.data);
 
@@ -228,13 +242,19 @@ const Message = () => {
   };
 
   const fetchMessagesFunc = async (id, page, limit) => {
-    let res = await getMsgAccConvId(id, page, limit); // Fetch messages with pagination
+    let res = await getMsgAccConvId({
+      convId: id,
+      page: page,
+      limit: limit,
+      whoId: actAs.id,
+      whoType: actAs.type === "company" ? "Company" : "User",
+    }); // Fetch messages with pagination
     if (res.status === 200) {
       console.log("Messages:", res.data);
 
       const modifiedMessages = res.data.map((message) => ({
-        ...message, // Spread the existing message properties
-        selected: false, // Add 'selected: false' to each message
+        ...message,
+        selected: false,
       }));
 
       // Prepend the modified messages to the existing messages
@@ -315,10 +335,14 @@ const Message = () => {
     let res = await changeFavourite(data);
     if (res.status === 200) {
       setFavList((prevFavList) => {
-        if (prevFavList.includes(data.receiverId)) {
-          return prevFavList.filter((id) => id !== data.receiverId);
+        if (prevFavList.some((fav) => fav.id === data.receiverId)) {
+          return prevFavList.filter((fav) => fav.id !== data.receiverId);
         } else {
-          return [...prevFavList, data.receiverId];
+          let newOb = {
+            id: data.receiverId,
+            type: data.receiverType,
+          };
+          return [...prevFavList, newOb];
         }
       });
       console.log(res.data);
@@ -326,125 +350,92 @@ const Message = () => {
   };
 
   const handleSendMsg = async () => {
-    let resChek = await checkConnectionEachOther({ receiverId: receiverId });
-    if (resChek.status === 200) {
-      console.log("you enable to msg");
-      let mediaUrl;
+    // let resChek = await checkConnectionEachOther({ receiverId: receiverId });
+    // if (resChek.status === 200) {
+    console.log("you enable to msg");
+    let mediaUrl;
 
-      if (postFile) {
-        let res = await getURLForPOST({ fileType: postFile.type });
-        if (res.status === 200) {
-          console.log(res.data.url);
-          const nameOfFile = res.data.fileName;
-          // upload in aws
+    if (postFile) {
+      let res = await getURLForPOST({ fileType: postFile.type });
+      if (res.status === 200) {
+        console.log(res.data.url);
+        const nameOfFile = res.data.fileName;
+        // upload in aws
 
-          let resOfAWS = await uploadFileAWS({
-            uploadURL: res.data.url,
-            postFile,
+        let resOfAWS = await uploadFileAWS({
+          uploadURL: res.data.url,
+          postFile,
+          fileType: postFile.type,
+        });
+        if (resOfAWS.status === 200) {
+          console.log("uploaded");
+          const bukket = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
+          const region = import.meta.env.VITE_AWS_REGION;
+          const permanentUrlForPost = `https://${bukket}.s3.${region}.amazonaws.com/PostPicture/${nameOfFile}`;
+          console.log(permanentUrlForPost);
+
+          mediaUrl = {
+            url: permanentUrlForPost,
             fileType: postFile.type,
-          });
-          if (resOfAWS.status === 200) {
-            console.log("uploaded");
-            const bukket = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
-            const region = import.meta.env.VITE_AWS_REGION;
-            const permanentUrlForPost = `https://${bukket}.s3.${region}.amazonaws.com/PostPicture/${nameOfFile}`;
-            console.log(permanentUrlForPost);
+          };
 
-            mediaUrl = {
-              url: permanentUrlForPost,
-              fileType: postFile.type,
-            };
-
-            if (currConversationId) {
-              let res = await sendMsg({
-                receiverId: receiverId,
+          if (currConversationId) {
+            let res = await sendMsg({
+              receiverId: receiverId,
+              senderId: actAs && actAs.id,
+              receiverType: typeOfReceiver,
+              senderType:
+                actAs && actAs.type === "company" ? "Company" : "User",
+              conversationId: currConversationId,
+              text: sendMsgText,
+              mediaUrl: mediaUrl,
+            });
+            if (res.status === 200) {
+              // send to socket server
+              const message = {
+                sender: {
+                  id: actAs && actAs.id,
+                  type: actAs && actAs.type === "company" ? "Company" : "User",
+                },
+                receiver: {
+                  id: receiverId,
+                  type: typeOfReceiver,
+                },
                 conversationId: currConversationId,
                 text: sendMsgText,
                 mediaUrl: mediaUrl,
-              });
-              if (res.status === 200) {
-                // send to socket server
-                const message = {
-                  senderId: currUserData._id,
-                  receiverId: receiverId,
-                  conversationId: currConversationId,
-                  text: sendMsgText,
-                  mediaUrl: mediaUrl,
-                  createdAt: new Date(),
-                };
+                createdAt: new Date(),
+              };
 
-                // ui update in message
+              // ui update in message
 
-                setMessages((prevMessages) => [...prevMessages, message]);
-                console.log(res.data);
-                setTimeout(() => {
-                  if (chatEndRef.current) {
-                    chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-                  }
-                }, 200);
-                setSendMsgText("");
-                setPostFile(null);
-                setPreviewUrl(null);
-              } else {
-                toast.error(
-                  `Somthing Error To Send Message, please refresh page`,
-                  {
-                    position: "top-right",
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                  }
-                );
-              }
+              setMessages((prevMessages) => [...prevMessages, message]);
+              console.log(res.data);
+              setTimeout(() => {
+                if (chatEndRef.current) {
+                  chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+                }
+              }, 200);
+              setSendMsgText("");
+              setPostFile(null);
+              setPreviewUrl(null);
             } else {
-              toast.error(`please first select conversation`, {
-                position: "top-right",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-              });
+              toast.error(
+                `Somthing Error To Send Message, please refresh page`,
+                {
+                  position: "top-right",
+                  autoClose: 2000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  theme: "light",
+                }
+              );
             }
-          }
-        }
-      } else {
-        if (currConversationId) {
-          let res = await sendMsg({
-            receiverId: receiverId,
-            conversationId: currConversationId,
-            text: sendMsgText,
-          });
-          if (res.status === 200) {
-            // send to socket server
-            const message = {
-              senderId: currUserData._id,
-              receiverId: receiverId,
-              conversationId: currConversationId,
-              text: sendMsgText,
-              createdAt: new Date(),
-            };
-
-            // ui update in message
-
-            setMessages((prevMessages) => [...prevMessages, message]);
-            console.log(res.data);
-            setTimeout(() => {
-              if (chatEndRef.current) {
-                chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-              }
-            }, 200);
-            setSendMsgText("");
-            setPostFile(null);
-            setPreviewUrl(null);
           } else {
-            toast.error(`Somthing Error To Send Message, please refresh page`, {
+            toast.error(`please first select conversation`, {
               position: "top-right",
               autoClose: 2000,
               hideProgressBar: false,
@@ -455,8 +446,48 @@ const Message = () => {
               theme: "light",
             });
           }
+        }
+      }
+    } else {
+      if (currConversationId) {
+        let res = await sendMsg({
+          receiverId: receiverId,
+          senderId: actAs && actAs.id,
+          receiverType: typeOfReceiver,
+          senderType: actAs && actAs.type === "company" ? "Company" : "User",
+          conversationId: currConversationId,
+          text: sendMsgText,
+        });
+        if (res.status === 200) {
+          // send to socket server
+          const message = {
+            sender: {
+              id: actAs && actAs.id,
+              type: actAs && actAs.type === "company" ? "Company" : "User",
+            },
+            receiver: {
+              id: receiverId,
+              type: typeOfReceiver,
+            },
+            conversationId: currConversationId,
+            text: sendMsgText,
+            createdAt: new Date(),
+          };
+
+          // ui update in message
+
+          setMessages((prevMessages) => [...prevMessages, message]);
+          console.log(res.data);
+          setTimeout(() => {
+            if (chatEndRef.current) {
+              chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 200);
+          setSendMsgText("");
+          setPostFile(null);
+          setPreviewUrl(null);
         } else {
-          toast.error(`please first select conversation`, {
+          toast.error(`Somthing Error To Send Message, please refresh page`, {
             position: "top-right",
             autoClose: 2000,
             hideProgressBar: false,
@@ -467,8 +498,20 @@ const Message = () => {
             theme: "light",
           });
         }
+      } else {
+        toast.error(`please first select conversation`, {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
     }
+    // }
     // setSendMsgText("");
   };
 
@@ -647,9 +690,10 @@ const Message = () => {
                           </p>
                         </div>
                         <div className='min-w-[50px] '>
-                          {favList && favList.includes(conv.receiverId) && (
-                            <StarIcon className='text-[#C37D16]   cursor-pointer' />
-                          )}
+                          {favList &&
+                            favList.some((f) => f.id === conv.receiverId) && (
+                              <StarIcon className='text-[#C37D16]   cursor-pointer' />
+                            )}
                         </div>
                       </div>
                     );
@@ -703,17 +747,26 @@ const Message = () => {
                           </p>
                         </div>
                         <div className='mr-5 flex justify-center items-center  cursor-pointer'>
-                          <StyledButton
+                          <IconButton
                             onClick={() => {
-                              handleChangeFavourite({ receiverId: receiverId });
+                              handleChangeFavourite({
+                                receiverId: receiverId,
+                                receiverType: typeOfReceiver,
+                                senderId: actAs && actAs.id,
+                                senderType:
+                                  actAs && actAs.type === "company"
+                                    ? "Company"
+                                    : "User",
+                              });
                             }}
                           >
-                            {favList && favList.includes(receiverId) ? (
+                            {favList &&
+                            favList.some((fav) => fav.id === receiverId) ? (
                               <StarIcon className='text-[#C37D16]   ' />
                             ) : (
                               <StarBorderIcon className='text-[#C37D16]   ' />
                             )}
-                          </StyledButton>
+                          </IconButton>
                           <DeleteMsgDialog
                             deleteDialog={deleteDialog}
                             setDeleteDialog={setDeleteDialog}
@@ -755,7 +808,7 @@ const Message = () => {
                       currUserData &&
                       currUserData._id &&
                       msg &&
-                      msg.senderId === currUserData._id;
+                      msg.sender.id === currUserData._id;
                     return (
                       <div
                         onMouseDown={() => {
@@ -767,7 +820,7 @@ const Message = () => {
                         onClick={() => handleSelectMsg(msg._id)}
                         onMouseUp={() => clearTimeout(timer)}
                         key={index}
-                        className={`message hover:bg-[#F4F2EE] ${
+                        className={`message hover:bg-[#F4F2EE] cursor-pointer ${
                           msg.selected && "bg-[#EDF3F8]"
                         }   flex   mt-2 ${
                           isCurrentUser ? "justify-end" : " justify-start"

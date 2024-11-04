@@ -577,7 +577,7 @@ const PostView = ({
   return (
     <div
       onScroll={handleScrollPost}
-      className='post-wrapper max-h-[120vh]  w-[100%]  overflow-y-scroll  flex-row space-y-'
+      className='post-wrapper max-h-[100vh]  w-[100%]  overflow-y-scroll  flex-row space-y-'
     >
       <Tostify />
       <PostDialog

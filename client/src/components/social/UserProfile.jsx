@@ -30,7 +30,8 @@ const UserProfile = () => {
     loginDialog,
     currUserData,
     setMessages,
-
+    actAs,
+    setActAs,
     setCurrConversationId,
   } = useContext(AllContext);
 
@@ -133,6 +134,7 @@ const UserProfile = () => {
   };
 
   const checkConnectionEachOtherFunction = async (data) => {
+    if (data.receiverType === "Company") return true;
     let res = await checkConnectionEachOther(data);
     if (res.status === 200) {
       console.log("you enable to msg");
@@ -164,7 +166,13 @@ const UserProfile = () => {
 
         let convId = res.data.id;
 
-        let res2 = await getMsgAccConvId(res.data.id);
+        let res2 = await getMsgAccConvId({
+          convId,
+          page: 1,
+          limit: 15,
+          whoId: currUserData && currUserData._id,
+          whoType: "User",
+        });
         if (res2.status === 200) {
           console.log("messages is", res2.data);
           setMessages(res2.data);
@@ -315,7 +323,15 @@ const UserProfile = () => {
                     </button>
                     <button
                       onClick={() => {
-                        setConversationFunction({ receiverId: userData._id });
+                        setConversationFunction({
+                          receiverId: userData && userData._id,
+                          senderType:
+                            actAs && actAs.type === "company"
+                              ? "Company"
+                              : "User",
+                          senderId: actAs && actAs.id,
+                          receiverType: "User",
+                        });
                       }}
                       className='p-1 w-[110px] flex space-x-1 rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] '
                     >

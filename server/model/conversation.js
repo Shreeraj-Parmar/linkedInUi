@@ -21,6 +21,7 @@ const conversationSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
     },
+
     unreadMessages: {
       type: Map,
       of: Number,

@@ -159,7 +159,19 @@ const userSchema = new mongoose.Schema(
       }, // Users who sent a connection request
     ],
     favorites: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Mutual followers (Connections)
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "favorites.type", // Dynamically reference either 'User' or 'Company'
+        },
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the follower is a user or a company
+          required: true,
+        },
+        _id: false,
+      },
     ],
   },
   {

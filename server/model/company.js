@@ -37,6 +37,21 @@ const companySchema = new mongoose.Schema({
       _id: false,
     },
   ],
+  favorites: [
+    {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "favorites.type", // Dynamically reference either 'User' or 'Company'
+      },
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the follower is a user or a company
+        required: true,
+      },
+      _id: false,
+    },
+  ],
   following: [
     {
       id: {

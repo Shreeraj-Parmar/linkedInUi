@@ -1,28 +1,39 @@
 import Conversation from "../model/conversation.js";
 
 export const newConversation = async (req, res) => {
+  const { senderId, senderType, receiverId, receiverType } = req.body;
+  console.log("req.body is", req.body);
+
   try {
-    const senderId = req._id;
-    const receiverId = req.body.receiverId;
+    // Check if a conversation with these members already exists
     const exist = await Conversation.findOne({
-      members: { $all: [receiverId, senderId] },
+      members: {
+        $all: [
+          { type: senderType, id: senderId },
+          { type: receiverType, id: receiverId },
+        ],
+      },
     });
 
     if (exist) {
       return res
         .status(200)
-        .json({ message: "conversation already exist", id: exist._id });
+        .json({ message: "Conversation already exists", id: exist._id });
     }
 
+    // Create a new conversation
     const newConversation = new Conversation({
-      members: [senderId, receiverId],
+      members: [
+        { type: senderType, id: senderId },
+        { type: receiverType, id: receiverId },
+      ],
     });
 
-    let result = await newConversation.save();
+    const result = await newConversation.save();
     console.log(result);
     return res
       .status(200)
-      .json({ message: "conversation saved sucessfully", id: result._id });
+      .json({ message: "Conversation saved successfully", id: result._id });
   } catch (error) {
     return res.status(500).json(error.message);
   }
@@ -32,21 +43,21 @@ export const newConversation = async (req, res) => {
 export const sendReceiverData = async (req, res) => {
   try {
     const senderId = req._id; // Assuming the sender's ID is available from the request token/session
-    const { convId } = req.body; // You might need to pass the conversation ID from the frontend request
+    const { convId } = req.body; // Expecting conversation ID from the frontend request
 
-    // Find the conversation by ID
-    const conversation = await Conversation.findById(convId).populate(
-      "members",
-      "name"
-    ); // Populate the members' names
+    // Find the conversation by ID and populate members dynamically
+    const conversation = await Conversation.findById(convId).populate({
+      path: "members.id",
+      select: "name profilePicture",
+    });
 
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found" });
     }
 
-    // Find the receiver (the member who is not the sender)
+    // Find the receiver by excluding the sender from the members list
     const receiver = conversation.members.find(
-      (member) => member._id.toString() !== senderId.toString()
+      (member) => member.id._id.toString() !== senderId.toString()
     );
 
     if (!receiver) {
@@ -57,39 +68,39 @@ export const sendReceiverData = async (req, res) => {
 
     // Send the receiver's data in the response
     res.status(200).json({
-      receiverId: receiver._id,
-      receiverName: receiver.name,
+      receiverId: receiver.id._id,
+      receiverType: receiver.type, // Include type to identify if it's a User or Company
+      receiverName: receiver.id.name,
+      receiverProfilePicture: receiver.id.profilePicture,
     });
   } catch (error) {
     console.log(
-      `error while calling sendReceiverData & error is : `,
+      `Error while calling sendReceiverData & error is: `,
       error.message
     );
-    res.status(500).json({ message: "internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 // send all conversation
 
 export const sendAllConversations = async (req, res) => {
+  const { reqIdType, reqId } = req.query;
   try {
-    const currUserId = req._id; // Assuming the sender's ID is available from the request token/session
-
-    // console.log("curruserid is", req._id);
     // Step 1: Find all conversations where the current user is a member
     const conversations = await Conversation.find({
-      members: { $in: [currUserId] },
+      "members.id": reqId, // Find conversations where the current user is a member
     })
       .populate({
-        path: "members", // Populate user details for each member
-        select: "name profilePicture unreadMessages", // Only get the user's name and profilePic & unread...
+        path: "members.id", // Populate the details for each member
+        select: "name profilePicture", // Get necessary fields
       })
       .populate({
-        path: "lastMessage", // Populate the last message
-        select: "text createdAt senderId mediaUrl", // Only get the message text and createdAt time
+        path: "lastMessage", // Populate the last message details
+        select: "text createdAt sender mediaUrl", // Get relevant fields for the last message
       });
 
-    if (!conversations) {
+    if (!conversations.length) {
       return res.status(404).json({ message: "No conversations found" });
     }
 
@@ -97,21 +108,19 @@ export const sendAllConversations = async (req, res) => {
     const formattedConversations = conversations.map((conversation) => {
       // Find the receiver by excluding the current user from the members list
       const receiver = conversation.members.find(
-        (member) => member._id.toString() !== currUserId.toString()
+        (member) => member.id._id.toString() !== reqId.toString()
       );
 
-      // console.log("reciever is", receiver);
       const lastMessage = conversation.lastMessage;
-
-      console.log("lastmassage is", lastMessage);
 
       return {
         conversationId: conversation._id,
-        receiverId: receiver._id,
-        receiverName: receiver.name,
-        unreadMessages: conversation.unreadMessages,
+        receiverId: receiver.id._id,
+        receiverType: receiver.type,
+        receiverName: receiver.id.name,
+        receiverProfilePicture: receiver.id.profilePicture,
+        unreadMessages: conversation.unreadMessages.get(reqId) || 0, // Get unread count for current user
 
-        receiverProfilePicture: receiver.profilePicture,
         lastMessage: lastMessage
           ? lastMessage.mediaUrl && lastMessage.mediaUrl.url
             ? "Attachment Sent"
@@ -119,7 +128,7 @@ export const sendAllConversations = async (req, res) => {
           : null,
 
         lastMessageTime: lastMessage ? lastMessage.createdAt : null,
-        lastMessageSenderId: lastMessage?.senderId || null, // Safely access senderId
+        lastMessageSenderId: lastMessage?.sender.id || null, // Safely access senderId
       };
     });
 
@@ -127,13 +136,9 @@ export const sendAllConversations = async (req, res) => {
     res.status(200).json(formattedConversations);
   } catch (error) {
     console.error(
-      `error while calling sendAllConversations & error is : `,
+      `Error while calling sendAllConversations & error is: `,
       error
     );
-    console.log(
-      `error while calling sendAllConversations & error is : `,
-      error.message
-    );
-    res.status(500).json({ message: "internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

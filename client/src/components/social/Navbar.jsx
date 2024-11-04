@@ -30,13 +30,17 @@ const Navbar = () => {
     currUserData,
     messages,
     lightMode,
+    actAs,
   } = useContext(AllContext);
   const navigate = useNavigate();
   const [unreadMSGCount, setMSGUnreadCount] = useState(0);
   const [unreadNotiCount, setUnreadNotiCount] = useState(0);
   const [connectionReqCount, setConnectionReqCount] = useState(0);
   const getAllUnreadMessagesFunc = async () => {
-    let res = await getAllUnreadMsg();
+    let res = await getAllUnreadMsg({
+      reqId: currUserData && currUserData._id,
+      reqIdType: "User",
+    });
     res.status === 200 && console.log(res.data);
     res.status === 200 && setMSGUnreadCount(res.data);
   };
@@ -82,6 +86,8 @@ const Navbar = () => {
           setConnectionReqCount((prev) => prev + 1);
         }
       );
+
+    currUserData && getAllUnreadMessagesFunc();
     return () => {
       if (socket) {
         socket.off(`new_notification_${currUserData && currUserData._id}`);

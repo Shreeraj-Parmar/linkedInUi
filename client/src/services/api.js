@@ -526,13 +526,16 @@ export const getReceiverData = async (data) => {
 
 // get aall conversations
 
-export const getAllConversations = async () => {
+export const getAllConversations = async (data) => {
   try {
-    let res = await axios.get(`${API}/conversation`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    let res = await axios.get(
+      `${API}/conversation?reqId=${data.reqId}&reqIdType=${data.reqIdType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(
@@ -557,14 +560,18 @@ export const sendMsg = async (data) => {
 };
 
 // get all msg from conversations
-export const getMsgAccConvId = async (id, page = 1, limit = 20) => {
+export const getMsgAccConvId = async (data) => {
+  const { convId, limit, page, whoId, whoType } = data;
   try {
     // Send page and limit as query parameters to the API
-    let res = await axios.get(`${API}/msg/${id}?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    let res = await axios.get(
+      `${API}/msg?convId=${convId}&page=${page}&limit=${limit}&whoId=${whoId}&whoType=${whoType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(
@@ -589,15 +596,17 @@ export const markAsRead = async (data) => {
 
 // get all unread msg for
 
-export const getAllUnreadMsg = async () => {
-  console.log("trrrrrrrrrigrerererer");
-  console.log("token isssssssssssssssssss", localStorage.getItem("token"));
+export const getAllUnreadMsg = async (data) => {
+  const { reqId, reqIdType } = data;
   try {
-    let res = await axios.get(`${API}/msg-unread`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    let res = await axios.get(
+      `${API}/msg-unread?reqId=${reqId}&reqIdType=${reqIdType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(

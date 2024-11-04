@@ -325,28 +325,41 @@ export const checkFollowOrNot = async (req, res) => {
 
 //send followers list || Following List
 export const sendFollowerOrFollowingList = async (req, res) => {
-  let { what } = req.query; // 'what' can be either 'followers' or 'following'
+  let { what } = req.query; // 'what' can be 'followers', 'following', or 'connections'
   const page = parseInt(req.query.page) || 1; // Default to page 1
   const limit = parseInt(req.query.limit) || 10; // Default to limit of 10
 
   try {
     let user = await User.findById(req._id).select(`${what}`);
 
-    // Fetch full details of the followers/following
-    let list = await User.find({ _id: { $in: user[what].map((f) => f.id) } }) // Extracting ids
-      .select("name profilePicture city gender")
-      .skip((page - 1) * limit) // Skip records for pagination
-      .limit(limit); // Limit records to fetch
+    // Check if 'what' is 'connections' to handle connections list differently
+    let list;
+    if (what === "connections") {
+      list = await User.find({ _id: { $in: user.connections } })
+        .select("name profilePicture city gender")
+        .skip((page - 1) * limit)
+        .limit(limit);
+    } else {
+      // For 'followers' or 'following'
+      list = await User.find({ _id: { $in: user[what].map((f) => f.id) } })
+        .select("name profilePicture city gender")
+        .skip((page - 1) * limit)
+        .limit(limit);
+    }
 
+    // Add isFollowing status if what is not 'connections'
     let modifiedList = await Promise.all(
       list.map(async (userInList) => {
-        let isFollowing = await User.exists({
-          _id: req._id,
-          following: { $elemMatch: { id: userInList._id, type: "User" } },
-        });
+        let isFollowing = false;
+        if (what !== "connections") {
+          isFollowing = await User.exists({
+            _id: req._id,
+            following: { $elemMatch: { id: userInList._id, type: "User" } },
+          });
+        }
         return {
           ...userInList.toObject(),
-          isFollowing: !!isFollowing, // Add isFollowing status
+          isFollowing: what !== "connections" ? !!isFollowing : undefined, // Only include isFollowing if relevant
         };
       })
     );
@@ -728,39 +741,55 @@ export const withdrawReq = async (req, res) => {
 
 // update user favorite
 export const updateUserFavouriteInDB = async (req, res) => {
-  const receiverId = req.body.receiverId;
+  const { receiverId, receiverType, senderId, senderType } = req.body;
 
-  if (!receiverId) {
-    return res.status(400).json({ message: "Receiver ID is required" });
+  if (!receiverId || !receiverType || !senderId || !senderType) {
+    return res.status(400).json({
+      message: "Receiver ID, type, sender ID, and sender type are required",
+    });
   }
 
   try {
-    // Find the user to check if the receiverId is already in the favorites array
-    const user = await User.findById(req._id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // Find the sender (user or company) to check if the receiver is already in the favorites array
+    const sender =
+      senderType === "User"
+        ? await User.findById(senderId)
+        : await Company.findById(senderId);
+
+    if (!sender) {
+      return res.status(404).json({ message: "Sender not found" });
     }
 
+    const favoriteItem = { id: receiverId, type: receiverType };
     let updateQuery;
 
-    // Check if the receiverId is already in the favorites array
-    if (user.favorites.includes(receiverId)) {
+    // Check if the receiver is already in the favorites array
+    const isFavorite = sender.favorites.some(
+      (favorite) =>
+        favorite.id.toString() === receiverId.toString() &&
+        favorite.type === receiverType
+    );
+
+    if (isFavorite) {
       // Remove from favorites
-      updateQuery = { $pull: { favorites: receiverId } };
+      updateQuery = { $pull: { favorites: favoriteItem } };
     } else {
       // Add to favorites
-      updateQuery = { $addToSet: { favorites: receiverId } };
+      updateQuery = { $addToSet: { favorites: favoriteItem } };
     }
 
-    // Update the user document
-    const updatedUser = await User.findByIdAndUpdate(req._id, updateQuery, {
-      new: true, // Return the updated document
-    });
-
-    console.log("Updated user:", updatedUser);
+    // Update the sender document
+    const updatedSender =
+      senderType === "User"
+        ? await User.findByIdAndUpdate(senderId, updateQuery, { new: true })
+        : await Company.findByIdAndUpdate(senderId, updateQuery, { new: true });
 
     res.status(200).json({
-      message: updatedUser.favorites.includes(receiverId)
+      message: updatedSender.favorites.some(
+        (fav) =>
+          fav.id.toString() === receiverId.toString() &&
+          fav.type === receiverType
+      )
         ? "Added to favourites"
         : "Removed from favourites",
     });

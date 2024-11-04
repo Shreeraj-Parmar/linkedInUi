@@ -7,15 +7,31 @@ const messageSchema = new mongoose.Schema(
       ref: "Conversation",
       required: [true, "conversation id required"],
     },
-    senderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "senderId required"],
+    sender: {
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the member is a user or company
+        required: true,
+      },
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "senderId.type", // Dynamically reference either 'User' or 'Company' model
+      },
+      _id: false,
     },
-    receiverId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "recieverId required"],
+    receiver: {
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the member is a user or company
+        required: true,
+      },
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "receiverId.type", // Dynamically reference either 'User' or 'Company' model
+      },
+      _id: false,
     },
     text: {
       type: String,
@@ -25,16 +41,14 @@ const messageSchema = new mongoose.Schema(
         type: {
           type: String,
           enum: ["User", "Company"], // Specifies if the deleter is a user or company
-          required: true,
         },
         id: {
           type: mongoose.Schema.Types.ObjectId,
-          required: true,
           refPath: "deletedBy.type", // Dynamically reference 'User' or 'Company'
         },
         _id: false,
       },
-    ], // Ar
+    ],
     mediaUrl: {
       url: String,
       fileType: String,
