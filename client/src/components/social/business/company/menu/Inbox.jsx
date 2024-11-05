@@ -139,8 +139,9 @@ const Inbox = ({ companyId, companyDetails }) => {
         currConversationId === data.conversationId
       );
       if (
-        currConversationId &&
-        currConversationId.toString() !== data.conversationId.toString()
+        (currConversationId &&
+          currConversationId.toString() !== data.conversationId.toString()) ||
+        currConversationId === null
       ) {
         console.log(
           `this is currConvId ${currConversationId} and data convId ${data.conversationId}`
@@ -215,7 +216,6 @@ const Inbox = ({ companyId, companyDetails }) => {
     console.log(res.data);
     if (res.status === 200) {
       const { receiverId, receiverName, receiverType } = res.data;
-
       console.log("Receiver Data:", receiverId, receiverName, receiverType);
       setReceiverId(receiverId);
       setTypeOfReceiver(receiverType);
@@ -231,14 +231,6 @@ const Inbox = ({ companyId, companyDetails }) => {
     if (res.status === 200) {
       console.log("all conv", res.data);
 
-      // let allReciverId = res.data.map((conv) => {
-      //   return {
-      //     [conv.receiverId]: currUserData.favorites.includes(conv.receiverId),
-      //   };
-      // });
-
-      // setFavList(allReciverId);
-
       let unread = {};
 
       // Loop over each conversation and add the receiverId: unreadMessages pair to the unread object
@@ -246,7 +238,7 @@ const Inbox = ({ companyId, companyDetails }) => {
         unread[conv.conversationId] = conv.unreadMessages;
       });
 
-      console.log("unread messages is", unread);
+      console.log("unread messages is okkkkkkgkgkgkgkgkgkgkkgkgkgkgk", unread);
       setUnreadMSG(unread);
       setConversations(res.data);
       setLastMsg((prevLastMsg) => ({
