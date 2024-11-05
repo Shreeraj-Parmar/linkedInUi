@@ -88,6 +88,7 @@ const Message = () => {
   const [timer, setTimer] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [data_convId, setdata_convId] = useState(null);
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
@@ -99,6 +100,17 @@ const Message = () => {
     console.log("this is unread arr of object inside useEffect", unreadMSG);
     console.log("curruntConvId is", currConversationId);
   }, [unreadMSG]);
+
+  useEffect(() => {
+    if (currConversationId === data_convId) {
+      setUnreadMSG((prevUnreadMSG) => {
+        return {
+          ...prevUnreadMSG,
+          [data_convId]: 0,
+        };
+      });
+    }
+  }, [data_convId, messages]);
 
   // for fav or not!
   useEffect(() => {
@@ -117,22 +129,30 @@ const Message = () => {
     socket.emit("join_conversation", currConversationId && currConversationId);
 
     socket.on(`unread_messages_${currUserData && currUserData._id}`, (data) => {
-      console.log("unread triggerd and data is", data);
-      if (currConversationId.toString() !== data.conversationId.toString()) {
+      setdata_convId(data.conversationId);
+      console.log(
+        "unread triggerd and data is",
+        data,
+        "and currConvid :",
+        currConversationId
+      );
+
+      // this is testing
+      console.log(
+        " chck if currConvid and data convId are same :",
+        currConversationId === data.conversationId
+      );
+      if (
+        currConversationId &&
+        currConversationId.toString() !== data.conversationId.toString()
+      ) {
         console.log(
           `this is currConvId ${currConversationId} and data convId ${data.conversationId}`
         );
         setUnreadMSG((prevUnreadMSG) => {
-          // Get the unreadMessages object for the specific conversationId
-          const conversationUnread = prevUnreadMSG[data.conversationId] || {};
-
           return {
             ...prevUnreadMSG,
-            // Update the unread count for the current user in the specific conversation
-            [data.conversationId]: {
-              ...conversationUnread,
-              [currUserData._id]: data.count, // Update the count for currUserData._id
-            },
+            [data.conversationId]: data.count,
           };
         });
       }
@@ -143,7 +163,10 @@ const Message = () => {
       console.log("this is receved msg from socketio", message);
       setLastMsg((prevLastMsg) => ({
         ...prevLastMsg,
-        [message.conversationId]: message.text,
+        [message.conversationId]:
+          message.mediaUrl && message.mediaUrl.url
+            ? "Send An Attachment"
+            : message.text,
       }));
       if (message.conversationId === currConversationId) {
         // Mark message as read if conversation is active
@@ -296,10 +319,7 @@ const Message = () => {
     setCurrConversationId(convId); // Select conversation
     setUnreadMSG((prevUnreadMSG) => ({
       ...prevUnreadMSG,
-      [convId]: {
-        ...prevUnreadMSG[convId],
-        [currUserData._id]: 0, // Set unread count for the current user to 0
-      },
+      [convId]: 0, // Set unread count for the current user to 0
     }));
     setPage(1); // Reset to page 1 when selecting a new conversation
     markAsReadFunction(convId, currUserData._id); // Mark conversation as read
@@ -665,7 +685,9 @@ const Message = () => {
                           <p className='text-black'>{conv.receiverName}</p>
                           <p className='text-[#ACACAC] text-sm flex  items-center'>
                             {truncateMessage(
-                              (lastMsg && lastMsg[conv.conversationId]) || ""
+                              (lastMsg && lastMsg[conv.conversationId]) ||
+                                messages[messages.length - 1]?.text ||
+                                ""
                             )}
 
                             <p className=' text-right  flex ml-20 justify-end'>
@@ -675,12 +697,10 @@ const Message = () => {
                                     currUserData &&
                                     unreadMSG &&
                                     unreadMSG[conv.conversationId]
-                                      ? unreadMSG[conv.conversationId][
-                                          currUserData._id
-                                        ]
+                                      ? unreadMSG[conv.conversationId]
                                       : currUserData &&
                                         currUserData._id &&
-                                        conv.unreadMessages[currUserData._id]
+                                        conv.unreadMessages[currConversationId]
                                   }
                                   color='primary'
                                   className=''
@@ -946,7 +966,7 @@ const Message = () => {
                       }}
                     >
                       <ExpandCircleDownIcon
-                        className='text-[#A0AEC0]'
+                        className='text-[#A0AEC0] hover:text-[#3D4852]'
                         fontSize='large'
                       />
                     </button>
@@ -970,7 +990,7 @@ const Message = () => {
                   </div>
                 )}
               </div>
-              <div className='msg-ipnut min-h-[9%] max-h-[9%] p-2 border '>
+              <div className='msg-ipnut min-h-[9%] max-h-[9%] p-2  '>
                 <div className='flex items-center space-x-1 relative'>
                   <div className='flex justify-center items-center relative'>
                     {isEmojiPickerVisible && (
