@@ -42,13 +42,6 @@ import Picker from "emoji-picker-react";
 import DeleteMsgDialog from "./DeleteMsgDialog.jsx";
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
 
-const StyledButton = styled(Button)`
-  border-radius: 100%;
-  width: 40px;
-  height: 40px;
-  padding: 10px;
-`;
-
 const Message = () => {
   const {
     isLogin,
@@ -547,6 +540,19 @@ const Message = () => {
       findReceiverData();
     }
   }, [currConversationId]);
+
+  // clean up function
+  useEffect(() => {
+    return () => {
+      setMessages([]);
+      setSendMsgText("");
+      setPostFile(null);
+      setPreviewUrl(null);
+      // setCurrConversationId(null);
+      setReceiverId(null);
+      setTypeOfReceiver(null);
+    };
+  }, []);
 
   const truncateMessage = (message, maxLength = 15) => {
     return message.length > maxLength

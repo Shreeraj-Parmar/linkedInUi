@@ -106,7 +106,7 @@ const Login = () => {
         }, 2000);
       } else {
         setSnak({
-          type: "success",
+          type: "error",
           text: "Somthing Error.. please tye again",
         });
         setLoading(false);

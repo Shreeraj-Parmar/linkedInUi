@@ -49,3 +49,65 @@ export const companyTypeArr = [
   "subsidiary",
   "trust",
 ];
+
+export const skillOptions = [
+  // AWS-related skills
+  "AWS EC2",
+  "AWS Lambda",
+  "AWS S3",
+  "AWS CloudFormation",
+  "AWS RDS",
+  "AWS DynamoDB",
+  "AWS CloudFront",
+  "AWS Route 53",
+  "AWS IAM",
+  "AWS Elastic Beanstalk",
+
+  // AI-related skills
+  "Machine Learning",
+  "Deep Learning",
+  "Natural Language Processing (NLP)",
+  "Computer Vision",
+  "TensorFlow",
+  "PyTorch",
+  "Reinforcement Learning",
+  "Artificial Intelligence",
+  "Data Science",
+  "Neural Networks",
+
+  // Cybersecurity-related skills
+  "Penetration Testing",
+  "Network Security",
+  "Ethical Hacking",
+  "Incident Response",
+  "Cryptography",
+  "Vulnerability Assessment",
+  "Security Information and Event Management (SIEM)",
+  "Firewall Management",
+  "Security Auditing",
+  "Cyber Threat Intelligence",
+
+  // Web development skills
+  "React",
+  "Angular",
+  "Vue.js",
+  "Node.js",
+  "Express.js",
+  "Next.js",
+  "GraphQL",
+  "TypeScript",
+  "RESTful API",
+  "HTML & CSS",
+
+  // Business-related skills
+  "Project Management",
+  "Agile Methodologies",
+  "Business Strategy",
+  "Digital Marketing",
+  "Product Management",
+  "Financial Analysis",
+  "Market Research",
+  "Leadership",
+  "Business Development",
+  "Salesforce",
+];

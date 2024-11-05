@@ -86,7 +86,7 @@ import {
 router.post("/company", jwtMiddle, saveNewCompanyInDB);
 router.put("/company", jwtMiddle, updateCompanyInDB);
 router.get("/company/:companyId/admin", jwtMiddle, getDataViaAdmin);
-router.get("/company/:companyId", sendCompanyDataAccID);
+router.get("/company/:companyId/withoutauth", sendCompanyDataAccID);
 router.put("/company/admin/add", jwtMiddle, addAdminOfCompanyInDB);
 router.delete("/company/admin", jwtMiddle, deleteAdminFromDB);
 router.get("/company/follow", jwtMiddle, sendFolllowerOrFollowingListOfCompany);

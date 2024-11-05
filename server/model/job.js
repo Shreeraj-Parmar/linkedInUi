@@ -25,6 +25,11 @@ const jobSchema = new mongoose.Schema(
       ],
       required: true,
     },
+    workplace: {
+      type: String,
+      enum: ["Work from Home", "Office", "Remote", "Hybrid"],
+      required: true,
+    },
     createdBy: {
       user: {
         type: mongoose.Schema.Types.ObjectId,

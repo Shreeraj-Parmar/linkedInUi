@@ -133,6 +133,18 @@ const FollowersOfCompany = () => {
               </div>
             </div>
           ))}
+        {followersList && followersList.length === 0 && (
+          <div>
+            <div className='flex justify-center items-center'>
+              <img
+                src='/no-follow.jpg'
+                className='min-w-[400px] min-h-[400px] max-w-[400px] max-h-[400px]'
+                alt=''
+              />
+            </div>
+            <p className='text-center mb-2'>No Followers</p>
+          </div>
+        )}
       </div>
     </>
   );

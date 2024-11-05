@@ -924,7 +924,7 @@ export const getCompanyData = async (data) => {
 
 export const getCompanyDataWithoutAuth = async (data) => {
   try {
-    const url = `${API}/company/${data}`;
+    const url = `${API}/company/${data}/withoutauth`;
     let res = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
