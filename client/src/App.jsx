@@ -9,7 +9,7 @@ import Lists from "./components/Lists";
 import Overview from "./components/social/Overview";
 // experiments compo
 import FormValidation from "./components/Experiments/FormValidation";
-
+import JobOverview from "./components/social/job/JobOverview";
 import "./App.css";
 import ViewProfile from "./components/social/ViewProfile";
 // import UserProfile from "./components/All ShowList/UserProfile";
@@ -26,6 +26,7 @@ import CompanyOverView from "./components/social/business/company/CompanyOverVie
 import { verifyTokenFunc } from "./utils/token-verification-func.js";
 import ViewCompany from "./components/social/business/company/ViewCompany.jsx";
 import CreateJob from "./components/social/job/CreateJob.jsx";
+import JobView from "./components/social/job/JobView.jsx";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -101,6 +102,14 @@ function App() {
     {
       path: "/job/new",
       element: <CreateJob />,
+    },
+    {
+      path: "/jobs",
+      element: <JobOverview />,
+    },
+    {
+      path: "/job/view/:jobId",
+      element: <JobView />,
     },
   ]);
 

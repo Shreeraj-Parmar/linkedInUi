@@ -42,6 +42,7 @@ const UserContext = ({ children }) => {
   const [lightMode, setLightMode] = useState(true);
   const [actAs, setActAs] = useState({});
   const [changeAsDialog, setChangeAsDialog] = useState(false);
+  const [selectCompanyForJob, setSelectCompanyForJob] = useState(null);
 
   const [loginDialog, setLoginDialog] = useState(false);
 
@@ -135,7 +136,8 @@ const UserContext = ({ children }) => {
         setIsSnakBar,
         selectMenu,
         setSelectMenu,
-
+        selectCompanyForJob,
+        setSelectCompanyForJob,
         isLogin,
         setIsLogin,
         changeAsDialog,

@@ -17,6 +17,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Badge from "@mui/material/Badge";
 import LoginDialog from "./LoginDialog.jsx";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import AppsIcon from "@mui/icons-material/Apps";
 
 const Navbar = () => {
   const {
@@ -114,6 +115,8 @@ const Navbar = () => {
       setCurrMenu("notification");
     } else if (window.location.pathname === "/business") {
       setCurrMenu("business");
+    } else if (window.location.pathname === "/jobs") {
+      setCurrMenu("jobs");
     } else {
       setCurrMenu("");
     }
@@ -219,6 +222,40 @@ const Navbar = () => {
                 </p>
               </div>
             </div>
+            {isLogin && (
+              <div
+                onClick={() => {
+                  setCurrMenu("jobs");
+                  setTimeout(() => {
+                    navigate("/jobs");
+                  }, 500);
+                }}
+                className={` ${
+                  currMenu === "jobs" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
+              >
+                <div className=' flex justify-center items-center'>
+                  <button>
+                    {currMenu !== "jobs" ? (
+                      <BusinessCenterIcon
+                        fontSize='small'
+                        className='text-[#6c6c6c] hover:text-[#000]'
+                      />
+                    ) : (
+                      <BusinessCenterIcon
+                        fontSize='medium'
+                        className='text-[#6c6c6c] hover:text-[#000]'
+                      />
+                    )}
+                  </button>
+                </div>
+                <div className=' flex justify-center mt-[-5px] items-center'>
+                  <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
+                    Jobs
+                  </p>
+                </div>
+              </div>
+            )}
             <div
               onClick={() => {
                 if (!isLogin) {
@@ -384,12 +421,12 @@ const Navbar = () => {
                   <div className=' flex justify-center items-center'>
                     <button>
                       {currMenu !== "business" ? (
-                        <BusinessCenterIcon
+                        <AppsIcon
                           fontSize='small'
                           className='text-[#6c6c6c] hover:text-[#000]'
                         />
                       ) : (
-                        <BusinessCenterIcon
+                        <AppsIcon
                           fontSize='medium'
                           className='text-[#6c6c6c] hover:text-[#000]'
                         />

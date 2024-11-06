@@ -81,6 +81,18 @@ import {
   sendCompanyDataAccID,
 } from "../controller/company-controller.js";
 
+import {
+  saveNewJob,
+  sendAllJobsAccWhat,
+  saveOrUnsaveJobInDB,
+} from "../controller/job-controller.js";
+
+// job apis
+
+router.post("/job", jwtMiddle, saveNewJob);
+router.get("/jobs", jwtMiddle, sendAllJobsAccWhat);
+router.put("/job/savedBy", jwtMiddle, saveOrUnsaveJobInDB);
+
 // company routs:
 
 router.post("/company", jwtMiddle, saveNewCompanyInDB);

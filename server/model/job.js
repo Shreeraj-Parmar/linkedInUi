@@ -42,6 +42,7 @@ const jobSchema = new mongoose.Schema(
         required: true,
       },
     },
+    savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     applicants: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

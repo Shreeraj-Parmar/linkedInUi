@@ -1039,3 +1039,53 @@ export const getCompanyFollowers = async (what, page, companyId) => {
     console.error(`Error while calling getCompanyFollowers: ${error.message}`);
   }
 };
+
+// post a new job
+export const postNewJob = async (data) => {
+  try {
+    let res = await axios.post(`${API}/job`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling postNewJob & error is : ${error.message}`);
+  }
+};
+
+// get all jobs acc what var
+
+export const getAllJobsAcc = async (data) => {
+  try {
+    let res = await axios.get(
+      `${API}/jobs?what=${data.what}&page=${data.page}&limit=7`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllJobsAcc & error is : ${error.message}`
+    );
+  }
+};
+
+// update save or unsaved job
+export const saveOrUnsaveJob = async (data) => {
+  try {
+    let res = await axios.put(`${API}/job/savedBy`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling saveOrUnsaveJob & error is : ${error.message}`
+    );
+  }
+};

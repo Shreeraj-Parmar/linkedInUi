@@ -25,6 +25,7 @@ const dialogStyle = {
 
 const SkillAddDialog = ({
   formikSkill,
+  setformikValues,
   setSkillDialog,
   skillDialog,
   skillOptions,
@@ -92,7 +93,7 @@ const SkillAddDialog = ({
             disabled={!skillOptions.includes(inputSkill)}
             onClick={() => {
               if (formikSkill.includes(inputSkill)) return;
-              formikSkill.push(inputSkill);
+              setformikValues("skills", formikSkill.concat(inputSkill));
               setSkillDialog(false);
               setInputSkill("");
             }}
