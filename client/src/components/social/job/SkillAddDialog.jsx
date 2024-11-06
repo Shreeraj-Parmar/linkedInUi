@@ -24,8 +24,7 @@ const dialogStyle = {
 };
 
 const SkillAddDialog = ({
-  setSkillArr,
-  skillArr,
+  formikSkill,
   setSkillDialog,
   skillDialog,
   skillOptions,
@@ -92,8 +91,8 @@ const SkillAddDialog = ({
             style={{ width: "fit-content" }}
             disabled={!skillOptions.includes(inputSkill)}
             onClick={() => {
-              if (skillArr.includes(inputSkill)) return;
-              setSkillArr([...skillArr, inputSkill]);
+              if (formikSkill.includes(inputSkill)) return;
+              formikSkill.push(inputSkill);
               setSkillDialog(false);
               setInputSkill("");
             }}

@@ -165,17 +165,17 @@ const Message = () => {
         // Mark message as read if conversation is active
         markAsReadFunction(currConversationId, actAs?.id);
         console.log("this is last msg", lastMsg);
-      }
-      if (message.sender.id !== actAs?.id) {
-        let check = messages.find((msg) => msg._id === message._id);
-        if (!check) {
-          setMessages((prevMessages) => [...prevMessages, message]);
-          // setLastMsg(message.text);
-          setTimeout(() => {
-            if (chatEndRef.current) {
-              chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 200);
+        if (message.sender.id !== actAs?.id) {
+          let check = messages.find((msg) => msg._id === message._id);
+          if (!check) {
+            setMessages((prevMessages) => [...prevMessages, message]);
+            // setLastMsg(message.text);
+            setTimeout(() => {
+              if (chatEndRef.current) {
+                chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 200);
+          }
         }
       }
       /// change it..

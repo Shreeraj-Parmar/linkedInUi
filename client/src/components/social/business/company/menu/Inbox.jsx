@@ -172,17 +172,17 @@ const Inbox = ({ companyId, companyDetails }) => {
           companyId && companyId.companyId
         );
         console.log("this is last msg", lastMsg);
-      }
-      if (String(message.sender.id) !== String(companyId.companyId)) {
-        let check = messages.find((msg) => msg._id === message._id);
-        if (!check) {
-          setMessages((prevMessages) => [...prevMessages, message]);
-          // setLastMsg(message.text);
-          setTimeout(() => {
-            if (chatEndRef.current) {
-              chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 200);
+        if (String(message.sender.id) !== String(companyId.companyId)) {
+          let check = messages.find((msg) => msg._id === message._id);
+          if (!check) {
+            setMessages((prevMessages) => [...prevMessages, message]);
+            // setLastMsg(message.text);
+            setTimeout(() => {
+              if (chatEndRef.current) {
+                chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 200);
+          }
         }
       }
       /// change it..

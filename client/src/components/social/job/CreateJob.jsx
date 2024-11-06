@@ -38,7 +38,6 @@ const workPlaceArr = ["Work from Home", "Office", "Remote", "Hybrid"];
 
 const CreateJob = () => {
   const { setIsSnakBar, setLoading } = useContext(AllContext);
-  const [skillArr, setSkillArr] = useState(["JavaScript", "React"]);
   const [skillDialog, setSkillDialog] = useState(false);
   const [snak, setSnak] = useState({ type: null, text: null });
 
@@ -48,14 +47,13 @@ const CreateJob = () => {
       title: "",
       description: "",
       workplace: "",
-      requirements: [],
       salary: "",
       location: "",
-      skills: skillArr,
+      skills: ["JavaScript", "React"],
       jobType: "",
       createdBy: {
-        user: "", // User ID who is creating the job
-        company: "", // Company ID on behalf of which the job is created
+        user: "s", // User ID who is creating the job
+        company: "s", // Company ID on behalf of which the job is created
       },
     },
     validationSchema: Yup.object({
@@ -64,9 +62,7 @@ const CreateJob = () => {
         .min(50, "Job description should be at least 50 characters")
         .max(1000, "Job description should not be more than 1000 characters")
         .required("Job description is required"),
-      requirements: Yup.array()
-        .of(Yup.string())
-        .min(1, "At least one requirement is required"),
+
       salary: Yup.string(),
       location: Yup.string(),
       skills: Yup.array()
@@ -92,10 +88,10 @@ const CreateJob = () => {
           "Invalid Workplace type"
         )
         .required("WorkPlace type is required"),
-      createdBy: Yup.object().shape({
-        user: Yup.string().required("User ID is required"),
-        company: Yup.string().required("Company ID is required"),
-      }),
+      // createdBy: Yup.object().shape({
+      //   user: Yup.string().required("User ID is required"),
+      //   company: Yup.string().required("Company ID is required"),
+      // }),
     }),
     onSubmit: (values) => {
       // Handle form submission, e.g., send data to the server
@@ -348,15 +344,13 @@ const CreateJob = () => {
                   the right candidates.
                 </p>
                 <div className='flex gap-1 items-center    mt-2 flex-wrap'>
-                  {skillArr.map((skill, index) => {
+                  {formik.values.skills.map((skill, index) => {
                     return (
                       <button
                         key={index}
                         onClick={() => {
-                          if (skillArr.length > 0) {
-                            setSkillArr(
-                              skillArr.filter((item) => item !== skill)
-                            );
+                          if (formik.values.skills.length > 0) {
+                            formik.values.skills.splice(index, 1);
                           }
                         }}
                         className=' p-2 flex max-h-[35px] min-h-[35px] items-center space-x-1 pl-3 pr-3 rounded-full font-semibold  text-white bg-green-700'
@@ -368,18 +362,31 @@ const CreateJob = () => {
                   })}
                   <button
                     onClick={() => setSkillDialog(true)}
-                    className=' p-2 flex items-center space-x-1 pl-3 pr-3 rounded-full font-semibold  text-black border-2 border-black'
+                    disabled={formik.values.skills.length >= 10}
+                    className=' p-2 flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed space-x-1 pl-3 pr-3 rounded-full font-semibold  text-black border-2 border-black'
                   >
                     Add Skill
                   </button>
                   <SkillAddDialog
-                    setSkillArr={setSkillArr}
-                    skillArr={skillArr}
+                    formikSkill={formik.values.skills}
                     setSkillDialog={setSkillDialog}
                     skillDialog={skillDialog}
                     skillOptions={skillOptions}
                   />
                 </div>
+              </div>
+              <div
+                className='p-4
+                flex justify-end items-center border-t-2 border-gray-400 border-opacity-70'
+              >
+                <button
+                  onClick={formik.handleSubmit}
+                  type='button'
+                  disabled={!formik.isValid}
+                  className='mt-5  disabled:bg-[#9e9e9e]    px-6 py-2.5 bg-[#0A66C2] text-white font-medium text-xs leading-tight uppercase rounded-full  shadow-md hover:bg-[#025682] hover:shadow-lg focus:bg-[#025682] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#025682] active:bg-[#025682] active:shadow-lg transition duration-150 ease-in-out'
+                >
+                  Post a Job
+                </button>
               </div>
             </form>
           </div>

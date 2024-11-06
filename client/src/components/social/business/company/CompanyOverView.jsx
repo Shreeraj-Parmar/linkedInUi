@@ -113,6 +113,9 @@ const CompanyOverView = () => {
                   </button>
                   <button
                     type='button'
+                    onClick={() => {
+                      navigate(`/company/${companyId.companyId}`);
+                    }}
                     className='outline-btn flex items-center space-x-1 p-2 pl-4 pr-4 border-2 border-gray-400 rounded-full hover:border-gray-600 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2 focus:ring-offset-white '
                     style={{
                       backgroundColor: "transparent",
@@ -161,6 +164,7 @@ const CompanyOverView = () => {
                   setCompanyMenu={setCompanyMenu}
                   companyMenu={companyMenu}
                   setEditCompanyDialog={setEditCompanyDialog}
+                  companyId={companyId}
                 />
               </div>
             </div>

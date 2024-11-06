@@ -139,7 +139,6 @@ const Navbar = () => {
                 fontSize='large'
               />
             </div>
-            {/* <h2 className="text-3xl text-center "></h2> */}
           </div>
           <div className='menu-side flex space-x-1 mr-[170px]'>
             <div

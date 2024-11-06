@@ -53,10 +53,6 @@ const ViewProfile = () => {
     });
   }, [currUserData]);
 
-  useEffect(() => {
-    console.log("PROFILEDATA ID", profileData);
-  }, [profileData]);
-
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] h-auto'>
       <div className='main-overview-wrapper   max-w-[100vw]  overflow-x-hidden'>

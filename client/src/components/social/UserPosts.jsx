@@ -621,7 +621,18 @@ const UserPosts = ({
                           )}
                           <EditIcon
                             onClick={() => {
+                              currUserData &&
+                                currUserData.company &&
+                                currUserData.company.length > 0 &&
+                                currUserData.company.some(
+                                  (com) => com._id === post.createdBy?.id._id
+                                ) &&
+                                setActAs({
+                                  id: companyId.companyId,
+                                  type: "company",
+                                });
                               setUpdatePostDialog(true);
+
                               setSelectedPostForUpdate(post);
                             }}
                             fontSize='medium'
