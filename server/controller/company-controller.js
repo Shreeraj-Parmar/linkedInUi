@@ -37,8 +37,6 @@ export const getDataViaAdmin = async (req, res) => {
       return res.status(400).json({ message: "Company not available" });
     }
 
-    console.log(company);
-
     // Check if userId exists in the company's admins array
     const isAdmin = company.user.some((user) => user._id.equals(req._id));
 

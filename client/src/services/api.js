@@ -1059,7 +1059,9 @@ export const postNewJob = async (data) => {
 export const getAllJobsAcc = async (data) => {
   try {
     let res = await axios.get(
-      `${API}/jobs?what=${data.what}&page=${data.page}&limit=7`,
+      `${API}/jobs?what=${data.what}&page=${data.page}&limit=7${
+        data.companyId && `&companyId=${data.companyId}`
+      }`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -1086,6 +1088,94 @@ export const saveOrUnsaveJob = async (data) => {
   } catch (error) {
     console.log(
       `error while calling saveOrUnsaveJob & error is : ${error.message}`
+    );
+  }
+};
+
+// get job data according job id
+
+export const getJobDataAccId = async (data) => {
+  try {
+    let res = await axios.get(`${API}/job/${data}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getJobDataAccId & error is : ${error.message}`
+    );
+  }
+};
+
+// apply new Job
+
+export const applyNewJob = async (data) => {
+  try {
+    let res = await axios.put(`${API}/job/apply`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling applyNewJob & error is : ${error.message}`
+    );
+  }
+};
+
+// get unreadapplicantcount from server
+
+export const getUnreadApplicantAccCompanyId = async (data) => {
+  try {
+    let res = await axios.get(`${API}/job-unread?companyId=${data.companyId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getUnreadApplicantAccCompanyId & error is : ${error.message}`
+    );
+  }
+};
+
+// get all application according jobid
+
+export const getAllApplicationsAccJobId = async (data, page) => {
+  try {
+    let res = await axios.get(
+      `${API}/job-applications?jobId=${data}&page=${page}&limit=7`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllApplicationsAccJobId & error is : ${error.message}`
+    );
+  }
+};
+
+// update isread job applications all
+
+export const updateIsReadJobApp = async (data) => {
+  try {
+    let res = await axios.put(`${API}/job-unread`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling updateIsReadJobApp & error is : ${error.message}`
     );
   }
 };

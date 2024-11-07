@@ -180,7 +180,12 @@ const CompanyOverView = () => {
             {companyMenu === "posts" && (
               <PagePost companyDetails={companyDetails} />
             )}
-            {companyMenu === "applications" && <Applications />}
+            {companyMenu === "applications" && (
+              <Applications
+                companyDetails={companyDetails}
+                setCompanyMenu={setCompanyMenu}
+              />
+            )}
             {companyMenu === "inbox" && (
               <Inbox companyId={companyId} companyDetails={companyDetails} />
             )}

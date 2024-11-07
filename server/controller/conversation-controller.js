@@ -42,8 +42,8 @@ export const newConversation = async (req, res) => {
 // send receiver data in curr conversation
 export const sendReceiverData = async (req, res) => {
   try {
-    const senderId = req._id; // Assuming the sender's ID is available from the request token/session
-    const { convId } = req.body; // Expecting conversation ID from the frontend request
+    // Assuming the sender's ID is available from the request token/session
+    const { convId, senderId } = req.body; // Expecting conversation ID from the frontend request
 
     // Find the conversation by ID and populate members dynamically
     const conversation = await Conversation.findById(convId).populate({

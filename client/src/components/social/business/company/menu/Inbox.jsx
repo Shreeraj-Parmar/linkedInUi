@@ -192,6 +192,9 @@ const Inbox = ({ companyId, companyDetails }) => {
   };
 
   useEffect(() => {
+    if (currConversationId === null) {
+      setCurrConversationId("");
+    }
     console.log("is login is :", isLogin);
     if (socket) socketMessageFunction();
 
@@ -202,17 +205,20 @@ const Inbox = ({ companyId, companyDetails }) => {
         socket.off("join_conversation");
       }
     };
-  }, [currConversationId, socket]);
+  }, [currConversationId, socket, isLogin]);
 
   useLayoutEffect(() => {
     findAllConversationsFunc();
     if (currConversationId) {
       handleConversationSelect(currConversationId);
     }
-  }, []);
+  }, [currConversationId]);
 
   const findReceiverData = async () => {
-    let res = await getReceiverData({ convId: currConversationId });
+    let res = await getReceiverData({
+      convId: currConversationId,
+      senderId: companyId && companyId.companyId,
+    });
     console.log(res.data);
     if (res.status === 200) {
       const { receiverId, receiverName, receiverType } = res.data;

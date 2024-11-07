@@ -85,13 +85,23 @@ import {
   saveNewJob,
   sendAllJobsAccWhat,
   saveOrUnsaveJobInDB,
+  sendJobDataAccId,
+  sendUnreadAppCount,
+  saveApplicantInJob,
+  sendAllAppAccJobId,
+  updateIsreadInDB,
 } from "../controller/job-controller.js";
 
 // job apis
 
 router.post("/job", jwtMiddle, saveNewJob);
+router.get("/job/:jobId", sendJobDataAccId);
 router.get("/jobs", jwtMiddle, sendAllJobsAccWhat);
+router.get("/job-applications", jwtMiddle, sendAllAppAccJobId);
+router.get("/job-unread", jwtMiddle, sendUnreadAppCount);
+router.put("/job-unread", jwtMiddle, updateIsreadInDB);
 router.put("/job/savedBy", jwtMiddle, saveOrUnsaveJobInDB);
+router.put("/job/apply", jwtMiddle, saveApplicantInJob);
 
 // company routs:
 

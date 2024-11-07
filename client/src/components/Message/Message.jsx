@@ -208,7 +208,10 @@ const Message = () => {
   }, [actAs]);
 
   const findReceiverData = async () => {
-    let res = await getReceiverData({ convId: currConversationId });
+    let res = await getReceiverData({
+      convId: currConversationId,
+      senderId: actAs?.id,
+    });
     console.log(res.data);
     if (res.status === 200) {
       const { receiverId, receiverName, receiverType } = res.data;
