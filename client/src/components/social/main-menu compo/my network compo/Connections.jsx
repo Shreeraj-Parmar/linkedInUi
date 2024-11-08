@@ -1,18 +1,31 @@
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 import Navbar from "../../Navbar";
-import { getMyFollowers } from "../../../../services/api.js";
+import {
+  getMyFollowers,
+  setConversation,
+  getMsgAccConvId,
+  markAsRead,
+} from "../../../../services/api.js";
 import { AllContext } from "../../../../context/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "@mui/material/Skeleton";
+import SnakBar from "../../../SnakBar.jsx";
 import { toast } from "react-toastify";
 import Tostify from "../../../Tostify.jsx";
 
 const Connections = () => {
   const [connectionList, setConnectionList] = useState([]);
-  const { setCurrMenu, isLogin } = useContext(AllContext);
+  const {
+    setCurrMenu,
+    isLogin,
+    currUserData,
+    setCurrConversationId,
+    setMessages,
+  } = useContext(AllContext);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMoreConnections] = useState(true);
   const navigate = useNavigate();
+  const [snak, setSnak] = useState({ type: null, text: null });
 
   const getAllConnectionsFunc = async () => {
     if (!hasMore) return; // Exit if no more connections to load
@@ -29,15 +42,9 @@ const Connections = () => {
         setHasMoreConnections(false);
       }
     } else {
-      toast.error(`Error While Fetching Your Connections, refresh it!`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Error While Fetching Your Connections, refresh it!",
       });
     }
   };
@@ -46,6 +53,40 @@ const Connections = () => {
     if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
       // If user is near the bottom of the list, load more notifications
       setPage((prevPage) => prevPage + 1); // Move to the next page
+    }
+  };
+
+  const setConversationFunction = async (data) => {
+    let res = await setConversation(data);
+    if (res.status === 200) {
+      console.log(res.data);
+      setCurrConversationId(res.data.id);
+
+      let convId = res.data.id;
+
+      let res2 = await getMsgAccConvId({
+        convId,
+        page: 1,
+        limit: 15,
+        whoId: currUserData && currUserData._id,
+        whoType: "User",
+      });
+      if (res2.status === 200) {
+        console.log("messages is", res2.data);
+        setMessages(res2.data);
+      }
+
+      console.log("conversation id selected", convId);
+      let res3 = await markAsRead({ convId, userId: currUserData._id });
+      if (res3.status === 200) {
+        console.log("message seen by user");
+      }
+
+      console.log("connection set");
+
+      setTimeout(() => {
+        navigate("/message");
+      }, 500);
     }
   };
 
@@ -59,7 +100,8 @@ const Connections = () => {
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         <Navbar />
-        <Tostify />
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
         <div className='main-display w-[80vw] min-h-[100vh] h-[90vh]   m-auto mt-[55px] p-4  '>
           <div className='main-down  p-1 flex space-x-3 min-h-[100%]'>
             <div className='w-[60%] h-[80vh] rounded-md bg-white border-2 border-gray-400 border-opacity-40 shadow-sm p-2 '>
@@ -102,7 +144,17 @@ const Connections = () => {
                         </div>
                         <div className='flex space-x-3 justify-end   p-2 lg:ml-[250px]'>
                           <div className=''>
-                            <button className='text-[#71B7ED] p-2 border-2 w-[100px] hover:border-3 hover:border-[#AAD6FF] hover:text-[#AAD6FF] rounded-full border-[#71B7ED]'>
+                            <button
+                              onClick={() => {
+                                setConversationFunction({
+                                  receiverId: user._id,
+                                  senderType: "User",
+                                  senderId: currUserData && currUserData._id,
+                                  receiverType: "User",
+                                });
+                              }}
+                              className='text-[#71B7ED] p-2 border-2 w-[100px] hover:border-3 hover:border-[#AAD6FF] hover:text-[#AAD6FF] rounded-full border-[#71B7ED]'
+                            >
                               Message
                             </button>
                           </div>

@@ -38,7 +38,7 @@ const UserContext = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [unreadMSG, setUnreadMSG] = useState({});
-  const [IsSnakBar, setIsSnakBar] = useState(false);
+  const [IsSnakBar, setIsSnakBar] = useState(true);
   const [lightMode, setLightMode] = useState(true);
   const [actAs, setActAs] = useState({});
   const [changeAsDialog, setChangeAsDialog] = useState(false);

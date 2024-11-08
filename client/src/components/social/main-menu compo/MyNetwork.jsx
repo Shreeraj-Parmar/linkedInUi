@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState, useContext } from "react";
 import { AllContext } from "../../../context/UserContext.jsx";
 import Navbar from "../Navbar";
+import SnakBar from "../../SnakBar.jsx";
 import {
   getCountOfConnections,
   getAllConnectionReq,
@@ -12,11 +13,9 @@ import {
 // icons
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 
-import { toast } from "react-toastify";
 import BoyIcon from "@mui/icons-material/Boy";
 import PageviewIcon from "@mui/icons-material/Pageview";
 import { useNavigate } from "react-router-dom";
-import Tostify from "../../Tostify.jsx";
 import MoreConnection from "./my network compo/MoreConnection.jsx";
 
 const MyNetwork = () => {
@@ -24,6 +23,7 @@ const MyNetwork = () => {
   const { setCurrMenu, currUserData } = useContext(AllContext);
   const [connectionCount, setConnectionCount] = useState(null);
   const [connectionReq, setConnectionReq] = useState([]);
+  const [snak, setSnak] = useState({ type: null, text: null });
 
   const getConnectionReqFromBackend = async () => {
     let res = await getAllConnectionReq();
@@ -45,8 +45,14 @@ const MyNetwork = () => {
 
       currUserData &&
         (await sendNotification({
-          recipient: data.receiverId,
-          sender: currUserData._id,
+          recipient: {
+            id: data.receiverId,
+            type: "User",
+          },
+          sender: {
+            id: currUserData._id,
+            type: "User",
+          },
           type: "connection_accepted",
           message: "your connection request has been accepted",
         }));
@@ -59,22 +65,21 @@ const MyNetwork = () => {
 
       currUserData &&
         (await sendNotification({
-          recipient: data.receiverId,
-
-          sender: currUserData._id,
+          recipient: {
+            id: data.receiverId,
+            type: "User",
+          },
+          sender: {
+            id: currUserData._id,
+            type: "User",
+          },
           type: "connection_rejected",
           message: "your connection request has been rejected",
         }));
     } else {
-      toast.error("Error while sending connection request. Please try again!", {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: " Error while sending connection request. Please try again!",
       });
     }
     getConnectionReqFromBackend();
@@ -107,7 +112,8 @@ const MyNetwork = () => {
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <div className='main-overview-wrapper max-w-[100vw] overflow-x-hidden'>
         <Navbar />
-        <Tostify />
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
         <div className='main-display w-[80vw] min-h-[100vh] h-[90vh] m-auto mt-[55px] p-4'>
           <div className='main-down p-1 flex justify-center space-x-3 min-h-fit'>
             <div className='w-1/4 h-[35vh] rounded-md bg-white border-2 shadow-sm border-gray-400 border-opacity-40'>
@@ -198,7 +204,7 @@ const MyNetwork = () => {
                     <img
                       src='/no-data.jpg'
                       alt=''
-                      className='h-[150px] w-[150px]'
+                      className='min-w-[150px] max-w-[150px] max-h-[150px] min-h-[150px]'
                     />
                   </div>
                   <p className='text-[#444444] text-center'>
@@ -223,7 +229,7 @@ const MyNetwork = () => {
                               : "/blank.png"
                           }
                           alt=''
-                          className='min-w-[70px] border border-grey-400 border-opacity-40 h-[70px] rounded-full'
+                          className='min-w-[70px] max-w-[70px] max-h-[70px] min-h-[70px] border border-grey-400 border-opacity-40 rounded-full'
                         />
                       </div>
                       <div className='flex-row ml-3 lg:min-w-[200px] space-y-[-3px]'>

@@ -6,11 +6,10 @@ import { io } from "../index.js";
 
 // save new notifiaction
 export const saveNewNotification = async (req, res) => {
-  //   console.log(req.body);
   try {
     let newNoti = new Notification(req.body);
     await newNoti.save();
-    io.emit(`new_notification_${req.body.recipient}`, "new noti here");
+    io.emit(`new_notification_${req.body.recipient.id}`, "new noti here");
     res.status(204);
   } catch (error) {
     console.log(
@@ -25,7 +24,7 @@ export const saveNewNotification = async (req, res) => {
 export const sendNotiCount = async (req, res) => {
   try {
     const unreadCount = await Notification.countDocuments({
-      recipient: req._id,
+      "recipient.id": req._id,
       isRead: false,
     });
 
@@ -48,7 +47,7 @@ export const sendAllNotifications = async (req, res) => {
   try {
     // First, mark all unread notifications as read
     await Notification.updateMany(
-      { recipient: req._id, isRead: false },
+      { "recipient.id": req._id, isRead: false },
       { $set: { isRead: true } }
     );
 
@@ -58,10 +57,10 @@ export const sendAllNotifications = async (req, res) => {
     const skipCount = (page - 1) * limit; // Calculate how many notifications to skip
 
     // Fetch notifications with pagination
-    let allNotifications = await Notification.find({ recipient: req._id })
+    let allNotifications = await Notification.find({ "recipient.id": req._id })
       .sort({ createdAt: -1 }) // Sort notifications by creation date
       .populate({
-        path: "sender",
+        path: "sender.id",
         select: "name profilePicture",
       })
       .select("-isRead") // Exclude the 'isRead' field from the response
@@ -94,9 +93,6 @@ export const updateNotiClickOn = async (req, res) => {
     );
 
     console.log(newNoti);
-    // if (unreadCount && unreadCount > 0) {
-    //   res.status(200).json(unreadCount);
-    // }
   } catch (error) {
     console.log(
       `error while calling updateNotiClickOn API & error is ${error.message}`

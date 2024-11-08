@@ -5,7 +5,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import Loader from "./../../Loader/Loader.jsx";
 import { AllContext } from "../../../context/UserContext";
-import { postNewJob } from "../../../services/api.js";
+import { getJobDataAccId, updateJob } from "../../../services/api.js";
 import SnakBar from "../../SnakBar.jsx";
 import { skillOptions } from "./../../../utils/somearr.js";
 import {
@@ -37,26 +37,48 @@ const jobTypeArr = [
 
 const workPlaceArr = ["Work from Home", "Office", "Remote", "Hybrid"];
 
-const CreateJob = () => {
-  const { setIsSnakBar, setLoading, selectCompanyForJob, currUserData } =
-    useContext(AllContext);
+const EditJob = () => {
+  const { setIsSnakBar, setLoading, currUserData } = useContext(AllContext);
+  const { jobId } = useParams();
   const navigate = useNavigate();
   const [skillDialog, setSkillDialog] = useState(false);
+  const [jobData, setJobData] = useState(null);
   const [snak, setSnak] = useState({ type: null, text: null });
+
+  const getJobDataFunc = async () => {
+    let res = await getJobDataAccId(jobId);
+    if (res.status === 200) {
+      console.log("this company data is", res.data);
+      setJobData(res.data.job);
+    } else if (res.status === 204) {
+      console.log("this company data is", res.data);
+    } else {
+      console.log("somthing error");
+    }
+  };
+
+  useEffect(() => {
+    getJobDataFunc();
+  }, []);
 
   // formik
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
-      title: "",
-      description: "",
-      workplace: "Office",
-      salary: 20000,
-      location: "",
-      skills: ["JavaScript", "React"],
-      jobType: "Full Time",
+      title: jobData && jobData.title && jobData.title,
+      description: jobData && jobData.description && jobData.description,
+      workplace: jobData && jobData.workplace && jobData.workplace,
+      salary: jobData && jobData.salary && jobData.salary,
+      location: jobData && jobData.location && jobData.location,
+      skills: jobData && jobData.skills && jobData.skills,
+      jobType: jobData && jobData.jobType && jobData.jobType,
       createdBy: {
-        user: currUserData && currUserData._id, // User ID who is creating the job
-        company: selectCompanyForJob && selectCompanyForJob._id, // Company ID on behalf of which the job is created
+        user:
+          jobData && jobData.createdBy.user._id && jobData.createdBy.user._id, // User ID who is creating the job
+        company:
+          jobData &&
+          jobData.createdBy.company._id &&
+          jobData.createdBy.company._id, // Company ID on behalf of which the job is created
       },
     },
     validationSchema: Yup.object({
@@ -102,7 +124,7 @@ const CreateJob = () => {
       // Handle form submission, e.g., send data to the server
       console.log("Form submitted with values:", values);
 
-      let res = await postNewJob(values);
+      let res = await updateJob(values, jobData && jobData._id);
       if (res.status === 200) {
         setSnak({ type: "success", text: `${res.data.message}` });
         formik.resetForm();
@@ -112,7 +134,8 @@ const CreateJob = () => {
 
       setTimeout(() => {
         setLoading(false);
-        navigate(`/job/view/${res.data.jobId}`);
+        // window.location.pathname = `/job/view/${jobId}`;
+        navigate(`/job/view/${jobId}`);
       }, 2000);
     },
   });
@@ -171,7 +194,7 @@ const CreateJob = () => {
                         "border-2  bg-white cursor-not-allowed border-black pl-12 mt-[3px] border-opacity-70 placeholder:text-[#908282] rounded-sm w-[100%] text-black h-[35px] p-3"
                       }
                       id='createdBy.company'
-                      value={selectCompanyForJob?.name}
+                      value={jobData && jobData.createdBy?.company?.name}
                       name='createdBy.company'
                       readOnly
                       type='text'
@@ -180,7 +203,11 @@ const CreateJob = () => {
                       onBlur={formik.handleBlur}
                     />
                     <img
-                      src={selectCompanyForJob?.profilePicture || "/blank.png"}
+                      src={
+                        (jobData &&
+                          jobData.createdBy?.company?.profilePicture) ||
+                        "/blank.png"
+                      }
                       className='absolute cursor-not-allowed max-w-[30px] min-w-[30px] min-h-[33px] shadow-md max-h-[33px] top-[28px] left-[1px] border'
                       alt=''
                     />
@@ -261,6 +288,7 @@ const CreateJob = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className='location--salary mt-4 flex space-x-4 items-center'>
                   <div className='inpss w-[50%]'>
                     <inputLabel className='text-[#707070]'>
@@ -382,7 +410,7 @@ const CreateJob = () => {
                   <button
                     type='button' //  nessasory to write .............//.....//..
                     onClick={() => setSkillDialog(true)}
-                    disabled={formik.values.skills.length >= 10}
+                    disabled={formik.values.skills?.length >= 10}
                     className=' p-2 flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed space-x-1 pl-3 pr-3 rounded-full font-semibold  text-black border-2 border-black'
                   >
                     Add Skill
@@ -412,7 +440,7 @@ const CreateJob = () => {
                   disabled={!formik.dirty && !formik.isValid}
                   className='mt-5    disabled:bg-[#c9c9c9]   cursor-pointer  px-6 py-2.5 bg-[#0A66C2] text-white font-medium text-xs leading-tight uppercase rounded-full  shadow-md hover:bg-[#025682] hover:shadow-lg focus:bg-[#025682] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#025682] active:bg-[#025682] active:shadow-lg transition duration-150 ease-in-out'
                 >
-                  Post a Job
+                  Update
                 </button>
               </div>
             </form>
@@ -423,4 +451,4 @@ const CreateJob = () => {
   );
 };
 
-export default CreateJob;
+export default EditJob;

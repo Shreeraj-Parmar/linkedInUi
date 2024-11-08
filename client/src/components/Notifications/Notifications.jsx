@@ -15,8 +15,13 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@mui/material";
 
 const Notifications = () => {
-  const { isLogin, setCurrMenu, setCurrConversationId, setMessages } =
-    useContext(AllContext);
+  const {
+    isLogin,
+    setCurrMenu,
+    setCurrConversationId,
+    setMessages,
+    currUserData,
+  } = useContext(AllContext);
   const [notificationsList, setNotificationLists] = useState([]);
   const [page, setPage] = useState(1); // For pagination
   const [loadingSkeleton, setLoadingSkeleton] = useState(true); // For loading state
@@ -32,7 +37,7 @@ const Notifications = () => {
         ...prevNotifications,
         ...res.data,
       ]);
-      console.log(res.data);
+      console.log("all noti", res.data);
       // Check if there are more notifications to load
       if (res.data.length < limit) {
         setHasMore(false); // If no more notifications are found, stop loading more
@@ -71,32 +76,46 @@ const Notifications = () => {
     }
   };
 
-  const handleNotiBtnClick = async (type, senderId) => {
+  const handleNotiBtnClick = async (type, senderId, what) => {
+    const pathIs = what === "Company" ? "company" : "user";
     if (type === "follow") {
       setTimeout(() => {
-        navigate(`/user/${senderId}`);
+        navigate(`/${pathIs}/${senderId}`);
       }, 300);
     } else if (type === "like") {
       setTimeout(() => {
-        navigate(`/user/${senderId}`);
+        navigate(`/${pathIs}/${senderId}`);
       }, 300);
     } else if (type === "profile_view") {
       setTimeout(() => {
-        navigate(`/user/${senderId}`);
+        navigate(`/${pathIs}/${senderId}`);
       }, 300);
     } else if (type === "connection_request") {
       setTimeout(() => {
         navigate(`/my-network`);
       }, 300);
     } else if (type === "connection_accepted") {
-      let res = await setConversation({ receiverId: senderId });
+      let hello = {
+        receiverId: senderId,
+        senderType: "User",
+        senderId: currUserData && currUserData._id,
+        receiverType: what,
+      };
+      console.log(hello);
+      let res = await setConversation(hello);
       if (res.status === 200) {
         console.log(res.data);
         setCurrConversationId(res.data.id);
 
         let convId = res.data.id;
 
-        let res2 = await getMsgAccConvId(res.data.id);
+        let res2 = await getMsgAccConvId({
+          convId,
+          page: 1,
+          limit: 15,
+          whoId: currUserData && currUserData._id,
+          whoType: "User",
+        });
         if (res2.status === 200) {
           console.log("messages is", res2.data);
           setMessages(res2.data);
@@ -187,7 +206,7 @@ const Notifications = () => {
                     onClick={() => {
                       handleClickNotification(
                         noti._id,
-                        noti.sender && noti.sender._id,
+                        noti.sender && noti.sender.id._id,
                         noti.type
                       );
                     }}
@@ -198,7 +217,11 @@ const Notifications = () => {
                   >
                     <div
                       onClick={() => {
-                        handleNotiBtnClick(noti.type, noti.sender._id);
+                        handleNotiBtnClick(
+                          noti.type,
+                          noti.sender.id._id,
+                          noti.sender.type
+                        );
                       }}
                       className='max-w-[20%]'
                     >
@@ -208,8 +231,8 @@ const Notifications = () => {
                       <img
                         src={
                           (noti.sender &&
-                            noti.sender.profilePicture &&
-                            noti.sender.profilePicture) ||
+                            noti.sender.id.profilePicture &&
+                            noti.sender.id.profilePicture) ||
                           "/blank.png"
                         }
                         alt='user profile picture'
@@ -223,12 +246,22 @@ const Notifications = () => {
                           <p
                             onClick={() => {
                               setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
+                                if (noti.sender.type === "Company") {
+                                  navigate(`/company/${noti.sender.id._id}`);
+                                } else {
+                                  navigate(`/user/${noti.sender.id._id}`);
+                                }
                               }, 300);
                             }}
                             className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
-                            {noti.sender.name}
+                            {noti.sender.id.name}
+                            {"       "}
+                            {noti.sender.type === "Company" && (
+                              <span className='text-black opacity-20'>
+                                company
+                              </span>
+                            )}
                           </p>
                         </p>
                       )}
@@ -239,12 +272,21 @@ const Notifications = () => {
                             onClick={() => {
                               console.log("usr trigerdx");
                               setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
+                                if (noti.sender.type === "Company") {
+                                  navigate(`/company/${noti.sender.id._id}`);
+                                } else {
+                                  navigate(`/user/${noti.sender.id._id}`);
+                                }
                               }, 300);
                             }}
                             className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
-                            {noti.sender.name}
+                            {noti.sender.id.name}{" "}
+                            {noti.sender.id.type === "Company" && (
+                              <span className='text-black opacity-60'>
+                                company
+                              </span>
+                            )}
                           </p>
                         </p>
                       )}
@@ -255,12 +297,21 @@ const Notifications = () => {
                           <p
                             onClick={() => {
                               setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
+                                if (noti.sender.type === "Company") {
+                                  navigate(`/company/${noti.sender.id._id}`);
+                                } else {
+                                  navigate(`/user/${noti.sender.id._id}`);
+                                }
                               }, 300);
                             }}
                             className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
-                            {noti.sender.name}
+                            {noti.sender.id.name}{" "}
+                            {noti.sender.id.type === "Company" && (
+                              <span className='text-black opacity-60'>
+                                company
+                              </span>
+                            )}
                           </p>
                         </p>
                       )}
@@ -269,14 +320,23 @@ const Notifications = () => {
                         <p
                           onClick={() => {
                             setTimeout(() => {
-                              navigate(`/user/${noti.sender._id}`);
+                              if (noti.sender.type === "Company") {
+                                navigate(`/company/${noti.sender.id._id}`);
+                              } else {
+                                navigate(`/user/${noti.sender.id._id}`);
+                              }
                             }, 300);
                           }}
                           className='flex'
                         >
                           You Have New Comment On your Post, Commented By{" "}
                           <span className='hover:underline hover:text-blue-700 ml-1 font-semibold'>
-                            {noti.sender.name}
+                            {noti.sender.id.name}{" "}
+                            {noti.sender.id.type === "Company" && (
+                              <span className='text-black opacity-60'>
+                                company
+                              </span>
+                            )}
                           </span>
                         </p>
                       )}
@@ -286,12 +346,21 @@ const Notifications = () => {
                           <p
                             onClick={() => {
                               setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
+                                if (noti.sender.type === "Company") {
+                                  navigate(`/company/${noti.sender.id._id}`);
+                                } else {
+                                  navigate(`/user/${noti.sender.id._id}`);
+                                }
                               }, 300);
                             }}
                             className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
-                            {noti.sender.name}
+                            {noti.sender.id.name}{" "}
+                            {noti.sender.id.type === "Company" && (
+                              <span className='text-black opacity-60'>
+                                company
+                              </span>
+                            )}
                           </p>
                         </p>
                       )}
@@ -301,12 +370,21 @@ const Notifications = () => {
                           <p
                             onClick={() => {
                               setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
+                                if (noti.sender.type === "Company") {
+                                  navigate(`/company/${noti.sender.id._id}`);
+                                } else {
+                                  navigate(`/user/${noti.sender.id._id}`);
+                                }
                               }, 300);
                             }}
                             className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
-                            {noti.sender.name}
+                            {noti.sender.id.name}{" "}
+                            {noti.sender.id.type === "Company" && (
+                              <span className='text-black opacity-60'>
+                                company
+                              </span>
+                            )}
                           </p>
                         </p>
                       )}
@@ -316,18 +394,31 @@ const Notifications = () => {
                           <p
                             onClick={() => {
                               setTimeout(() => {
-                                navigate(`/user/${noti.sender._id}`);
+                                if (noti.sender.type === "Company") {
+                                  navigate(`/company/${noti.sender.id._id}`);
+                                } else {
+                                  navigate(`/user/${noti.sender.id._id}`);
+                                }
                               }, 300);
                             }}
                             className='hover:underline hover:text-blue-700 ml-1 font-semibold'
                           >
-                            {noti.sender.name}
+                            {noti.sender.id.name}{" "}
+                            {noti.sender.id.type === "Company" && (
+                              <span className='text-black opacity-60'>
+                                company
+                              </span>
+                            )}
                           </p>
                         </p>
                       )}
                       <button
                         onClick={() => {
-                          handleNotiBtnClick(noti.type, noti.sender._id);
+                          handleNotiBtnClick(
+                            noti.type,
+                            noti.sender.id._id,
+                            noti.sender.type
+                          );
                         }}
                         className='mt-2 pl-3 pr-3 text-[#0A66C2] p-1 border-2 border-[#0A66C2] rounded-full hover:text-[#004182] hover:border-[#004182]'
                       >

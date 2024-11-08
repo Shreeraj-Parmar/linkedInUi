@@ -1179,3 +1179,53 @@ export const updateIsReadJobApp = async (data) => {
     );
   }
 };
+
+// update job according id
+
+export const updateJob = async (value, id) => {
+  let data = {
+    value,
+    id,
+  };
+  try {
+    let res = await axios.put(`${API}/job`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling updateJob & error is : ${error.message}`);
+  }
+};
+
+// check job author according jobid
+
+export const checkJobAuthorAccJobId = async (jobId) => {
+  try {
+    let res = await axios.get(`${API}/job-author?jobId=${jobId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling checkJobAuthorAccJobId & error is : ${error.message}`
+    );
+  }
+};
+
+//deleteJob
+export const deleteJob = async (data) => {
+  try {
+    let res = await axios.delete(`${API}/job/${data}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling deleteJob & error is : ${error.message}`);
+  }
+};

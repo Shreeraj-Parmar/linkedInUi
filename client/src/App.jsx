@@ -27,6 +27,7 @@ import { verifyTokenFunc } from "./utils/token-verification-func.js";
 import ViewCompany from "./components/social/business/company/ViewCompany.jsx";
 import CreateJob from "./components/social/job/CreateJob.jsx";
 import JobView from "./components/social/job/JobView.jsx";
+import EditJob from "./components/social/job/EditJob.jsx";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -110,6 +111,10 @@ function App() {
     {
       path: "/job/view/:jobId",
       element: <JobView />,
+    },
+    {
+      path: "/job/edit/:jobId",
+      element: <EditJob />,
     },
   ]);
 

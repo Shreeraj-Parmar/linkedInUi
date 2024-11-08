@@ -7,14 +7,13 @@ import {
   saveProfileURL,
   refresIt,
 } from "../../services/api";
-import { toast } from "react-toastify";
 import Profile from "./Profile";
 import PostView from "./PostView";
 import Suggest from "./Suggest";
 import { AllContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import Tostify from "./../Tostify";
 import LoginDialog from "./LoginDialog";
+import SnakBar from "../SnakBar";
 import Navbar from "./Navbar";
 //icons
 
@@ -32,10 +31,12 @@ const Overview = () => {
     loginDialog,
     socket,
     setCurrUserData,
+    setIsSnakBar,
     setLoginDialog,
   } = useContext(AllContext);
   const navigate = useNavigate();
   const [profileSkeleton, setProfileSkeleton] = useState(false);
+  const [snak, setSnak] = useState({ type: null, text: null });
 
   const [imgUrl, setImgUrl] = useState(null);
 
@@ -75,6 +76,7 @@ const Overview = () => {
   }, []);
 
   const handleSubmitFile = async (e, isFile) => {
+    setIsSnakBar(true);
     if (isLogin) {
       setProfileSkeleton(true);
       console.log("in overview file is", isFile);
@@ -102,34 +104,26 @@ const Overview = () => {
           const permanentUrl = `https://${bukket}.s3.${region}.amazonaws.com/ProfilePicture/${fileName}`;
           if (permanentUrl) {
             setImgUrl(permanentUrl);
+            setSnak({
+              type: "success",
+              text: "Profile picture uploaded successfully",
+            });
           }
           let res = await saveProfileURL({ url: permanentUrl });
           console.log(res.status);
         }
       } else {
         console.log("file not selected");
-        toast.error(`File Not Selectedd Please Try Again !`, {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: "Please select a file",
         });
       }
       setProfileSkeleton(false);
     } else {
-      toast.error(`Login to enable Select File.`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Login to enable Select File.",
       });
     }
   };
@@ -140,7 +134,6 @@ const Overview = () => {
         lightMode && "bg-[#F4F2EE]"
       }`}
     >
-      <Tostify />
       <LoginDialog
         isLogin={isLogin}
         setIsLogin={setIsLogin}
@@ -150,6 +143,8 @@ const Overview = () => {
       <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
+
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
 
         <div className='main-display w-[80vw] h-[100vh] mt-10  m-auto p-2  '>
           <div className='main-down h-[100%]'>

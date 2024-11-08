@@ -10,7 +10,6 @@ import { Skeleton } from "@mui/material";
 
 // icons
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { toast } from "react-toastify";
 
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
@@ -30,7 +29,6 @@ import {
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
-import Tostify from "../Tostify.jsx";
 import Slider from "react-slick";
 import { Card, CardMedia, Box } from "@mui/material";
 import "slick-carousel/slick/slick.css";
@@ -40,13 +38,14 @@ import linkifyContent from "../../utils/linkify.js";
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChangeAs from "../../Post Compo/ChangeAs.jsx";
+import SnakBar from "../SnakBar.jsx";
 
 const PostView = ({
   imgUrl,
   setLoginDialog,
   loginDialog,
   isLogin,
-  setIsSnakBar,
+
   setLoading,
 }) => {
   const {
@@ -58,6 +57,7 @@ const PostView = ({
     lightMode,
     actAs,
     setActAs,
+    setIsSnakBar,
   } = useContext(AllContext);
   const [postDialog, setPostDialog] = useState(false);
   const [commentBoxOpen, setCommentBoxOpen] = useState({});
@@ -80,6 +80,7 @@ const PostView = ({
   const [isStatus, setIsStatus] = useState(false);
   const [isFollowStatus, setIsFollowStatus] = useState(false);
   const [updatePostDialog, setUpdatePostDialog] = useState(false);
+  const [snak, setSnak] = useState({ type: null, text: null });
 
   // loading state:
   const [loadingPost, setLoadingPost] = useState(true); // Loading state for posts
@@ -159,16 +160,6 @@ const PostView = ({
     };
   }, []);
 
-  // const checkFollowStatus = async () => {
-  //   const status = {};
-  //   for (const post of allPost) {
-  //     let res = await checkIfFollowingUser(post.user._id);
-  //     status[post.user._id] = res.data.isFollowing;
-  //   }
-  //   console.log("follow status", status);
-  //   setFollowStatus(status);
-  // };
-
   const handleFollowClick = async (receiver, type) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
@@ -182,16 +173,6 @@ const PostView = ({
       senderType: actAs && actAs.type === "company" ? "Company" : "User",
     });
     if (res.status === 200) {
-      console.log(res.data.message);
-      if (res.data.message === "Now you are following the user!") {
-        await sendNotification({
-          recipient: receiver,
-          sender: currUserData._id,
-          type: "follow",
-          message: "you have new follower",
-        });
-      }
-      // Toggle the follow status locally
       setFollowStatus((prev) => ({
         ...prev,
         [receiver]: {
@@ -199,16 +180,26 @@ const PostView = ({
           [actAs.id]: !prev[receiver][actAs.id], // Set the like status to true for the current user or company
         },
       }));
+      console.log(res.data.message);
+      if (res.data.message.startsWith("Now you are following")) {
+        await sendNotification({
+          recipient: {
+            id: receiver,
+            type: type,
+          },
+          sender: {
+            id: actAs && actAs.id,
+            type: actAs && actAs.type === "company" ? "Company" : "User",
+          },
+          type: "follow",
+          message: "you have new follower",
+        });
+      }
+      // Toggle the follow status locally
     } else {
-      toast.error(`Some Error Wile follow/unfollow Please Try again !`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Error while following/unfollowing!",
       });
       console.error("Error while following/unfollowing:", res.data.message);
     }
@@ -406,7 +397,7 @@ const PostView = ({
 
   // for like update
 
-  const handleLike = async (postId) => {
+  const handleLike = async (postId, receiver, type) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
@@ -466,6 +457,19 @@ const PostView = ({
       }
 
       // You can add a notification here if needed
+
+      await sendNotification({
+        recipient: {
+          id: receiver,
+          type: type,
+        },
+        sender: {
+          id: actAs && actAs.id,
+          type: actAs && actAs.type === "company" ? "Company" : "User",
+        },
+        type: "like",
+        message: "you have new like",
+      });
     } else {
       console.error("Error updating like status on server", res.data.message);
     }
@@ -507,7 +511,7 @@ const PostView = ({
   };
 
   // send CommentData to the Backend
-  const handleCommentPost = async (id, userId) => {
+  const handleCommentPost = async (id, userId, type) => {
     if (!isLogin) {
       setLoginDialog(true); // Show login dialog if user is not logged in
       return;
@@ -554,15 +558,25 @@ const PostView = ({
           ...prevCount,
           [id]: prevCount[id] ? prevCount[id] + 1 : 1,
         }));
-      if (currUserData._id !== userId)
+      if (actAs.id !== userId)
         await sendNotification({
-          recipient: userId,
-          sender: currUserData._id,
+          recipient: {
+            id: userId,
+            type: type,
+          },
+          sender: {
+            id: actAs && actAs.id,
+            type: actAs && actAs.type === "company" ? "Company" : "User",
+          },
           type: "comment",
           message: "you have new comment on post",
         });
       getAllCommentsFunc(id);
     } else {
+      setSnak({
+        type: "error",
+        text: res.data.message,
+      });
       console.log("error somthing :", res.data.message);
       setCommentText("");
     }
@@ -579,7 +593,8 @@ const PostView = ({
       onScroll={handleScrollPost}
       className='post-wrapper max-h-[100vh]  w-[100%]  overflow-y-scroll  flex-row space-y-'
     >
-      <Tostify />
+      {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
       <PostDialog
         postDialog={postDialog}
         setPostDialog={setPostDialog}
@@ -837,12 +852,15 @@ const PostView = ({
                                   setUpdatePostDialog={setUpdatePostDialog}
                                   setShowAllMedia={setShowAllMedia}
                                   setAllPost={setAllPost}
+                                  snak={snak}
                                   updatePostDialog={updatePostDialog}
                                   selectedPostForUpdate={selectedPostForUpdate}
                                   setSelectedPostForUpdate={
                                     setSelectedPostForUpdate
                                   }
                                   actAs={actAs}
+                                  setSnak={setSnak}
+                                  setIsSnakBar={setIsSnakBar}
                                 />
                               )}
                               <EditIcon
@@ -1182,7 +1200,7 @@ const PostView = ({
                               handleLike(
                                 post._id,
                                 post.createdBy?.id,
-                                post.likedBy
+                                post.createdBy?.type
                               );
                             }}
                           >
@@ -1258,7 +1276,8 @@ const PostView = ({
                                 onClick={() => {
                                   handleCommentPost(
                                     post._id,
-                                    post.createdBy?.id
+                                    post.createdBy?.id,
+                                    post.createdBy?.type
                                   );
                                 }}
                                 disabled={isDisabledPostBtn}

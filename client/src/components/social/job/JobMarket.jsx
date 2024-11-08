@@ -89,7 +89,7 @@ const JobMarket = ({ currUserData }) => {
               >
                 <div className=''>
                   <img
-                    src={job.createdBy.company.profilePicture || "/blank.png"}
+                    src={job.createdBy?.company?.profilePicture || "/blank.png"}
                     className='min-w-[70px] rounded-sm max-w-[70px] min-h-[70px] max-h-[70px]'
                     alt=''
                   />
@@ -98,7 +98,7 @@ const JobMarket = ({ currUserData }) => {
                   <p className='font-semibold text-xl text-blue-700 hover:underline'>
                     {job.title}
                   </p>
-                  <p>{job.createdBy.company.name}</p>
+                  <p>{job.createdBy?.company?.name}</p>
                   <p className=' text-gray-500'>
                     {job.location} ({job.workplace})
                   </p>
@@ -126,6 +126,15 @@ const JobMarket = ({ currUserData }) => {
               </div>
             </div>
           ))}
+        {jobList && jobList.length === 0 && (
+          <div className='flex justify-center min-h-[100%] items-center'>
+            <img
+              src='no-data.jpg'
+              className='min-w-[300px] max-w-[300px] min-h-[300px] max-h-[300px]'
+              alt=''
+            />
+          </div>
+        )}
       </div>
     </>
   );

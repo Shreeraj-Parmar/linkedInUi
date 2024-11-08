@@ -33,7 +33,7 @@ const dialogStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: "#F4F2EE",
+  backgroundColor: "#fff",
 };
 
 const ViewApplication = ({
@@ -116,8 +116,8 @@ const ViewApplication = ({
   useEffect(() => {
     setTimeout(() => {
       updateIsRead();
-    }, 5000);
-  }, []);
+    }, 100);
+  }, [selectedJob]);
 
   useEffect(() => {
     getAllApplicationsAccJob();
@@ -207,6 +207,25 @@ const ViewApplication = ({
                 </div>
               );
             })}
+
+          {applications && applications.length === 0 && (
+            <>
+              <div className='text-center flex justify-center items-center p-3'>
+                <img
+                  src='/no-data.jpg'
+                  className=''
+                  alt=''
+                  style={{
+                    minWidth: "300px",
+                    minHeight: "300px",
+                    maxWidth: "300px",
+                    maxHeight: "300px",
+                  }}
+                />
+              </div>
+              <p className='text-center'>No application found</p>
+            </>
+          )}
         </div>
       </div>
     </Dialog>

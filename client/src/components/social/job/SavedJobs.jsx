@@ -3,11 +3,13 @@ import { getAllJobsAcc, saveOrUnsaveJob } from "../../../services/api.js";
 import IconButton from "@mui/material/IconButton";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import { useNavigate } from "react-router-dom";
 
 const SavedJobs = ({ currUserData }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [saveStatus, setSaveStatus] = useState({});
+  const navigate = useNavigate();
 
   const [jobList, setJobList] = useState([]);
 
@@ -79,6 +81,9 @@ const SavedJobs = ({ currUserData }) => {
           jobList.map((job) => (
             <div
               key={job._id}
+              onClick={() => {
+                navigate(`/job/view/${job._id}`);
+              }}
               className='w-[100%] flex items-center cursor-pointer justify-between hover:bg-gray-200  p-5 '
             >
               <div className='flex gap-4 '>
@@ -121,6 +126,16 @@ const SavedJobs = ({ currUserData }) => {
               </div>
             </div>
           ))}
+
+        {jobList && jobList.length === 0 && (
+          <div className='flex justify-center min-h-[100%] items-center'>
+            <img
+              src='no-data.jpg'
+              className='min-w-[300px] max-w-[300px] min-h-[300px] max-h-[300px]'
+              alt=''
+            />
+          </div>
+        )}
       </div>
     </>
   );

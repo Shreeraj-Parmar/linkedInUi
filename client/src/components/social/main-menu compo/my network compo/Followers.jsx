@@ -4,7 +4,11 @@ import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
 import Tostify from "../../../Tostify.jsx";
 import { AllContext } from "../../../../context/UserContext.jsx";
-import { getMyFollowers, sendFollowReq } from "../../../../services/api.js";
+import {
+  getMyFollowers,
+  sendFollowReq,
+  sendNotification,
+} from "../../../../services/api.js";
 
 const Followers = ({ navigate, setCurrMenu }) => {
   const [followerList, setFollowerList] = useState([]);
@@ -73,12 +77,26 @@ const Followers = ({ navigate, setCurrMenu }) => {
 
     if (res.status === 200) {
       console.log(res.data.message);
-
-      // Toggle the follow status in the UI
       setFollowStatus((prevStatus) => ({
         ...prevStatus,
         [receiverId]: !prevStatus[receiverId],
       }));
+
+      if (!followStatus[receiverId]) {
+        await sendNotification({
+          recipient: {
+            id: receiverId,
+            type: "User",
+          },
+          sender: {
+            id: currUserData._id,
+            type: "User",
+          },
+          type: "follow",
+          message: "your profile has been followed",
+        });
+      }
+      // Toggle the follow status in the UI
     } else {
       console.error("Error while following/unfollowing:", res.data.message);
     }

@@ -1,16 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getAllJobsAcc } from "../../../../../services/api.js";
+import { getAllJobsAcc, deleteJob } from "../../../../../services/api.js";
 import ViewApplication from "./view-company/ViewApplication.jsx";
-
+import SnakBar from "../../../../SnakBar.jsx";
+import { AllContext } from "../../../../../context/UserContext.jsx";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DescriptionIcon from "@mui/icons-material/Description";
+import { IconButton } from "@mui/material";
 const Applications = ({ companyDetails, setCompanyMenu }) => {
   const { companyId } = useParams();
   const navigate = useNavigate();
+
+  const { setIsSnakBar, setSelectCompanyForJob } = useContext(AllContext);
 
   const [jobAppDialog, setJobAppDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [jobList, setJobList] = useState([]);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   const [selectedJob, setSelectedJob] = useState(null);
 
   const getAllJobFunc = async () => {
@@ -35,6 +44,23 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
       console.log("somthing error");
     }
   };
+
+  const deleteFunction = async (id) => {
+    setIsSnakBar(true);
+    let res = await deleteJob(id);
+    if (res.status === 200) {
+      setSnak({ type: "success", text: `${res.data.message}` });
+
+      console.log("deleted");
+      setJobList(jobList.filter((job) => job._id !== id));
+    } else if (res.status === 201) {
+      console.log("You are Not author To delete it");
+      setSnak({ type: "error", text: `${res.data.message}` });
+    } else {
+      console.log("somthing error");
+      setSnak({ type: "error", text: `${res.data.message}` });
+    }
+  };
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
@@ -46,13 +72,15 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
     getAllJobFunc();
   }, [page]);
   return (
-    <div className='p-2 border-2 border-gray-400 w-[80%] bg-white border-opacity-40 rounded-lg'>
+    <div className='p-2 border-2 border-gray-400 w-[90%] bg-white border-opacity-40 rounded-lg'>
       <div className='p-2'>
         <p className=' font-semibold text-xl'>Company Jobs</p>
         <p className=' opacity-75 text-[#7e7979]'>
           See number of job applications According Company Jobs
         </p>
       </div>
+      {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
       <ViewApplication
         companyDetails={companyDetails}
         setCompanyMenu={setCompanyMenu}
@@ -111,7 +139,10 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
                           setSelectedJob(job);
                           setJobAppDialog(true);
                         }}
+                        aria-label='view applications'
                         className='
+                          flex
+                          items-center
                           bg-white
                           text-blue-700
                           border border-blue-700
@@ -126,10 +157,17 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
                           py-2
                         '
                       >
-                        View applications
+                        <DescriptionIcon />
+                        <p className='ml-2'>View applications</p>
                       </button>
                       <button
+                        onClick={() => {
+                          navigate(`/job/edit/${job._id}`);
+                        }}
+                        aria-label='edit job'
                         className='
+                            flex
+                            items-center
                             bg-white
                             text-yellow-700
                             border border-yellow-700
@@ -144,10 +182,15 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
                             py-2
                           '
                       >
-                        Edit job
+                        <EditIcon />
+                        <p className='ml-2'>Edit job</p>
                       </button>
                       <button
+                        onClick={() => deleteFunction(job._id)}
+                        aria-label='delete job'
                         className='
+                          flex
+                          items-center
                           bg-white
                           text-red-700
                           border border-red-700
@@ -162,7 +205,8 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
                           py-2
                         '
                       >
-                        Delete job
+                        <DeleteIcon />
+                        <p className='ml-2'>Delete job</p>
                       </button>
                     </div>
                     <div
@@ -185,6 +229,43 @@ const Applications = ({ companyDetails, setCompanyMenu }) => {
                 </div>
               </div>
             ))}
+
+          {jobList && jobList.length === 0 && (
+            <>
+              <div className='flex justify-center items-center'>
+                <img
+                  src='/no-data.jpg'
+                  alt=''
+                  className='min-w-[300px] mt-5 max-w-[300px] min-h-[300px] max-h-[300px]'
+                />
+              </div>
+              <p className='mt-2 text-center'>No Any Job, Please Add Job</p>
+              <div className='flex justify-center'>
+                <button
+                  onClick={() => {
+                    setSelectCompanyForJob(companyDetails);
+                    navigate("/job/new");
+                  }}
+                  className='
+                  bg-blue-700
+                  text-white
+                  border border-transparent
+                  hover:bg-blue-800
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-offset-2
+                  focus:ring-blue-500
+                  rounded-full
+                  px-4
+                  py-2
+                  mt-5
+                '
+                >
+                  Create Job
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import CloseIcon from "@mui/icons-material/Close";
-import Tostify from "../Tostify.jsx";
-import { toast } from "react-toastify";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { Dialog } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
+import SnakBar from "../SnakBar.jsx";
 
 import {
   getURLForPOST,
@@ -34,8 +33,11 @@ const dialogStyle = {
 };
 
 const UpdatePostDialog = ({
+  setSnak,
+  snak,
   updatePostDialog,
   actAs,
+  setIsSnakBar,
   setAllPost,
   setUpdatePostDialog,
   setShowAllMedia,
@@ -71,17 +73,12 @@ const UpdatePostDialog = ({
   };
 
   const handlePostFileChange = (e) => {
+    setIsSnakBar(true);
     const files = Array.from(e.target.files); // Convert FileList to an array
     if (postFile.includes(files[0])) {
-      toast.error(`File Already Added. !`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "File already selected !",
       });
       return;
     }
@@ -95,16 +92,11 @@ const UpdatePostDialog = ({
   };
 
   const handlePostSubmit = async () => {
+    setIsSnakBar(true);
     if (postText === "" && previewUrl.length === 0) {
-      toast.error(`Please Write Somthing Or Select Photo. !`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Please Write Somthing Or Select Photo. !",
       });
       return;
     }
@@ -132,7 +124,10 @@ const UpdatePostDialog = ({
               fileType: file.type,
             }); // Store the uploaded URL
           } else {
-            toast.error("Error while uploading image!");
+            setSnak({
+              type: "error",
+              text: "Error While Uploading IMAGE . !",
+            });
           }
         }
       }
@@ -155,6 +150,10 @@ const UpdatePostDialog = ({
 
       if (res.status === 200) {
         console.log("post saved successfully");
+        setSnak({
+          type: "success",
+          text: "Post Updated Successfully !",
+        });
 
         setAllPost((prev) =>
           prev.map((post) =>
@@ -172,15 +171,9 @@ const UpdatePostDialog = ({
         setPreviewUrl([]);
         setUpdatePostDialog(false);
       } else {
-        toast.error(`Error While Uploading IMAGE . !`, {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: " Error While Uploading IMAGE . !",
         });
         console.log("error while generating url");
 
@@ -197,6 +190,10 @@ const UpdatePostDialog = ({
         createdId: actAs.id,
       });
       if (res.status === 200) {
+        setSnak({
+          type: "success",
+          text: "Post Updated Successfully !",
+        });
         setAllPost((prev) =>
           prev.map((post) =>
             post._id === selectedPostForUpdate._id
@@ -230,7 +227,8 @@ const UpdatePostDialog = ({
       }}
     >
       <div className='w-[100%] p-5 mt-[5%] h-[100%]'>
-        <Tostify />
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
         <div className='p-4 '>
           <div>
             <textarea

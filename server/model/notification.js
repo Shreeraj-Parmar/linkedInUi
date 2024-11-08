@@ -3,13 +3,30 @@ import mongoose from "mongoose";
 const notificationSchema = mongoose.Schema(
   {
     recipient: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // The user who receives the notification
-      required: true,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "recipient.type", // Dynamically reference either 'User' or 'Company'
+      },
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the follower is a user or a company
+        required: true,
+      },
+      _id: false,
     },
     sender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // The user who triggers the notification (can be null for system notifications)
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "sender.type", // Dynamically reference either 'User' or 'Company'
+      },
+      type: {
+        type: String,
+        enum: ["User", "Company"], // Specifies if the follower is a user or a company
+        required: true,
+      },
+      _id: false,
     },
     type: {
       type: String,
@@ -27,20 +44,9 @@ const notificationSchema = mongoose.Schema(
         "message", // New message
         "event_invitation", // Event invitation
         "network_suggestion", // People you may know
-        // Add other LinkedIn-like notifications here
       ],
     },
-    entity: {
-      // This field can refer to different types of entities depending on the notification type.
-      post: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Post", // Reference to the Post if the notification is about a post
-      },
-      comment: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Comment", // Reference to the Comment if the notification is about a comment
-      },
-    },
+
     isRead: {
       type: Boolean,
       default: false, // Whether the notification has been read

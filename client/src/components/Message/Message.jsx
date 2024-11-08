@@ -202,7 +202,7 @@ const Message = () => {
       setCurrMenu("message");
     }
     findAllConversationsFunc();
-    if (currConversationId) {
+    if (currConversationId && currConversationId !== null) {
       handleConversationSelect(currConversationId);
     }
   }, [actAs]);

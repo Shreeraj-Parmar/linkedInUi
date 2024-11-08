@@ -633,6 +633,16 @@ const Inbox = ({ companyId, companyDetails }) => {
       }
     }
   };
+  useEffect(() => {
+    return () => {
+      setMessages([]);
+      setSendMsgText("");
+      setPostFile(null);
+      setPreviewUrl(null);
+      setReceiverId(null);
+      setTypeOfReceiver(null);
+    };
+  }, []);
 
   return (
     <div className=' border-2 border-gray-400 min-h-[83vh] max-h-[83vh] fixed w-[60%] bg-white border-opacity-40 flex rounded-lg'>

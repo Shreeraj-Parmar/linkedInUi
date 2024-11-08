@@ -1,11 +1,9 @@
 import React, { useEffect, useContext, useState } from "react";
 import { Dialog, styled } from "@mui/material";
 import { sendLoginData } from "../../services/api.js";
-import Tostify from "../Tostify.jsx";
 import Button from "../Reusable Components/Button.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
-
-import { toast } from "react-toastify";
+import SnakBar from "../SnakBar.jsx";
 import CloseIcon from "@mui/icons-material/Close";
 import { useFormik } from "formik";
 import * as Yup from "yup"; // Import Yup for validation
@@ -26,7 +24,7 @@ const dialogStyle = {
   maxHeight: "50vh",
 
   //   overflow: "hidden",
-  borderRadius: "20px",
+  borderRadius: "8px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -37,6 +35,8 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
   const { loginData, setLoginData, loginDialog, setLoginDialog } =
     useContext(AllContext);
   const navigate = useNavigate();
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   // form logic
   const formik = useFormik({
     initialValues: {
@@ -64,15 +64,10 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
         localStorage.setItem("token", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
         // console.log("saved token", localStorage.getItem("token"));
-        toast.success(`Welcome ${values.email}`, {
-          position: "top-right",
-          autoClose: 100,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+
+        setSnak({
+          type: "success",
+          text: `Welcome ${values.email}`,
         });
         setLoginData(values);
         setTimeout(() => {
@@ -80,15 +75,9 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
           navigate("/");
         }, 1000);
       } else if (res.status === 201) {
-        toast.error("Invalid Email or Password", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: "Invalid Email or Password",
         });
       } else if (res.status === 202) {
         console.log(res);
@@ -103,30 +92,19 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
         //   localStorage.getItem("refreshToken")
         // );
         // toast success for admin login
-        toast.success("Welcome Back Admin", {
-          position: "top-right",
-          autoClose: 100,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+
+        setSnak({
+          type: "success",
+          text: "Welcome back Admin",
         });
         setTimeout(() => {
           setLoginDialog(false);
           navigate("/lists");
         }, 2000);
       } else {
-        toast.error("Something went wrong... please try later", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: "Something went wrong... please try later",
         });
       }
     },
@@ -141,10 +119,11 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
       }}
     >
       <div className='login  flex flex-col items-center gap-4 p-2  rounded-md w-[70%]'>
-        <Tostify />
-        <h2 className='font-semibold text-2xl  text-center w-[100%]'>
+        <h2 className='font-semibold text-2xl text-blue-700  text-center w-[100%]'>
           Login Here
         </h2>
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
         <form
           onSubmit={formik.handleSubmit}
           className='flex-row space-y-2  w-[100%]'
@@ -191,7 +170,7 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
                 type={"submit"}
                 lable={"Login"}
                 className={
-                  " bg-[#000] hover:bg-white hover:text-black p-3 text-white rounded-md w-[100px]"
+                  " bg-blue-700 hover:bg-blue-800  p-3 text-white rounded-md w-[100px]"
                 }
               />
             </div>
@@ -200,7 +179,7 @@ const LoginDialog = ({ isLogin, setIsLogin }) => {
         <p>
           Are You New User?
           <span
-            className='text-blue-500 hover:text-blue-600 cursor-pointer'
+            className='text-blue-700 hover:text-blue-900 cursor-pointer'
             onClick={() => {
               navigate("/signup");
             }}

@@ -90,12 +90,18 @@ import {
   saveApplicantInJob,
   sendAllAppAccJobId,
   updateIsreadInDB,
+  updateJobAccIdInDB,
+  checkIsAuthOfJob,
+  deleteJobInDB,
 } from "../controller/job-controller.js";
 
 // job apis
 
 router.post("/job", jwtMiddle, saveNewJob);
+router.delete("/job/:jobId", jwtMiddle, deleteJobInDB);
+router.put("/job", jwtMiddle, updateJobAccIdInDB);
 router.get("/job/:jobId", sendJobDataAccId);
+router.get("/job-author", jwtMiddle, checkIsAuthOfJob);
 router.get("/jobs", jwtMiddle, sendAllJobsAccWhat);
 router.get("/job-applications", jwtMiddle, sendAllAppAccJobId);
 router.get("/job-unread", jwtMiddle, sendUnreadAppCount);

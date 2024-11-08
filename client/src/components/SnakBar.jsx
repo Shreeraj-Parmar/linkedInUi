@@ -14,7 +14,12 @@ const SnakBar = ({ type, text }) => {
   };
   return (
     <div>
-      <Snackbar open={IsSnakBar} autoHideDuration={6000} onClose={handleClose}>
+      <Snackbar
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={IsSnakBar}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
         <Alert
           onClose={handleClose}
           severity={type || "info"}

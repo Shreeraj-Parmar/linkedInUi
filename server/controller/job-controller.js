@@ -26,7 +26,9 @@ export const saveNewJob = async (req, res) => {
       const newJob = new Job(req.body);
       let result = await newJob.save();
       console.log("job result", result);
-      res.status(200).json({ message: "Job created successfully" });
+      res
+        .status(200)
+        .json({ message: "Job created successfully", jobId: result._id });
     }
   } catch (error) {
     console.log(
@@ -39,8 +41,8 @@ export const saveNewJob = async (req, res) => {
 // send all jobs according what , what can be "all" or "posted" or "saved"
 export const sendAllJobsAccWhat = async (req, res) => {
   const { what, page = 1, limit = 7 } = req.query; // Ensure default values
-  const pageNumber = parseInt(page, 7); // Parse page as an integer
-  const limitNumber = parseInt(limit, 7); // Parse limit as an integer
+  const pageNumber = parseInt(page, 10); // Parse page as an integer
+  const limitNumber = parseInt(limit, 10); // Parse limit as an integer
 
   try {
     if (what === "all") {
@@ -226,6 +228,67 @@ export const updateIsreadInDB = async (req, res) => {
   } catch (error) {
     console.log(
       `error while calling updateIsreadInDB API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//updateJobAccIdInDB
+// update job according job id
+export const updateJobAccIdInDB = async (req, res) => {
+  const { value, id } = req.body;
+  try {
+    let job = await Job.findByIdAndUpdate(id, value, { new: true });
+    if (job) {
+      res.status(200).json({ message: "Job updated successfully" });
+    } else {
+      res.status(201).json({ message: "Job not found" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling updateJobAccIdInDB API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//  ckeck for available to edit or not
+export const checkIsAuthOfJob = async (req, res) => {
+  const { jobId } = req.query;
+  try {
+    let job = await Job.findById(jobId);
+    if (job?.createdBy.user._id.toString() === req._id.toString()) {
+      res.status(200).json({ message: "Authorise to edit job" });
+    } else {
+      res.status(201).json({ message: "Not Authorise to edit the job" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling checkIsAuthOfJob API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//deleteJobInDB
+// delete job according job id
+export const deleteJobInDB = async (req, res) => {
+  const { jobId } = req.params;
+  try {
+    let job = await Job.findById(jobId);
+
+    if (job.createdBy.user._id.toString() !== req._id.toString()) {
+      res.status(201).json({ message: "Not Authorise to delete the job" });
+    }
+    if (job) {
+      await Job.findByIdAndDelete(jobId);
+      res.status(200).json({ message: "Job deleted successfully" });
+    } else {
+      res.status(204).json({ message: "Job not found" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling deleteJobInDB API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
