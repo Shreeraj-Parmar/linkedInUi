@@ -9,6 +9,8 @@ import {
   getMsgAccConvId,
   markAsRead,
   checkConnectionEachOther,
+  deleteJob,
+  getAllJobsAcc,
 } from "../../services/api.js";
 import LoginDialog from "./LoginDialog.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
@@ -21,6 +23,9 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import UserPosts from "./UserPosts.jsx";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import linkifyContent from "../../utils/linkify.js";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import SnakBar from "../SnakBar.jsx";
 
 const UserProfile = () => {
   const {
@@ -32,6 +37,8 @@ const UserProfile = () => {
     setMessages,
     actAs,
     setActAs,
+    setIsSnakBar,
+    setSelectCompanyForJob,
     setCurrConversationId,
   } = useContext(AllContext);
 
@@ -44,6 +51,11 @@ const UserProfile = () => {
   const [pendinConnection, setPendingConnection] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [allPost, setAllPost] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [jobList, setJobList] = useState([]);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   const maxLength = 100;
   const getUserDataFunc = async () => {
     console.log("use trigger");
@@ -99,6 +111,58 @@ const UserProfile = () => {
     }
   };
 
+  const getAllJobFunc = async () => {
+    if (!hasMore) return;
+
+    let res = await getAllJobsAcc({
+      what: "postedByUser",
+      page,
+      userId: userId,
+    });
+
+    if (res && res.status === 200) {
+      console.log("this Jobs data is", res.data.allJobs);
+      const jobs = res.data.allJobs;
+
+      setJobList((prev) => [...prev, ...jobs]);
+
+      if (jobs.length < 7) {
+        setHasMore(false);
+      }
+    } else {
+      console.log("somthing error");
+    }
+  };
+
+  const deleteFunction = async (id) => {
+    setIsSnakBar(true);
+    let res = await deleteJob(id);
+    if (res.status === 200) {
+      setSnak({ type: "success", text: `${res.data.message}` });
+
+      console.log("deleted");
+      setJobList(jobList.filter((job) => job._id !== id));
+    } else if (res.status === 201) {
+      console.log("You are Not author To delete it");
+      setSnak({ type: "error", text: `${res.data.message}` });
+    } else {
+      console.log("somthing error");
+      setSnak({ type: "error", text: `${res.data.message}` });
+    }
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore) {
+      // If user is near the bottom of the list, load more notifications
+      setPage((prevPage) => prevPage + 1); // Move to the next page
+    }
+  };
+
+  useEffect(() => {
+    getAllJobFunc();
+  }, [page]);
+
   useEffect(() => {
     console.log(
       `setFollow is ${follow}, setConnection is ${connection} & setPendingConnection is ${pendinConnection}`
@@ -106,6 +170,8 @@ const UserProfile = () => {
   }, [follow, connection, pendinConnection]);
 
   const sendConnectionReq = async (id) => {
+    setIsSnakBar(true);
+
     let res = await sendConnect({ receiverId: id });
     if (res.status === 200) {
       setPendingConnection((prev) => true); // Guaranteed to use the latest state
@@ -119,21 +185,14 @@ const UserProfile = () => {
         message: "you have new Connection Request From",
       });
     } else if (res.status === 201) {
-      toast.error(`${res.data.message}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      setSnak({ type: "error", text: `${res.data.message}` });
     }
     console.log(res.data);
   };
 
   const checkConnectionEachOtherFunction = async (data) => {
+    setIsSnakBar(true);
+
     if (data.receiverType === "Company") return true;
     let res = await checkConnectionEachOther(data);
     if (res.status === 200) {
@@ -141,16 +200,8 @@ const UserProfile = () => {
       return true;
     } else if (res.status === 201) {
       console.log("you not .. enable to msg first connect please");
-      toast.error(`${res.data}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      setSnak({ type: "error", text: `${res.data}` });
+
       return false;
     }
   };
@@ -209,7 +260,7 @@ const UserProfile = () => {
       <div className='main-overview-wrapper   max-w-[100vw]  overflow-x-hidden'>
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
-        <Tostify />
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
 
         <div className='main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  '>
           <div className='main-down mt-[60px]  w-[95%]  min-h-[70%]'>
@@ -410,6 +461,138 @@ const UserProfile = () => {
                       </div>
                     );
                   })}
+              </div>
+            )}
+            {/* jobs */}
+            {jobList && jobList.length > 0 && (
+              <div className='job-applications border-2 border-gray-400 mt-4 bg-white w-[65%] mb-10 rounded-md border-opacity-40'>
+                <div className='p-3 font-semibold text-xl'>
+                  <p>Jobs Posted</p>
+                </div>
+
+                <div
+                  onScroll={handleScroll}
+                  className='flex-row justify-center   overflow-y-scroll max-h-[70vh]  min-h-[70vh] items-center'
+                >
+                  {jobList &&
+                    jobList.length > 0 &&
+                    jobList.map((job) => (
+                      <div
+                        key={job._id}
+                        className='w-[100%] flex items-center cursor-pointer justify-between hover:bg-gray-200  p-5 '
+                      >
+                        <div className='flex gap-4 '>
+                          <div
+                            onClick={() => {
+                              navigate(`/job/view/${job._id}`);
+                            }}
+                            className=''
+                          >
+                            <img
+                              src={
+                                job.createdBy?.company?.profilePicture ||
+                                "/blank.png"
+                              }
+                              className='min-w-[70px] rounded-sm max-w-[70px] min-h-[70px] max-h-[70px]'
+                              alt=''
+                            />
+                          </div>
+                          <div
+                            onClick={() => {
+                              navigate(`/job/view/${job._id}`);
+                            }}
+                            className='relative top-[-7px] min-w-[250px] max-w-[150px]'
+                          >
+                            <p className='font-semibold text-xl text-blue-700 hover:underline'>
+                              {job.title}
+                            </p>
+                            <p>{job.createdBy?.company?.name}</p>
+                            <p className=' text-gray-500'>
+                              {job.location} ({job.workplace})
+                            </p>
+                            <p>{job.salary}$/year</p>
+                            <p className='text-green-700'>
+                              {job.applicants?.length || "0"} applicants
+                            </p>
+                          </div>
+                          {currUserData &&
+                            currUserData.company?.length > 0 &&
+                            currUserData.company.some(
+                              (company) =>
+                                company._id === job.createdBy?.company._id
+                            ) && (
+                              <div className='relative'>
+                                <div className='flex gap-3'>
+                                  <button
+                                    onClick={() => {
+                                      navigate(`/job/edit/${job._id}`);
+                                    }}
+                                    aria-label='edit job'
+                                    className='
+                            flex
+                            items-center
+                            bg-white
+                            text-yellow-700
+                            border border-yellow-700
+                            hover:text-white
+                            hover:bg-yellow-700
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-offset-2
+                            focus:ring-yellow-700
+                            rounded-md
+                            px-4
+                            py-2
+                          '
+                                  >
+                                    <EditIcon />
+                                    <p className='ml-2'>Edit job</p>
+                                  </button>
+                                  <button
+                                    onClick={() => deleteFunction(job._id)}
+                                    aria-label='delete job'
+                                    className='
+                          flex
+                          items-center
+                          bg-white
+                          text-red-700
+                          border border-red-700
+                          hover:text-white
+                          hover:bg-red-700
+                          focus:outline-none
+                          focus:ring-2
+                          focus:ring-offset-2
+                          focus:ring-red-700
+                          rounded-md
+                          px-4
+                          py-2
+                        '
+                                  >
+                                    <DeleteIcon />
+                                    <p className='ml-2'>Delete job</p>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    ))}
+
+                  {jobList && jobList.length === 0 && (
+                    <>
+                      <div className='flex justify-center items-center'>
+                        <img
+                          src='/no-data.jpg'
+                          alt=''
+                          className='min-w-[300px] mt-5 max-w-[300px] min-h-[300px] max-h-[300px]'
+                        />
+                      </div>
+                      <p className='mt-2 text-center'>
+                        No Any Job Posted by comapny
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 

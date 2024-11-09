@@ -184,7 +184,12 @@ const ViewCompany = () => {
                 />
               </div>
             )}
-            {menu === "jobs" && <Jobs companyDetails={companyDetails} />}
+            {menu === "jobs" && (
+              <Jobs
+                companyDetails={companyDetails}
+                currUserData={currUserData}
+              />
+            )}
           </div>
         </div>
       </div>

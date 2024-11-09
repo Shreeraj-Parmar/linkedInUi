@@ -41,8 +41,10 @@ export const saveNewJob = async (req, res) => {
 // send all jobs according what , what can be "all" or "posted" or "saved"
 export const sendAllJobsAccWhat = async (req, res) => {
   const { what, page = 1, limit = 7 } = req.query; // Ensure default values
-  const pageNumber = parseInt(page, 10); // Parse page as an integer
-  const limitNumber = parseInt(limit, 10); // Parse limit as an integer
+  const pageNumber = parseInt(page) || 1;
+  const limitNumber = parseInt(limit) || 7;
+
+  console.log(req.query);
 
   try {
     if (what === "all") {
@@ -69,6 +71,14 @@ export const sendAllJobsAccWhat = async (req, res) => {
       res.status(200).json({ allJobs });
     } else if (what === "posted") {
       let allJobs = await Job.find({ "createdBy.user": req._id })
+        .populate("createdBy.company", "name profilePicture salary applicants")
+        .sort({ createdAt: -1 })
+        .skip((pageNumber - 1) * limitNumber)
+        .limit(limitNumber)
+        .select("title location workplace");
+      res.status(200).json({ allJobs });
+    } else if (what === "postedByUser") {
+      let allJobs = await Job.find({ "createdBy.user": req.query.userId })
         .populate("createdBy.company", "name profilePicture salary applicants")
         .sort({ createdAt: -1 })
         .skip((pageNumber - 1) * limitNumber)

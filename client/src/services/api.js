@@ -1057,11 +1057,12 @@ export const postNewJob = async (data) => {
 // get all jobs acc what var
 
 export const getAllJobsAcc = async (data) => {
+  console.log("get all job acc", data);
   try {
     let res = await axios.get(
       `${API}/jobs?what=${data.what}&page=${data.page}&limit=7${
         data.companyId && `&companyId=${data.companyId}`
-      }`,
+      }${data.userId && `&userId=${data.userId}`}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

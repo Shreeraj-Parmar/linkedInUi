@@ -102,7 +102,7 @@ router.delete("/job/:jobId", jwtMiddle, deleteJobInDB);
 router.put("/job", jwtMiddle, updateJobAccIdInDB);
 router.get("/job/:jobId", sendJobDataAccId);
 router.get("/job-author", jwtMiddle, checkIsAuthOfJob);
-router.get("/jobs", jwtMiddle, sendAllJobsAccWhat);
+router.get("/jobs", sendAllJobsAccWhat);
 router.get("/job-applications", jwtMiddle, sendAllAppAccJobId);
 router.get("/job-unread", jwtMiddle, sendUnreadAppCount);
 router.put("/job-unread", jwtMiddle, updateIsreadInDB);
