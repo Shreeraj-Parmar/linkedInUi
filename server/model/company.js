@@ -74,6 +74,11 @@ const companySchema = new mongoose.Schema({
       isRead: { type: Boolean, default: false }, // New isRead field
     }, // Users who sent a connection request
   ],
+  visitors: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // The user reference
+    },
+  ],
   website: { type: String, required: false }, // Company website
   createdAt: { type: Date, default: Date.now }, // Timestamp for when the company was created
   updatedAt: { type: Date, default: Date.now }, // Timestamp for last update

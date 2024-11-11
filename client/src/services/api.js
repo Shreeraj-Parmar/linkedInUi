@@ -1230,3 +1230,19 @@ export const deleteJob = async (data) => {
     console.log(`error while calling deleteJob & error is : ${error.message}`);
   }
 };
+
+// add visitor of the company
+export const addVisitorOfComapny = async (data) => {
+  try {
+    let res = await axios.put(`${API}/company/visitor`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling addVisitorOfComapny & error is : ${error.message}`
+    );
+  }
+};

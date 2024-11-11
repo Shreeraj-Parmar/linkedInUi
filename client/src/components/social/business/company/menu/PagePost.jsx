@@ -4,10 +4,9 @@ import UserPosts from "../../../UserPosts";
 import PostDialog from "../../../../../Post Compo/PostDialog";
 import { AllContext } from "../../../../../context/UserContext";
 
-const PagePost = ({ companyDetails }) => {
+const PagePost = ({ companyDetails, postDialog, setPostDialog }) => {
   const companyId = useParams();
   const { setActAs } = useContext(AllContext);
-  const [postDialog, setPostDialog] = useState(false);
   const [allPost, setAllPost] = useState([]);
   const [showAllMedia, setShowAllMedia] = useState();
   return (

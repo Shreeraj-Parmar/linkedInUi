@@ -19,12 +19,14 @@ import { getCompanyData } from "../../../../services/api.js";
 
 const CompanyOverView = () => {
   const companyId = useParams();
-  const { setLoading, setIsSnakBar } = useContext(AllContext);
+  const { setLoading, setIsSnakBar, setSelectCompanyForJob } =
+    useContext(AllContext);
   const [snak, setSnak] = useState({ type: null, text: null });
   const [companyMenu, setCompanyMenu] = useState("dashboard");
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [companyDetails, setCompanyDetails] = useState({});
   const navigate = useNavigate();
+  const [postDialog, setPostDialog] = useState(false);
 
   const getCompanyDataFunc = async () => {
     let res = await getCompanyData(companyId && companyId.companyId);
@@ -39,10 +41,6 @@ const CompanyOverView = () => {
       console.log("somthing error");
     }
   };
-
-  // useEffect(() => {
-  //   console.log("user arr", companyDetails);
-  // }, [companyDetails]);
 
   useEffect(() => {
     console.log("companyId;:", companyId);
@@ -98,19 +96,7 @@ const CompanyOverView = () => {
                     companyDetails.followers.length}{" "}
                   {" Followers"}
                 </p>
-                <div className='space-y-3'>
-                  <button
-                    type='button'
-                    className='bg-[#0A66C2] text-white rounded-full px-4 py-2 flex items-center space-x-1 hover:bg-[#004182] transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2 focus:ring-offset-white mt-4'
-                    onClick={() => {
-                      // handle button click
-                    }}
-                  >
-                    <AddIcon />
-                    <span className='duration-200 font-semibold ease-in-out transition-all'>
-                      Create
-                    </span>
-                  </button>
+                <div className='space-y-3 mt-3'>
                   <button
                     type='button'
                     onClick={() => {
@@ -178,7 +164,11 @@ const CompanyOverView = () => {
               />
             )}
             {companyMenu === "posts" && (
-              <PagePost companyDetails={companyDetails} />
+              <PagePost
+                companyDetails={companyDetails}
+                postDialog={postDialog}
+                setPostDialog={setPostDialog}
+              />
             )}
             {companyMenu === "applications" && (
               <Applications

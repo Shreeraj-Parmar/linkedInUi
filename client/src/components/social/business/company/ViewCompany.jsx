@@ -5,6 +5,10 @@ import Navbar from "../../Navbar";
 import {
   getCompanyDataWithoutAuth,
   sendFollowReq,
+  markAsRead,
+  getMsgAccConvId,
+  setConversation,
+  addVisitorOfComapny,
 } from "../../../../services/api.js";
 import About from "./menu/view-company/About";
 import Jobs from "./menu/view-company/Jobs";
@@ -15,7 +19,8 @@ import EditCompany from "./Edit/EditCompany.jsx";
 
 const ViewCompany = () => {
   const companyId = useParams();
-  const { currUserData, actAs, setActAs } = useContext(AllContext);
+  const { currUserData, actAs, setActAs, setCurrConversationId, setMessages } =
+    useContext(AllContext);
   console.log("companyId Inside ViewCompany", companyId);
   const navigate = useNavigate();
   const [companyDetails, setCompanyDetails] = useState({});
@@ -48,9 +53,52 @@ const ViewCompany = () => {
   //   console.log("user arr", companyDetails);
   // }, [companyDetails]);
 
-  useEffect(() => {
-    setActAs({ type: "user", id: currUserData?._id });
+  const addVisitorFunction = async () => {
+    let res = await addVisitorOfComapny({ companyId: companyId.companyId });
+    if (res.status === 200) {
+      console.log("You Are added as visitor");
+    }
+  };
 
+  const setConversationFunction = async (data) => {
+    // console.log(await checkConnectionEachOtherFunction(data));
+    // here logic of if connections done than msg other wise not in starting otherwise new conversation made
+    let res = await setConversation(data);
+    if (res.status === 200) {
+      console.log(res.data);
+      setCurrConversationId(res.data.id);
+
+      let convId = res.data.id;
+
+      let res2 = await getMsgAccConvId({
+        convId,
+        page: 1,
+        limit: 15,
+        whoId: currUserData && currUserData._id,
+        whoType: "User",
+      });
+      if (res2.status === 200) {
+        console.log("messages is", res2.data);
+        setMessages(res2.data);
+      }
+
+      console.log("conversation id selected", convId);
+      let res3 = await markAsRead({ convId, userId: companyId.companyId });
+      if (res3.status === 200) {
+        console.log("message seen by user");
+      }
+
+      console.log("connection set");
+
+      setTimeout(() => {
+        navigate("/message");
+      }, 500);
+    }
+  };
+
+  useEffect(() => {
+    addVisitorFunction();
+    setActAs({ type: "user", id: currUserData?._id });
     console.log("companyId;:", companyId);
     getCompanyDataFunc();
   }, []);
@@ -116,7 +164,17 @@ const ViewCompany = () => {
               </p>
             </div>
             <div className='mt-4 pl-4 flex items-center space-x-4'>
-              <button className='bg-[#0a66c2] text-white font-semibold py-2 px-4 rounded-full hover:bg-[#0e5485] active:bg-[#0a66c2] active:transform active:translate-y-px'>
+              <button
+                onClick={() => {
+                  setConversationFunction({
+                    receiverId: companyId && companyId.companyId,
+                    senderType: "User",
+                    senderId: currUserData && currUserData._id,
+                    receiverType: "Company",
+                  });
+                }}
+                className='bg-[#0a66c2] text-white font-semibold py-2 px-4 rounded-full hover:bg-[#0e5485] active:bg-[#0a66c2] active:transform active:translate-y-px'
+              >
                 Message
               </button>
               <button

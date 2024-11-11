@@ -226,3 +226,33 @@ export const sendFolllowerOrFollowingListOfCompany = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// add visitor of company
+export const addVisitorOfComapnyInDB = async (req, res) => {
+  const { companyId } = req.body;
+  try {
+    console.log("companyId:", companyId);
+
+    // Check if the user is already a visitor
+    const company = await Company.findById(companyId).select("visitors");
+    const isVisitor = company.visitors.some(
+      (visitor) => visitor.user.toString() === req._id.toString()
+    );
+
+    if (!isVisitor) {
+      await Company.findByIdAndUpdate(
+        companyId,
+        { $push: { visitors: { user: req._id } } },
+        { new: true }
+      );
+      res.status(200).json({ message: "Visitor added successfully" });
+    } else {
+      res.status(200).json({ message: "User is already a visitor" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling addVisitorOfComapnyInDB API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

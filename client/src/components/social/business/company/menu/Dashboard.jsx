@@ -83,7 +83,13 @@ const Dashboard = ({ companyDetails, setCompanyMenu }) => {
           <p className='text-blue-700 relative bottom-[5px] font-semibold'>
             Total visitors
           </p>
-          <p className='relative bottom-[15px]'>N/A</p>
+          <p className='relative bottom-[15px]'>
+            {companyDetails &&
+            companyDetails.visitors &&
+            companyDetails.visitors.length === 0
+              ? "N/A"
+              : ""}
+          </p>
         </div>
       </div>
     </div>

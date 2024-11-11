@@ -79,6 +79,7 @@ import {
   deleteAdminFromDB,
   sendFolllowerOrFollowingListOfCompany,
   sendCompanyDataAccID,
+  addVisitorOfComapnyInDB,
 } from "../controller/company-controller.js";
 
 import {
@@ -113,6 +114,7 @@ router.put("/job/apply", jwtMiddle, saveApplicantInJob);
 
 router.post("/company", jwtMiddle, saveNewCompanyInDB);
 router.put("/company", jwtMiddle, updateCompanyInDB);
+router.put("/company/visitor", jwtMiddle, addVisitorOfComapnyInDB);
 router.get("/company/:companyId/admin", jwtMiddle, getDataViaAdmin);
 router.get("/company/:companyId/withoutauth", sendCompanyDataAccID);
 router.put("/company/admin/add", jwtMiddle, addAdminOfCompanyInDB);
