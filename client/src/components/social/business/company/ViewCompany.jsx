@@ -56,6 +56,7 @@ const ViewCompany = () => {
   const addVisitorFunction = async () => {
     let res = await addVisitorOfComapny({ companyId: companyId.companyId });
     if (res.status === 200) {
+      console.log("data asses", res.data.message);
       console.log("You Are added as visitor");
     }
   };

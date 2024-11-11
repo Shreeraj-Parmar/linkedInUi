@@ -79,7 +79,12 @@ const Dashboard = ({ companyDetails, setCompanyMenu }) => {
           </p>
         </div>
         <div className='space-y-3 p-3 pl-5 lg:min-w-[200px] min-h-[130px] max-h-[130px] border-2 border-gray-400 border-opacity-40 hover:shadow-md cursor-pointer rounded-lg'>
-          <p className=' font-semibold text-3xl'>0</p>
+          <p className=' font-semibold text-3xl'>
+            {(companyDetails &&
+              companyDetails.visitors &&
+              companyDetails.visitors.length) ||
+              "0"}
+          </p>
           <p className='text-blue-700 relative bottom-[5px] font-semibold'>
             Total visitors
           </p>
