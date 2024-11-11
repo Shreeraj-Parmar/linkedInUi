@@ -10,8 +10,6 @@ import { AllContext } from "../../../../context/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "@mui/material/Skeleton";
 import SnakBar from "../../../SnakBar.jsx";
-import { toast } from "react-toastify";
-import Tostify from "../../../Tostify.jsx";
 
 const Connections = () => {
   const [connectionList, setConnectionList] = useState([]);

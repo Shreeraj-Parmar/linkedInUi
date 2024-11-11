@@ -1,20 +1,21 @@
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 
 import { getMyFollowers, sendFollowReq } from "../../../../services/api.js";
-import { toast } from "react-toastify";
 import { AllContext } from "../../../../context/UserContext.jsx";
-import Tostify from "../../../Tostify.jsx";
 import { Skeleton } from "@mui/material";
-
+import SnakBar from "../../../SnakBar.jsx";
 const Following = ({ navigate, setCurrMenu }) => {
   const [followingList, setFollowingList] = useState([]);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   const [followStatus, setFollowStatus] = useState({});
   const [followingSkeleton, setFollowingSkeleton] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const { currUserData } = useContext(AllContext);
+  const { currUserData, setIsSnakBar } = useContext(AllContext);
 
   const getAllFollowingDataFunc = async () => {
+    setIsSnakBar(true);
     if (!hasMore) return; // If no more following, exit
 
     setFollowingSkeleton(true);
@@ -40,15 +41,9 @@ const Following = ({ navigate, setCurrMenu }) => {
         setHasMore(false);
       }
     } else {
-      toast.error(`Error While Fetching Your Followings, refresh it!`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Error While Fetching Your Followings, refresh it!",
       });
     }
     setFollowingSkeleton(false);
@@ -79,19 +74,10 @@ const Following = ({ navigate, setCurrMenu }) => {
         [receiverId]: !prevStatus[receiverId],
       }));
     } else {
-      toast.error(
-        `Error While follow/unfollow please try again , refresh it . !`,
-        {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        }
-      );
+      setSnak({
+        type: "error",
+        text: "Error While follow/unfollow please try again , refresh it . !",
+      });
       console.error("Error while following/unfollowing:", res.data.message);
     }
   };
@@ -112,7 +98,8 @@ const Following = ({ navigate, setCurrMenu }) => {
                   key={user._id}
                   className=' flex items-center max-w-[100%] border-b border-gray-400 border-opacity-40 w-[100%] p min-h-[10%] rounded-md '
                 >
-                  <Tostify />
+                  {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
                   <div className='w-[] p-1 '>
                     {followingSkeleton ? (
                       <Skeleton

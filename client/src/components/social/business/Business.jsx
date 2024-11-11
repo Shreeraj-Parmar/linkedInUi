@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 // components:
 import Navbar from "../Navbar";
-import Tostify from "../../Tostify";
 
 // icons:
 import BusinessIcon from "@mui/icons-material/Business";
@@ -13,7 +12,6 @@ const Business = () => {
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <div className='main-overview-wrapper max-w-[100vw] overflow-x-hidden'>
         <Navbar />
-        <Tostify />
         <div className='main-display w-[80vw]  min-h-[100vh] h-fit m-auto mt-[55px] p-4'>
           <div className=' flex mt-10 flex-col justify-center items-center '>
             <p className='text-[32px] text-[#444444] '>Create a Company Page</p>

@@ -8,7 +8,6 @@ import React, {
 import Navbar from "../social/Navbar";
 import SendIcon from "@mui/icons-material/Send";
 import { AllContext } from "../../context/UserContext";
-import { toast } from "react-toastify";
 import Brightness1Icon from "@mui/icons-material/Brightness1";
 import Badge from "@mui/material/Badge";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -23,6 +22,7 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import moment from "moment";
 import linkifyContent from "../../utils/linkify.js";
+import SnakBar from "../SnakBar.jsx";
 
 import { useNavigate } from "react-router-dom";
 import {
@@ -37,7 +37,6 @@ import {
   getURLForPOST,
   getPresignedURLForDownload,
 } from "../../services/api.js";
-import Tostify from "../Tostify.jsx";
 import Picker from "emoji-picker-react";
 import DeleteMsgDialog from "./DeleteMsgDialog.jsx";
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
@@ -52,6 +51,7 @@ const Message = () => {
     currUserData,
     messages,
     setMessages,
+    setIsSnakBar,
     socket,
     setAllOnlineUsers,
     unreadMSG,
@@ -82,6 +82,7 @@ const Message = () => {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [data_convId, setdata_convId] = useState(null);
+  const [snak, setSnak] = useState({ type: null, text: null });
 
   const handleOnlineUsers = (onlineUsersData) => {
     setAllOnlineUsers(onlineUsersData);
@@ -366,6 +367,7 @@ const Message = () => {
   };
 
   const handleSendMsg = async () => {
+    setIsSnakBar(true);
     // let resChek = await checkConnectionEachOther({ receiverId: receiverId });
     // if (resChek.status === 200) {
     console.log("you enable to msg");
@@ -436,30 +438,15 @@ const Message = () => {
               setPostFile(null);
               setPreviewUrl(null);
             } else {
-              toast.error(
-                `Somthing Error To Send Message, please refresh page`,
-                {
-                  position: "top-right",
-                  autoClose: 2000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                  progress: undefined,
-                  theme: "light",
-                }
-              );
+              setSnak({
+                type: "error",
+                text: "Somthing Error To Send Message, please refresh page",
+              });
             }
           } else {
-            toast.error(`please first select conversation`, {
-              position: "top-right",
-              autoClose: 2000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
+            setSnak({
+              type: "error",
+              text: "Please first select a conversation",
             });
           }
         }
@@ -503,32 +490,19 @@ const Message = () => {
           setPostFile(null);
           setPreviewUrl(null);
         } else {
-          toast.error(`Somthing Error To Send Message, please refresh page`, {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
+          setSnak({
+            type: "error",
+            text: "Something Error To Send Message, please refresh page",
           });
         }
       } else {
-        toast.error(`please first select conversation`, {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: "Please first select conversation",
         });
       }
     }
     // }
-    // setSendMsgText("");
   };
 
   const markAsReadFunction = async (convId, userId) => {
@@ -574,6 +548,7 @@ const Message = () => {
   };
 
   const handleDownloadMsgMedia = async (msg) => {
+    setIsSnakBar(true);
     let fileExe = [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -618,15 +593,9 @@ const Message = () => {
       link.click();
       document.body.removeChild(link);
     } else {
-      toast.error(`Somthing Error To download media`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: `Somthing Error To download media`,
       });
     }
   };
@@ -652,7 +621,8 @@ const Message = () => {
 
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
-      <Tostify />
+      {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
       <div className='main-overview-wrapper max-w-[100vw]  overflow-x-hidden'>
         <Navbar />
 

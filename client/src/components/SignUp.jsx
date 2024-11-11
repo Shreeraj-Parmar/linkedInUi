@@ -1,6 +1,5 @@
 import React from "react";
 import { useState, useEffect, useContext } from "react";
-import { toast } from "react-toastify";
 import { sendSignUpData } from "./../services/api.js";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -25,7 +24,7 @@ import {
 } from "@mui/material";
 
 // Components
-import Tostify from "./Tostify";
+import SnakBar from "./SnakBar.jsx";
 import Input from "./Reusable Components/Input";
 import Button from "./Reusable Components/Button";
 
@@ -36,12 +35,17 @@ import Loader from "./Loader/Loader.jsx";
 const HobbyArr = ["Dancing", "Raceing", "Advanture", "Reading", "Cooking"];
 
 const SignUp = () => {
-  useEffect(() => {
-    // if (localStorage.getItem("token")) navigate("/lists");
-  }, []);
-  const { signUpData, setSignUpData, isLogin, defaultSignUpdata, setLoading } =
-    useContext(AllContext);
+  const {
+    signUpData,
+    setSignUpData,
+    isLogin,
+    defaultSignUpdata,
+    setLoading,
+    setIsSnakBar,
+  } = useContext(AllContext);
   const [gender, setGender] = useState(null);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   const [selectedHobby, setSelectedHobby] = useState([]);
   const navigate = useNavigate();
 
@@ -105,6 +109,8 @@ const SignUp = () => {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
+      setIsSnakBar(true);
+
       setLoading(true);
       // Handle form submission
       console.log(values);
@@ -112,34 +118,19 @@ const SignUp = () => {
       console.log(res.data);
 
       if (res.status === 200) {
-        toast.success(
-          `Welcome ${signUpData.name} You will redirect on Login Page`,
-          {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          }
-        );
+        setSnak({
+          type: "success",
+          text: `Welcome ${signUpData.name} You will redirect on Login Page`,
+        });
         setTimeout(() => {
           navigate("/login");
           setLoading(false);
         }, 2000);
       } else {
         console.log(res.data);
-        toast.error(`Registration Failed due to ${res.data.message}`, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: `Registration Failed due to ${res.data.message}`,
         });
         setLoading(false);
       }
@@ -147,18 +138,19 @@ const SignUp = () => {
   });
 
   return (
-    <div className="signup-wrapper p-5 flex justify-center items-center">
-      <Tostify />
+    <div className='signup-wrapper p-5 flex justify-center items-center'>
       <Loader />
-      <div className="border border-black p-5 mt-10 rounded-md">
-        <div className="heading mb-2">
-          <h2 className="font-semibold text-3xl text-center">
+      {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
+      <div className='border border-black p-5 mt-10 rounded-md'>
+        <div className='heading mb-2'>
+          <h2 className='font-semibold text-3xl text-center'>
             Welcome, Register Here
           </h2>
         </div>
         <form onSubmit={formik.handleSubmit}>
-          <div className="box">
-            <div className="w-[30%]">
+          <div className='box'>
+            <div className='w-[30%]'>
               <Input
                 id={"name"}
                 value={formik.values.name}
@@ -171,10 +163,10 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.name && formik.errors.name ? (
-                <div className="text-red-500">{formik.errors.name}</div>
+                <div className='text-red-500'>{formik.errors.name}</div>
               ) : null}
             </div>
-            <div className="w-[70%]">
+            <div className='w-[70%]'>
               <Input
                 id={"email"}
                 required={true}
@@ -187,49 +179,49 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.email && formik.errors.email ? (
-                <div className="text-red-500">{formik.errors.email}</div>
+                <div className='text-red-500'>{formik.errors.email}</div>
               ) : null}
             </div>
           </div>
 
-          <div className="box">
+          <div className='box'>
             {/* <InputLabel id="demo-simple-select-label">Age</InputLabel> */}
-            <div className="w-[45%]">
+            <div className='w-[45%]'>
               <FormControl>
-                <FormLabel id="demo-row-radio-buttons-group-label">
+                <FormLabel id='demo-row-radio-buttons-group-label'>
                   Gender
                 </FormLabel>
                 <RadioGroup
                   row
-                  aria-labelledby="demo-row-radio-buttons-group-label"
-                  name="gender"
+                  aria-labelledby='demo-row-radio-buttons-group-label'
+                  name='gender'
                   value={formik.values.gender} // Formik value for gender
                   onChange={formik.handleChange}
                 >
-                  <div className="flex">
+                  <div className='flex'>
                     <FormControlLabel
-                      value="female"
+                      value='female'
                       control={<Radio />}
-                      label="Female"
+                      label='Female'
                     />
                     <FormControlLabel
-                      value="male"
+                      value='male'
                       control={<Radio />}
-                      label="Male"
+                      label='Male'
                     />
                     <FormControlLabel
-                      value="other"
+                      value='other'
                       control={<Radio />}
-                      label="Other"
+                      label='Other'
                     />
                   </div>
                 </RadioGroup>
               </FormControl>
               {formik.touched.gender && formik.errors.gender ? (
-                <div className="text-red-500">{formik.errors.gender}</div>
+                <div className='text-red-500'>{formik.errors.gender}</div>
               ) : null}
             </div>
-            <div className="w-[80%]">
+            <div className='w-[80%]'>
               <Input
                 id={"address"}
                 value={formik.values.address}
@@ -241,13 +233,13 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.address && formik.errors.address ? (
-                <div className="text-red-500">{formik.errors.address}</div>
+                <div className='text-red-500'>{formik.errors.address}</div>
               ) : null}
             </div>
           </div>
 
-          <div className="box">
-            <div className="w-1/3">
+          <div className='box'>
+            <div className='w-1/3'>
               <Input
                 id={"city"}
                 required={true}
@@ -260,10 +252,10 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.city && formik.errors.city ? (
-                <div className="text-red-500">{formik.errors.city}</div>
+                <div className='text-red-500'>{formik.errors.city}</div>
               ) : null}
             </div>
-            <div className="w-1/3">
+            <div className='w-1/3'>
               <Input
                 id={"state"}
                 value={formik.values.state}
@@ -275,10 +267,10 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.state && formik.errors.state ? (
-                <div className="text-red-500">{formik.errors.state}</div>
+                <div className='text-red-500'>{formik.errors.state}</div>
               ) : null}
             </div>
-            <div className="w-1/3">
+            <div className='w-1/3'>
               <Input
                 id={"country"}
                 value={formik.values.country}
@@ -290,13 +282,13 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.country && formik.errors.country ? (
-                <div className="text-red-500">{formik.errors.country}</div>
+                <div className='text-red-500'>{formik.errors.country}</div>
               ) : null}
             </div>
           </div>
 
-          <div className="box">
-            <div className="w-[30%]">
+          <div className='box'>
+            <div className='w-[30%]'>
               <Input
                 id={"pincode"}
                 required={true}
@@ -309,17 +301,17 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.pincode && formik.errors.pincode ? (
-                <div className="text-red-500">{formik.errors.pincode}</div>
+                <div className='text-red-500'>{formik.errors.pincode}</div>
               ) : null}
             </div>
-            <div className="w-[70%]">
-              <FormControl className="w-[100%]">
-                <InputLabel id="demo-multiple-checkbox-label">Hobby</InputLabel>
+            <div className='w-[70%]'>
+              <FormControl className='w-[100%]'>
+                <InputLabel id='demo-multiple-checkbox-label'>Hobby</InputLabel>
                 <Select
-                  labelId="demo-multiple-checkbox-label"
-                  id="demo-multiple-checkbox"
+                  labelId='demo-multiple-checkbox-label'
+                  id='demo-multiple-checkbox'
                   multiple
-                  name="hobby" // Bind to Formik
+                  name='hobby' // Bind to Formik
                   value={formik.values.hobby} // Ensure this is an array
                   onChange={(e) => {
                     const {
@@ -331,7 +323,7 @@ const SignUp = () => {
                       typeof value === "string" ? value.split(",") : value
                     );
                   }} // Handle multiple selections
-                  input={<OutlinedInput label="Hobby" />}
+                  input={<OutlinedInput label='Hobby' />}
                   renderValue={(selected) => selected.join(", ")} // Display selected hobbies
                 >
                   {HobbyArr.map((name) => (
@@ -345,13 +337,13 @@ const SignUp = () => {
                 </Select>
               </FormControl>
               {formik.touched.hobby && formik.errors.hobby ? (
-                <div className="text-red-500">{formik.errors.hobby}</div>
+                <div className='text-red-500'>{formik.errors.hobby}</div>
               ) : null}
             </div>
           </div>
 
-          <div className="box">
-            <div className="w-[40%]">
+          <div className='box'>
+            <div className='w-[40%]'>
               <Input
                 id={"mobile"}
                 required={true}
@@ -364,10 +356,10 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.mobile && formik.errors.mobile ? (
-                <div className="text-red-500">{formik.errors.mobile}</div>
+                <div className='text-red-500'>{formik.errors.mobile}</div>
               ) : null}
             </div>
-            <div className="w-[60%]">
+            <div className='w-[60%]'>
               <Input
                 id={"password"}
                 required={true}
@@ -380,15 +372,15 @@ const SignUp = () => {
                 onBlur={formik.handleBlur}
               />
               {formik.touched.password && formik.errors.password ? (
-                <div className="text-red-500">{formik.errors.password}</div>
+                <div className='text-red-500'>{formik.errors.password}</div>
               ) : null}
             </div>
           </div>
 
-          <div className="register box flex justify-center">
+          <div className='register box flex justify-center'>
             <Button
               lable={"Register"}
-              type="submit"
+              type='submit'
               className={"btn rounded-md w-[130px] mt-2"}
               // onClick={(e) => {
               //   handleRegister(e);

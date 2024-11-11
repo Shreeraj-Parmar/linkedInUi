@@ -8,7 +8,6 @@ import SignUp from "./components/SignUp";
 import Lists from "./components/Lists";
 import Overview from "./components/social/Overview";
 // experiments compo
-import FormValidation from "./components/Experiments/FormValidation";
 import JobOverview from "./components/social/job/JobOverview";
 import "./App.css";
 import ViewProfile from "./components/social/ViewProfile";
@@ -45,10 +44,6 @@ function App() {
     {
       path: "/lists",
       element: <Lists />,
-    },
-    {
-      path: "/exe",
-      element: <FormValidation />,
     },
     {
       path: "/",

@@ -15,8 +15,6 @@ import {
 import LoginDialog from "./LoginDialog.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
 import Navbar from "./Navbar.jsx";
-import { toast } from "react-toastify";
-import Tostify from "../Tostify.jsx";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";

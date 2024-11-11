@@ -6,16 +6,17 @@ import {
   sendConnect,
   sendNotification,
 } from "../../../../services/api.js";
+import SnakBar from "../../../SnakBar.jsx";
 import ConnectionWithdrawDialog from "./ConnectionWithdrawDialog";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import Tostify from "../../../Tostify.jsx";
 
 const MoreConnection = ({ connectionReqLength, user_id }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [allUsers, setAllUsers] = useState([]);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
   const [userConnectBtns, setUserConnectBtns] = useState({});
   const [currId, setCurrId] = useState(null);
   const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
@@ -61,15 +62,9 @@ const MoreConnection = ({ connectionReqLength, user_id }) => {
         message: "you have new Connection Request From",
       });
     } else if (res.status === 201) {
-      toast.error(`${res.data.message}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: `${res.data.message}`,
       });
     }
     console.log(res.data);

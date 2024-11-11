@@ -6,7 +6,6 @@ import React, {
   useRef,
 } from "react";
 import Navbar from "../../Navbar";
-import Tostify from "../../../Tostify";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -99,6 +98,7 @@ const NewCompany = () => {
     }),
     onSubmit: async (values) => {
       setLoading(true);
+      setIsSnakBar(true);
       console.log(values); // Log the values here
       let permanentUrl;
 
@@ -174,7 +174,6 @@ const NewCompany = () => {
       }
 
       setLoading(false);
-      setIsSnakBar(true);
     },
   });
 
@@ -203,7 +202,6 @@ const NewCompany = () => {
     <div className='main-overview w-[100vw] bg-[#F4F2EE] min-h-[100vh]'>
       <div className='main-overview-wrapper max-w-[100vw] overflow-x-hidden'>
         <Navbar />
-        <Tostify />
         <Loader />
         {snak.type && <SnakBar type={snak.type} text={snak.text} />}
         <div className='main-display w-[80vw] flex space-x-2  min-h-[100vh] h-fit m-auto mt-[55px] p-4'>

@@ -1,19 +1,20 @@
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 
-import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
-import Tostify from "../../../Tostify.jsx";
 import { AllContext } from "../../../../context/UserContext.jsx";
 import {
   getMyFollowers,
   sendFollowReq,
   sendNotification,
 } from "../../../../services/api.js";
+import SnakBar from "../../../SnakBar.jsx";
 
 const Followers = ({ navigate, setCurrMenu }) => {
   const [followerList, setFollowerList] = useState([]);
   const [followStatus, setFollowStatus] = useState({});
-  const { currUserData } = useContext(AllContext);
+  const [snak, setSnak] = useState({ type: null, text: null });
+
+  const { currUserData, setIsSnakBar } = useContext(AllContext);
 
   const [followerSkeleton, setFollowerSkeleton] = useState(true);
   const [page, setPage] = useState(1);
@@ -21,7 +22,7 @@ const Followers = ({ navigate, setCurrMenu }) => {
 
   const getAllFollowersDataFunc = async () => {
     if (!hasMore) return; // If no more followers, exit
-
+    setIsSnakBar(true);
     setFollowerSkeleton(true);
     let res = await getMyFollowers("followers", page); // Pass page to the function
 
@@ -45,15 +46,9 @@ const Followers = ({ navigate, setCurrMenu }) => {
         setHasMore(false);
       }
     } else {
-      toast.error(`Error While Fetching Your Followers, refresh it!`, {
-        position: "top-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      setSnak({
+        type: "error",
+        text: "Error While Fetching Your Followers, refresh it!",
       });
     }
     setFollowerSkeleton(false);
@@ -118,7 +113,8 @@ const Followers = ({ navigate, setCurrMenu }) => {
                   key={user._id}
                   className='border-b border-gray-400 border-opacity-40 flex items-center max-w-[100%]  w-[100%] min-h-[10%] rounded-md '
                 >
-                  <Tostify />
+                  {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
                   <div className='w-[] p-1 '>
                     {followerSkeleton ? (
                       <Skeleton
