@@ -1,0 +1,248 @@
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+    },
+    skills: [
+      {
+        type: String,
+      },
+    ],
+    website: {
+      link: {
+        type: String,
+      },
+      linkText: {
+        type: String,
+      },
+    },
+
+    role: {
+      type: String,
+    },
+    about: {
+      type: String,
+    },
+    heading: {
+      type: String,
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      trim: true,
+      match: [/\S+@\S+\.\S+/, "Email is invalid"],
+    },
+    mobile: {
+      type: String,
+      required: [true, "Mobile number is required"],
+      minlength: [10, "Mobile number must be at least 10 digits long"],
+      maxlength: [15, "Mobile number cannot be more than 15 digits long"],
+    },
+    gender: {
+      type: String,
+      required: [true, "Gender is required"],
+      enum: ["male", "female", "other"],
+    },
+    hobby: [
+      {
+        type: String,
+        default: "N/A",
+        trim: true,
+      },
+    ],
+    address: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      required: [true, "City is required"],
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    pincode: {
+      type: String,
+      required: [true, "Pincode is required"],
+      minlength: [5, "Pincode must be at least 5 characters long"],
+      maxlength: [10, "Pincode cannot be more than 10 characters long"],
+      trim: true,
+    },
+    hash: {
+      type: String,
+      required: [true, "Password is required"],
+    },
+    company: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+      },
+    ],
+    refreshToken: {
+      type: String,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    profilePicture: {
+      type: String,
+    },
+    education: [
+      {
+        school: String,
+        university: String,
+        grade: String,
+        degree: String,
+        description: String,
+        startDate: {
+          month: String,
+          year: Number,
+        },
+        endDate: {
+          month: String,
+          year: Number,
+        },
+      },
+    ],
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+    followers: [
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "followers.type", // Dynamically reference either 'User' or 'Company'
+        },
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the follower is a user or a company
+          required: true,
+        },
+        _id: false,
+      },
+    ],
+
+    following: [
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "following.type", // Dynamically reference either 'User' or 'Company'
+        },
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the follower is a user or a company
+          required: true,
+        },
+        _id: false,
+      },
+    ],
+
+    connections: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Mutual followers (Connections)
+    ],
+    connectionRequests: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // The user reference
+        isRead: { type: Boolean, default: false }, // New isRead field
+      }, // Users who sent a connection request
+    ],
+    favorites: [
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "favorites.type", // Dynamically reference either 'User' or 'Company'
+        },
+        type: {
+          type: String,
+          enum: ["User", "Company"], // Specifies if the follower is a user or a company
+          required: true,
+        },
+        _id: false,
+      },
+    ],
+    payment_details: {
+      square: {
+        merchantId: {
+          type: String,
+        },
+        accessToken: {
+          type: String,
+        },
+        isActive: {
+          type: Boolean,
+        },
+        tokenType: {
+          type: String,
+        },
+        expiresAt: {
+          type: String,
+        },
+        refreshToken: {
+          type: String,
+        },
+        locationId: {
+          type: String,
+        },
+      },
+      paypal: {
+        merchantId: {
+          type: String,
+        },
+        clientId: {
+          type: String,
+        },
+        clientSecret: {
+          type: String,
+        },
+        isActive: {
+          type: Boolean,
+        },
+      },
+      stripe: {
+        accountId: { type: String },
+        created: { type: String },
+        default_currency: { type: String },
+      },
+    },
+    auth_url: {
+      // connecting merchant url in which merchant will redirect and follow payment method connection steps
+      type: String,
+    },
+    subscription: {
+      is_active: {
+        type: Boolean,
+        default: false,
+      },
+      plan: {
+        type: String,
+        enums: ["Free", "Premium"],
+        default: "Free",
+      },
+      customer_id: {
+        type: String,
+        default: "",
+      },
+    },
+
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const User = mongoose.model("User", userSchema);
+
+export default User;
