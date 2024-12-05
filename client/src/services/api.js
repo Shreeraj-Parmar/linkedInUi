@@ -1060,8 +1060,7 @@ export const getAllJobsAcc = async (data) => {
   console.log("get all job acc", data);
   try {
     let res = await axios.get(
-      `${API}/jobs?what=${data.what}&page=${data.page}&limit=7${
-        data.companyId && `&companyId=${data.companyId}`
+      `${API}/jobs?what=${data.what}&page=${data.page}&limit=7${data.companyId && `&companyId=${data.companyId}`
       }${data.userId && `&userId=${data.userId}`}`,
       {
         headers: {
@@ -1244,5 +1243,78 @@ export const addVisitorOfComapny = async (data) => {
     console.log(
       `error while calling addVisitorOfComapny & error is : ${error.message}`
     );
+  }
+};
+
+
+// payment
+
+
+
+// connect payment method
+export const connectPayment = async (data) => {
+  try {
+    let res = await axios.post(`${API}/payment/connect`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling connectPayment & error is : ${error.message}`
+    );
+  }
+};
+
+
+// disconnect payment method
+export const disconnectPayment = async (data) => {
+  try {
+    let res = await axios.post(`${API}/payment/disconnect`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling disconnectPayment & error is : ${error.message}`
+    );
+  }
+};
+
+
+// chechAccount Status
+
+export const checkAccountStatus = async (data) => {
+  console.log("token is", localStorage.getItem("token"));
+  try {
+    const response = await axios.post(`${API}/check-acc-status`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error(
+      `Error while calling checkAccountStatus: ${error.message}`
+    );
+  }
+};
+
+
+
+// fpor subsctiprion
+export const createCheckoutSession = async (data) => {
+  try {
+    let res = await axios.post(`${API}/subscription`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling subscribe & error is : ${error.message}`);
   }
 };

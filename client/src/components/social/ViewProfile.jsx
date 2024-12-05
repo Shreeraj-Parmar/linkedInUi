@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 
 import { AllContext } from "../../context/UserContext";
-import { getUserData } from "../../services/api.js";
+import { getUserData, connectPayment, disconnectPayment } from "../../services/api.js";
 import AddEducationDialog from "../Profile/AddEducationDialog.jsx";
 import Navbar from "./Navbar.jsx";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +25,54 @@ const ViewProfile = () => {
   const [allPost, setAllPost] = useState([]);
 
   const maxLength = 250;
+
+
+  const handleConnectPayment = async (data) => {
+    if (currUserData.payment_method) return;
+    let res; // declare the variable outside the switch block
+    switch (data) {
+      case "stripe":
+        res = await connectPayment({ method: "stripe" });
+        if (res.status === 200) {
+
+          window.location.replace(res?.data?.authentication_url);
+        } else {
+          console.log(res.data);
+        }
+        break;
+      case "paypal":
+        // navigate("/paypal");
+        break;
+      case "square":
+        // navigate("/coinbase");
+        break;
+      default:
+        break;
+    }
+  }
+
+
+
+  const handleDisconnectPayment = async (data) => {
+    switch (data) {
+      case "stripe":
+        res = await disconnectPayment({ method: "stripe" });
+        if (res.status === 200) {
+          console.log("payment disconnected")
+        }
+        break;
+      case "paypal":
+        // navigate("/paypal");
+        break;
+      case "square":
+        // navigate("/coinbase");
+        break;
+      default:
+        break;
+    }
+  };
+
+
 
   useEffect(() => {
     setProfileData({
@@ -110,16 +158,14 @@ const ViewProfile = () => {
                       : "<----Add Heading---->"}
                   </p>
                   <p className='text-[#686868] mt-2 text-sm'>
-                    {`${currUserData ? profileData && profileData.city : ""}, ${
-                      currUserData ? profileData && profileData.state : ""
-                    }, ${
-                      currUserData ? profileData && profileData.country : ""
-                    }`}
+                    {`${currUserData ? profileData && profileData.city : ""}, ${currUserData ? profileData && profileData.state : ""
+                      }, ${currUserData ? profileData && profileData.country : ""
+                      }`}
                   </p>
                   {currUserData &&
-                  profileData &&
-                  profileData.linkText &&
-                  profileData.linkText ? (
+                    profileData &&
+                    profileData.linkText &&
+                    profileData.linkText ? (
                     <div className='flex space-x-1 mt-2 cursor-pointer'>
                       <a
                         href={profileData.link}
@@ -179,17 +225,17 @@ const ViewProfile = () => {
                         dangerouslySetInnerHTML={{
                           __html: !showMore
                             ? linkifyContent(
-                                currUserData &&
-                                  profileData &&
-                                  profileData.about &&
-                                  profileData.about.substring(0, maxLength)
-                              )
+                              currUserData &&
+                              profileData &&
+                              profileData.about &&
+                              profileData.about.substring(0, maxLength)
+                            )
                             : linkifyContent(
-                                currUserData &&
-                                  profileData &&
-                                  profileData.about &&
-                                  profileData.about
-                              ),
+                              currUserData &&
+                              profileData &&
+                              profileData.about &&
+                              profileData.about
+                            ),
                         }}
                       ></pre>
                       {profileData.about.length > maxLength && (
@@ -231,9 +277,9 @@ const ViewProfile = () => {
                     </button>
                   </div>
                   {currUserData &&
-                  profileData &&
-                  profileData.skills &&
-                  profileData.skills.length > 0 ? (
+                    profileData &&
+                    profileData.skills &&
+                    profileData.skills.length > 0 ? (
                     profileData.skills.map((skill, index) => {
                       return (
                         <div
@@ -297,6 +343,65 @@ const ViewProfile = () => {
                   />
                 </div>
               </div>
+              <div className='  w-[100%] mt-2'>
+                <div className=' border-2 border-gray-400 bg-white rounded-md border-opacity-40 border-b-0 w-[100%]'>
+                  <div className='border-b-2 p-2 border-gray-400 border-opacity-40'>
+                    <p className=' font-semibold text-xl'>
+                      Connect Payment Method
+                    </p>
+                  </div>
+                  <div>
+                    <div className='flex justify-between p-4'>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          // Handle Stripe payment
+                          handleConnectPayment("stripe");
+                        }}
+                      >
+                        Connect with Stripe
+                      </button>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          // Handle PayPal payment
+                        }}
+                      >
+                        Connect with PayPal
+                      </button>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          // Handle Square payment
+                        }}
+                      >
+                        Connect with Square
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {
+                currUserData && currUserData.payment_method &&
+                <div className='  w-[100%] mt-2'>
+                  <div className=' border-2 border-gray-400 bg-white rounded-md border-opacity-40  border-b-0 w-[100%]'>
+                    <div className='border-b-2 p-2 border-gray-400 border-opacity-40'>
+                      <p className=' font-semibold text-xl'>
+                        Disconnect Method
+                      </p>
+                    </div>
+                    <button
+                      className='p-2 pl-4 pr-4 font-semibold border-2 mt-2  rounded-full border-[#FF0000] text-[#FF0000] hover:border-[#B22222] hover:text-[#B22222]'
+                      onClick={() => {
+                        // Handle disconnect payment method
+                        handleDisconnectPayment(currUserData.payment_method);
+                      }}
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                </div>
+              }
               <div>
                 <div className='flex mt-2'>
                   <button
@@ -358,6 +463,10 @@ const ViewProfile = () => {
                   </div>
                 </div>
               )}
+
+
+
+
           </div>
         </div>
       </div>

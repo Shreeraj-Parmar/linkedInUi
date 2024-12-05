@@ -27,6 +27,7 @@ import ViewCompany from "./components/social/business/company/ViewCompany.jsx";
 import CreateJob from "./components/social/job/CreateJob.jsx";
 import JobView from "./components/social/job/JobView.jsx";
 import EditJob from "./components/social/job/EditJob.jsx";
+import PremiumView from "./components/social/business/PremiumView.jsx";
 
 // import { io } from "socket.io-client";
 // const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
@@ -110,6 +111,10 @@ function App() {
     {
       path: "/job/edit/:jobId",
       element: <EditJob />,
+    },
+    {
+      path: "/premium",
+      element: <PremiumView />,
     },
   ]);
 

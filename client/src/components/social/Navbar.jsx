@@ -14,6 +14,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import ChatIcon from "@mui/icons-material/Chat";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import Badge from "@mui/material/Badge";
 import LoginDialog from "./LoginDialog.jsx";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
@@ -117,6 +118,9 @@ const Navbar = () => {
       setCurrMenu("business");
     } else if (window.location.pathname === "/jobs") {
       setCurrMenu("jobs");
+    }
+    else if (window.location.pathname === "/premium") {
+      setCurrMenu("premium");
     } else {
       setCurrMenu("");
     }
@@ -124,15 +128,13 @@ const Navbar = () => {
 
   return (
     <div
-      className={`flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ${
-        lightMode && " bg-white"
-      }`}
+      className={`flex justify-center z-20 bg-[#1B1F23] fixed  w-[100%] ${lightMode && " bg-white"
+        }`}
     >
       <LoginDialog isLogin={isLogin} setIsLogin={setIsLogin} />
       <div
-        className={` main-up h-[7vh]  text-white flex justify-center items-center  border-b-2 border-gray-400 border-opacity-40  w-[100%] ${
-          lightMode && " text-black"
-        }`}
+        className={` main-up h-[7vh]  text-white flex justify-center items-center  border-b-2 border-gray-400 border-opacity-40  w-[100%] ${lightMode && " text-black"
+          }`}
       >
         <div className='up-header-wrapper flex justify-between w-[80%]'>
           <div className='logo-side flex justify-center ml-5 items-center'>
@@ -151,9 +153,8 @@ const Navbar = () => {
                   navigate("/");
                 }, 500);
               }}
-              className={` ${
-                currMenu === "home" ? "curr-menu-active" : ""
-              } cursor-pointer main-menu-div  w-[100px]`}
+              className={` ${currMenu === "home" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
             >
               <div className=' flex justify-center items-center'>
                 <button>
@@ -188,18 +189,16 @@ const Navbar = () => {
                   }, 500);
                 }
               }}
-              className={` ${
-                currMenu === "network" ? "curr-menu-active" : ""
-              } cursor-pointer main-menu-div  w-[100px]`}
+              className={` ${currMenu === "network" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
             >
               <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu !== "network" ? (
                     <Badge
                       badgeContent={connectionReqCount}
-                      className={`${
-                        connectionReqCount > 0 && " w-[25px] h-[15px]"
-                      }`}
+                      className={`${connectionReqCount > 0 && " w-[25px] h-[15px]"
+                        }`}
                       // style={{ width: "25px", height: "15px" }}
                       color='primary'
                     >
@@ -230,9 +229,8 @@ const Navbar = () => {
                     navigate("/jobs");
                   }, 500);
                 }}
-                className={` ${
-                  currMenu === "jobs" ? "curr-menu-active" : ""
-                } cursor-pointer main-menu-div  w-[100px]`}
+                className={` ${currMenu === "jobs" ? "curr-menu-active" : ""
+                  } cursor-pointer main-menu-div  w-[100px]`}
               >
                 <div className=' flex justify-center items-center'>
                   <button>
@@ -268,18 +266,16 @@ const Navbar = () => {
                   }, 500);
                 }
               }}
-              className={` ${
-                currMenu === "message" ? "curr-menu-active" : ""
-              } cursor-pointer main-menu-div  w-[100px]`}
+              className={` ${currMenu === "message" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
             >
               <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu !== "message" ? (
                     <Badge
                       badgeContent={unreadMSGCount}
-                      className={`${
-                        unreadMSGCount > 0 && " w-[25px] h-[15px]"
-                      }`}
+                      className={`${unreadMSGCount > 0 && " w-[25px] h-[15px]"
+                        }`}
                       // style={{ width: "25px", height: "15px" }}
                       color='primary'
                     >
@@ -314,18 +310,16 @@ const Navbar = () => {
                   }, 500);
                 }
               }}
-              className={` ${
-                currMenu === "notification" ? "curr-menu-active" : ""
-              } cursor-pointer main-menu-div  w-[100px]`}
+              className={` ${currMenu === "notification" ? "curr-menu-active" : ""
+                } cursor-pointer main-menu-div  w-[100px]`}
             >
               <div className=' flex justify-center items-center'>
                 <button>
                   {currMenu !== "notification" ? (
                     <Badge
                       badgeContent={unreadNotiCount}
-                      className={`${
-                        unreadNotiCount > 0 && " w-[25px] h-[15px]"
-                      }`}
+                      className={`${unreadNotiCount > 0 && " w-[25px] h-[15px]"
+                        }`}
                       // style={{ width: "25px", height: "15px" }}
                       color='primary'
                     >
@@ -361,9 +355,8 @@ const Navbar = () => {
                     }, 500);
                   }
                 }}
-                className={` ${
-                  currMenu === "profile" ? "curr-menu-active" : ""
-                } cursor-pointer main-menu-div  w-[100px]`}
+                className={` ${currMenu === "profile" ? "curr-menu-active" : ""
+                  } cursor-pointer main-menu-div  w-[100px]`}
               >
                 <div className=' flex justify-center  items-center'>
                   <button>
@@ -414,9 +407,8 @@ const Navbar = () => {
                       }, 500);
                     }
                   }}
-                  className={` ${
-                    currMenu === "business" ? "curr-menu-active" : ""
-                  } cursor-pointer main-menu-div  w-[100px]`}
+                  className={` ${currMenu === "business" ? "curr-menu-active" : ""
+                    } cursor-pointer main-menu-div  w-[100px]`}
                 >
                   <div className=' flex justify-center items-center'>
                     <button>
@@ -436,6 +428,42 @@ const Navbar = () => {
                   <div className=' flex justify-center mt-[-5px] items-center'>
                     <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
                       For Business
+                    </p>
+                  </div>
+                </div>
+                <div
+                  onClick={() => {
+                    if (!isLogin) {
+                      setLoginDialog(true);
+                      return;
+                    } else {
+                      setCurrMenu("premium");
+                      setTimeout(() => {
+                        navigate("/premium");
+                      }, 500);
+                    }
+                  }}
+                  className={` ${currMenu === "premium" ? "curr-menu-active" : ""
+                    } cursor-pointer main-menu-div  w-[100px]`}
+                >
+                  <div className=' flex justify-center items-center'>
+                    <button>
+                      {currMenu !== "premium" ? (
+                        <WorkspacePremiumIcon
+                          fontSize='small'
+                          className='text-[#6c6c6c] hover:text-[#000]'
+                        />
+                      ) : (
+                        <WorkspacePremiumIcon
+                          fontSize='medium'
+                          className='text-[#6c6c6c] hover:text-[#000]'
+                        />
+                      )}
+                    </button>
+                  </div>
+                  <div className=' flex justify-center mt-[-5px] items-center'>
+                    <p className=' text-[12px] text-[#6c6c6c] hover:text-[#000]'>
+                      Try Premium
                     </p>
                   </div>
                 </div>
