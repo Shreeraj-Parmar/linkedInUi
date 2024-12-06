@@ -96,6 +96,20 @@ import {
   deleteJobInDB,
 } from "../controller/job-controller.js";
 
+import { sendSessionLink, disconnectFromPaymentProvder, verifyPaymentAccount, createSubscription } from "../controller/payment/allover-controller.js";
+import { handleStripeWebhook } from "../controller/payment/webhook.js"
+
+// webhook
+// router.post("/webhook/stripe", express.raw({ type: 'application/json' }), handleStripeWebhook);
+
+
+// payments 
+
+router.post("/payment/connect", jwtMiddle, sendSessionLink);
+router.post("/payment/disconnect", jwtMiddle, disconnectFromPaymentProvder);
+router.post("/check-acc-status", jwtMiddle, verifyPaymentAccount);
+router.post("/subscription", jwtMiddle, createSubscription);
+
 // job apis
 
 router.post("/job", jwtMiddle, saveNewJob);

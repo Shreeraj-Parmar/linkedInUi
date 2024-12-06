@@ -6,10 +6,17 @@ import ConnectDB from "./Database/db.js";
 import router from "./routes/route.js";
 import http from "http"; // Import Node's http module
 import { Server } from "socket.io"; // Import socket.io's Server class
+import { handleStripeWebhook } from "./controller/payment/webhook.js";
 
 const app = express();
 app.use(cors());
 dotEnv.config();
+
+app.post(
+  "/webhook/stripe",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook
+);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ extended: true }));
@@ -19,6 +26,9 @@ const PORT = process.env.PORT;
 
 // real time messaging with socket.io
 const server = http.createServer(app);
+
+
+
 
 const io = new Server(server, {
   cors: {

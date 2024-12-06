@@ -173,6 +173,73 @@ const userSchema = new mongoose.Schema(
         _id: false,
       },
     ],
+    payment_details: {
+      square: {
+        merchantId: {
+          type: String,
+        },
+        accessToken: {
+          type: String,
+        },
+        isActive: {
+          type: Boolean,
+        },
+        tokenType: {
+          type: String,
+        },
+        expiresAt: {
+          type: String,
+        },
+        refreshToken: {
+          type: String,
+        },
+        locationId: {
+          type: String,
+        },
+      },
+      paypal: {
+        merchantId: {
+          type: String,
+        },
+        clientId: {
+          type: String,
+        },
+        clientSecret: {
+          type: String,
+        },
+        isActive: {
+          type: Boolean,
+        },
+      },
+      stripe: {
+        accountId: { type: String },
+        created: { type: String },
+        default_currency: { type: String },
+      },
+    },
+    auth_url: {
+      // connecting merchant url in which merchant will redirect and follow payment method connection steps
+      type: String,
+    },
+    payment_method: {
+      enums: ["paypal", "stripe", "square"],
+      type: String,
+    },
+    subscription: {
+      is_active: {
+        type: Boolean,
+        default: false,
+      },
+      plan: {
+        type: String,
+        enums: ["Free", "Premium"],
+        default: "Free",
+      },
+      customer_id: {
+        type: String,
+        default: "",
+      },
+    },
   },
   {
     timestamps: true,
