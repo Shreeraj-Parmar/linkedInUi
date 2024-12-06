@@ -175,9 +175,14 @@ export const savePostData = async (data) => {
 };
 
 // get all post from DB
-export const getAllPostFromDB = async (data) => {
+
+export const getAllPostFromDB = async (page, limit) => {
   try {
-    let res = await axios.post(`${API}/post/all`, data, {
+    // Construct the URL with query parameters
+    const url = `${API}/post/all?page=${page}&limit=${limit}`;
+
+    // Use GET request with the constructed URL
+    let res = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -185,7 +190,7 @@ export const getAllPostFromDB = async (data) => {
     return res;
   } catch (error) {
     console.log(
-      `error while calling getAllPostFromDB & error is : ${error.message}`
+      `Error while calling getAllPostFromDB & error is: ${error.message}`
     );
   }
 };
@@ -240,18 +245,21 @@ export const getCommentAccPost = async (postId) => {
 };
 
 // get limited user data which have same city
-export const getUserDataAccSameCity = async () => {
+export const getUserDataAccSameCity = async (page, limit) => {
   try {
-    // Append postId to the URL as a query parameter
-    let res = await axios.get(`${API}/user/same-city`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    // Pass page and limit as query parameters
+    let res = await axios.get(
+      `${API}/user/same-city?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(
-      `error while calling getUserDataAccSameCity & error is : ${error.message}`
+      `Error while calling getUserDataAccSameCity & error is: ${error.message}`
     );
   }
 };
@@ -397,13 +405,17 @@ export const checkIfFollowingUser = async (userId) => {
 };
 
 // get user followers list
-export const getMyFollowers = async (what) => {
+export const getMyFollowers = async (what, page) => {
   try {
-    let res = await axios.get(`${API}/follow?what=${what}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    let res = await axios.get(
+      `${API}/follow?what=${what}&page=${page}&limit=7`,
+      {
+        // Pass page and limit
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res;
   } catch (error) {
     console.log(
@@ -460,5 +472,849 @@ export const updateConnectionReq = async (data) => {
     console.log(
       `error while calling updateConnectionReq & error is : ${error.message}`
     );
+  }
+};
+
+// send coonection req
+export const sendConnect = async (data) => {
+  try {
+    let res = await axios.post(`${API}/connection/req`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling sendConnect & error is : ${error.message}`
+    );
+  }
+};
+
+// set conversation
+export const setConversation = async (data) => {
+  try {
+    let res = await axios.post(`${API}/conversation`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling setConversation & error is : ${error.message}`
+    );
+  }
+};
+
+// get recever Data in coversation
+
+export const getReceiverData = async (data) => {
+  try {
+    let res = await axios.post(`${API}/conversation/receiver`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getReceiverData & error is : ${error.message}`
+    );
+  }
+};
+
+// get aall conversations
+
+export const getAllConversations = async (data) => {
+  try {
+    let res = await axios.get(
+      `${API}/conversation?reqId=${data.reqId}&reqIdType=${data.reqIdType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllConversations & error is : ${error.message}`
+    );
+  }
+};
+
+// send msg
+
+export const sendMsg = async (data) => {
+  try {
+    let res = await axios.post(`${API}/msg`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling sendMsg & error is : ${error.message}`);
+  }
+};
+
+// get all msg from conversations
+export const getMsgAccConvId = async (data) => {
+  const { convId, limit, page, whoId, whoType } = data;
+  try {
+    // Send page and limit as query parameters to the API
+    let res = await axios.get(
+      `${API}/msg?convId=${convId}&page=${page}&limit=${limit}&whoId=${whoId}&whoType=${whoType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getMsgAccConvId & error is: ${error.message}`
+    );
+  }
+};
+
+// mark as read message sysytem
+export const markAsRead = async (data) => {
+  try {
+    let res = await axios.post(`${API}/msg/read`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling markAsRead & error is : ${error.message}`);
+  }
+};
+
+// get all unread msg for
+
+export const getAllUnreadMsg = async (data) => {
+  const { reqId, reqIdType } = data;
+  try {
+    let res = await axios.get(
+      `${API}/msg-unread?reqId=${reqId}&reqIdType=${reqIdType}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllUnreadMsg & error is : ${error.message}`
+    );
+  }
+};
+
+// check each other connected or not , if connecct than we redirect to message otherwise not..
+export const checkConnectionEachOther = async (data) => {
+  try {
+    let res = await axios.post(`${API}/msg/verify`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling checkConnectionEachOther & error is : ${error.message}`
+    );
+  }
+};
+
+// new notification
+export const sendNotification = async (data) => {
+  console.log("new notification client function trigger");
+  try {
+    let res = await axios.post(`${API}/notification`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling sendNotification & error is : ${error.message}`
+    );
+  }
+};
+
+// get count of notifications that user unread
+// new notification
+export const getAllUnreadNotiCount = async () => {
+  try {
+    let res = await axios.get(`${API}/notification/count`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllUnreadNotiCount & error is : ${error.message}`
+    );
+  }
+};
+
+// get all notification details
+
+export const fatchAllNotifications = async (page, limit) => {
+  try {
+    let res = await axios.get(`${API}/notifications`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      params: { limit, page }, // Use `page` instead of `skip`
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling fatchAllNotifications: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// update isClick on notification
+
+export const updateNotiClick = async (data) => {
+  try {
+    let res = await axios.put(`${API}/notification`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling updateNotiClick: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// get all connectionReq count of user
+export const getConnectionReqCount = async () => {
+  try {
+    let res = await axios.get(`${API}/connection-req/count`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling getConnectionReqCount: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// mark as read connection req
+
+export const markAsReadConn = async () => {
+  console.log("mark as read connection req");
+  try {
+    let res = await axios.get(`${API}/connection-req`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling markAsReadConn: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// refresh token
+export const refresIt = async (dat) => {
+  try {
+    let response = await axios.post(`${API}/refresh-verify`, dat);
+    return response;
+  } catch (error) {
+    console.error(
+      "error while calling refresIt forntend api & message is : ",
+      error.message
+    );
+  }
+};
+
+// feach to more connect with users
+export const fatchAllUsersWhichNotConnected = async (page, limit) => {
+  try {
+    let res = await axios.get(`${API}/users/more`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      params: { limit, page }, // Use `page` instead of `skip`
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling fatchAllUsersWhichNotConnected: ${error.message}`
+    );
+    return null; // Return null or handle the error as needed
+  }
+};
+
+// withdraw request
+export const withdrawConnectionReq = async (data) => {
+  try {
+    let res = await axios.put(`${API}/connection/withdraw`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`Error while calling withdrawConnectionReq: ${error.message}`);
+    return null; // Return null or handle the error as needed
+  }
+};
+
+/// update post
+export const updatePostData = async (data) => {
+  try {
+    let res = await axios.put(`${API}/post`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling updatePostData & error is : ${error.message}`
+    );
+  }
+};
+
+// update favorite
+export const changeFavourite = async (data) => {
+  try {
+    let res = await axios.put(`${API}/user/favourite`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling changeFavourite & error is : ${error.message}`
+    );
+  }
+};
+
+// generate presigned url for download
+export const getPresignedURLForDownload = async (data) => {
+  try {
+    let res = await axios.post(`${API}/aws/msg/download`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getPresignedURLForDownload & error is : ${error.message}`
+    );
+  }
+};
+
+// delete selected msgs
+export const deleteMsg = async (data) => {
+  // console.log("delete selected msgs data inside api.js", data);
+  try {
+    let res = await axios.delete(`${API}/msg`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      params: {
+        deletedMsgList: data.deletedMsgList,
+        deleteFor: data.deleteFor,
+      }, // pass data as query params
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling deleteMsg & error is : ${error.message}`);
+  }
+};
+
+// get all post of user
+export const getAllPostAccUser = async (data) => {
+  try {
+    // Construct the URL with query parameters
+    const url = `${API}/post/user/all?page=${data.page}&limit=${data.limit}&userid=${data.userId}`;
+
+    // Use GET request with the constructed URL
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getAllPostAccUser & error is: ${error.message}`
+    );
+  }
+};
+
+// update user profile
+export const updateUserProfile = async (data) => {
+  try {
+    // Construct the URL with query parameters
+    const url = `${API}/user/profile`;
+
+    // Use GET request with the constructed URL
+    let res = await axios.put(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling updateUserProfile & error is: ${error.message}`
+    );
+  }
+};
+
+// save new company data
+export const saveNewCompanyData = async (data) => {
+  try {
+    const url = `${API}/company`;
+    let res = await axios.post(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling saveNewCompanyData & error is: ${error.message}`
+    );
+    console.error(`Error while calling saveNewCompanyData: ${error.message}`);
+  }
+};
+
+// get company Data via admin
+
+export const getCompanyData = async (data) => {
+  try {
+    const url = `${API}/company/${data}/admin`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getCompanyData & error is: ${error.message}`
+    );
+    console.error(`Error while calling getCompanyData: ${error.message}`);
+  }
+};
+
+// get company Data without admin
+
+export const getCompanyDataWithoutAuth = async (data) => {
+  try {
+    const url = `${API}/company/${data}/withoutauth`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getCompanyDataWithoutAuth & error is: ${error.message}`
+    );
+    console.error(
+      `Error while calling getCompanyDataWithoutAuth: ${error.message}`
+    );
+  }
+};
+
+// update company data
+
+export const updateCompanyData = async (data) => {
+  try {
+    const url = `${API}/company/`;
+    let res = await axios.put(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling updateCompanyData & error is: ${error.message}`
+    );
+    console.error(`Error while calling updateCompanyData: ${error.message}`);
+  }
+};
+
+// search users for admin adding
+
+export const searchUserForAdmin = async (data) => {
+  try {
+    const url = `${API}/users/admin/add/search?query=${data}`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling searchUserForAdmin & error is: ${error.message}`
+    );
+    console.error(`Error while calling searchUserForAdmin: ${error.message}`);
+  }
+};
+
+// add admin of company
+
+export const addAdminOfCompany = async (data) => {
+  try {
+    const url = `${API}/company/admin/add`;
+    let res = await axios.put(url, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling addAdminOfCompany & error is: ${error.message}`
+    );
+    console.error(`Error while calling addAdminOfCompany: ${error.message}`);
+  }
+};
+
+// delete admin from company
+
+export const deleteAdminFromCompany = async (data) => {
+  try {
+    const url = `${API}/company/admin/?data=${encodeURIComponent(
+      JSON.stringify(data)
+    )}`;
+    let res = await axios.delete(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling deleteAdminFromCompany & error is: ${error.message}`
+    );
+    console.error(
+      `Error while calling deleteAdminFromCompany: ${error.message}`
+    );
+  }
+};
+
+// company followers & following func
+
+export const getCompanyFollowers = async (what, page, companyId) => {
+  try {
+    const url = `${API}/company/follow?what=${what}&page=${page}&limit=7&companyId=${companyId}`;
+    let res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `Error while calling getCompanyFollowers & error is: ${error.message}`
+    );
+    console.error(`Error while calling getCompanyFollowers: ${error.message}`);
+  }
+};
+
+// post a new job
+export const postNewJob = async (data) => {
+  try {
+    let res = await axios.post(`${API}/job`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling postNewJob & error is : ${error.message}`);
+  }
+};
+
+// get all jobs acc what var
+
+export const getAllJobsAcc = async (data) => {
+  console.log("get all job acc", data);
+  try {
+    let res = await axios.get(
+      `${API}/jobs?what=${data.what}&page=${data.page}&limit=7${data.companyId && `&companyId=${data.companyId}`
+      }${data.userId && `&userId=${data.userId}`}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllJobsAcc & error is : ${error.message}`
+    );
+  }
+};
+
+// update save or unsaved job
+export const saveOrUnsaveJob = async (data) => {
+  try {
+    let res = await axios.put(`${API}/job/savedBy`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling saveOrUnsaveJob & error is : ${error.message}`
+    );
+  }
+};
+
+// get job data according job id
+
+export const getJobDataAccId = async (data) => {
+  try {
+    let res = await axios.get(`${API}/job/${data}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getJobDataAccId & error is : ${error.message}`
+    );
+  }
+};
+
+// apply new Job
+
+export const applyNewJob = async (data) => {
+  try {
+    let res = await axios.put(`${API}/job/apply`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling applyNewJob & error is : ${error.message}`
+    );
+  }
+};
+
+// get unreadapplicantcount from server
+
+export const getUnreadApplicantAccCompanyId = async (data) => {
+  try {
+    let res = await axios.get(`${API}/job-unread?companyId=${data.companyId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getUnreadApplicantAccCompanyId & error is : ${error.message}`
+    );
+  }
+};
+
+// get all application according jobid
+
+export const getAllApplicationsAccJobId = async (data, page) => {
+  try {
+    let res = await axios.get(
+      `${API}/job-applications?jobId=${data}&page=${page}&limit=7`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling getAllApplicationsAccJobId & error is : ${error.message}`
+    );
+  }
+};
+
+// update isread job applications all
+
+export const updateIsReadJobApp = async (data) => {
+  try {
+    let res = await axios.put(`${API}/job-unread`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling updateIsReadJobApp & error is : ${error.message}`
+    );
+  }
+};
+
+// update job according id
+
+export const updateJob = async (value, id) => {
+  let data = {
+    value,
+    id,
+  };
+  try {
+    let res = await axios.put(`${API}/job`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling updateJob & error is : ${error.message}`);
+  }
+};
+
+// check job author according jobid
+
+export const checkJobAuthorAccJobId = async (jobId) => {
+  try {
+    let res = await axios.get(`${API}/job-author?jobId=${jobId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling checkJobAuthorAccJobId & error is : ${error.message}`
+    );
+  }
+};
+
+//deleteJob
+export const deleteJob = async (data) => {
+  try {
+    let res = await axios.delete(`${API}/job/${data}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling deleteJob & error is : ${error.message}`);
+  }
+};
+
+// add visitor of the company
+export const addVisitorOfComapny = async (data) => {
+  try {
+    let res = await axios.put(`${API}/company/visitor`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling addVisitorOfComapny & error is : ${error.message}`
+    );
+  }
+};
+
+
+// payment
+
+
+
+// connect payment method
+export const connectPayment = async (data) => {
+  try {
+    let res = await axios.post(`${API}/payment/connect`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling connectPayment & error is : ${error.message}`
+    );
+  }
+};
+
+
+// disconnect payment method
+export const disconnectPayment = async (data) => {
+  try {
+    let res = await axios.post(`${API}/payment/disconnect`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling disconnectPayment & error is : ${error.message}`
+    );
+  }
+};
+
+
+// chechAccount Status
+
+export const checkAccountStatus = async (data) => {
+  console.log("token is", localStorage.getItem("token"));
+  try {
+    const response = await axios.post(`${API}/check-acc-status`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error(
+      `Error while calling checkAccountStatus: ${error.message}`
+    );
+  }
+};
+
+
+
+// fpor subsctiprion
+export const createCheckoutSession = async (data) => {
+  try {
+    let res = await axios.post(`${API}/subscription`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(`error while calling subscribe & error is : ${error.message}`);
   }
 };

@@ -1,45 +1,59 @@
 import Post from "../model/post.js";
 import User from "../model/user.js";
+import Company from "../model/company.js"; // Adjust the path as necessary
+
 import Comment from "../model/comment.js";
+import mongoose from "mongoose";
 
 // save post into DB
 export const savePostDataIntoDB = async (req, res) => {
-  // console.log("this is req body /n", req.body.url);
+  console.log("this is media urls", req.body.mediaUrls);
 
   try {
-    // Find the user based on the provided email
-    let findUser = await User.findOne({ email: req.user });
-    console.log("user id is this", findUser._id);
+    let mediaUrls = [];
 
-    // Check if the URL is provided
-    let newPost;
-    if (req.body.url) {
-      newPost = new Post({
-        user: findUser._id,
-        text: req.body.text,
-        url: req.body.url, // Save URL to the database
-      });
-    } else {
-      newPost = new Post({
-        user: findUser._id,
-        text: req.body.text,
-      });
+    // Check if mediaUrls exists and assign it
+    if (req.body.mediaUrls && req.body.mediaUrls.length > 0) {
+      mediaUrls = req.body.mediaUrls.map(({ url, fileType }) => ({
+        url,
+        fileType,
+      }));
     }
+
+    // Create a new post with the createdBy structure
+    let newPost = new Post({
+      createdBy: {
+        type: req.body.createdBy.type, // 'User' or 'Company'
+        id: req.body.createdBy.id, // user or company ID
+      },
+      text: req.body.text,
+      mediaUrls: mediaUrls,
+    });
 
     // Save the post to the database
     let savedPost = await newPost.save();
     console.log("saved post in db is", savedPost);
 
-    // If post is saved successfully, update the user's posts array
+    // If post is saved successfully, update the user's or company's posts array
     if (savedPost) {
-      // Update the user's posts array
-      await User.findByIdAndUpdate(
-        findUser._id,
-        { $push: { posts: savedPost._id } }, // Push the new post ID into the posts array
-        { new: true } // Return the updated user document
-      );
+      // Update the respective user's posts array
+      if (req.body.createdBy.type === "User") {
+        await User.findByIdAndUpdate(
+          req.body.createdBy.id, // user ID from createdBy
+          { $push: { posts: savedPost._id } },
+          { new: true }
+        );
+      } else if (req.body.createdBy.type === "Company") {
+        await Company.findByIdAndUpdate(
+          req.body.createdBy.id, // company ID from createdBy
+          { $push: { posts: savedPost._id } },
+          { new: true }
+        );
+      }
 
-      res.status(200).json({ message: "post saved successfully" });
+      res
+        .status(200)
+        .json({ message: "post saved successfully", postId: savedPost._id });
     } else {
       res.status(201).json({ message: "error while saving post" });
     }
@@ -53,21 +67,37 @@ export const savePostDataIntoDB = async (req, res) => {
 
 // send all post to frontend
 export const sendAllPosts = async (req, res) => {
-  // console.log("runiing......................");
-  try {
-    let allPosts = await Post.find()
-      .populate("user", "name city profilePicture")
-      .populate(""); // Populate user for the post
+  // Extract page and limit from the request query parameters
+  const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10 if not provided
 
-    // console.log("all post start here", allPosts);
-    if (allPosts) {
-      res.status(200).json({ allPosts });
-    } else {
-      res.status(201).json({ message: "Somthing error" });
-    }
+  try {
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    // Calculate the number of posts to skip
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Fetch posts with pagination, populating the createdBy field
+    let allPosts = await Post.find()
+      .populate({
+        path: "createdBy.id", // Use the dynamic reference
+        select: "name city role followers heading profilePicture", // Specify fields to return
+      })
+      .sort({ createdAt: -1 }) // Sort by creation date, latest first
+      .skip(skip) // Skip the posts according to pagination
+      .limit(limitNumber); // Limit the number of posts fetched
+
+    // Get the total number of posts for further use (like checking if there are more posts)
+    const totalPosts = await Post.countDocuments();
+
+    // Return posts and information about pagination
+    res
+      .status(200)
+      .json({ allPosts, totalPosts, page: pageNumber, limit: limitNumber });
   } catch (error) {
     console.log(
-      `error while calling sendAllPosts API & error is ${error.message}`
+      `Error while calling sendAllPosts API & error is: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -75,25 +105,52 @@ export const sendAllPosts = async (req, res) => {
 
 // update like count in db
 export const updateLike = async (req, res) => {
-  // console.log(req.body);
-  let { postId, likeStatus, whoLiked } = req.body;
+  let { postId, whoLiked, type } = req.body;
+
+  console.log(req.body);
+
   try {
     const post = await Post.findById(postId);
-    if (likeStatus) {
-      // Add user to likes array if not already liked
-      if (!post.likedBy.includes(whoLiked)) {
-        post.likedBy.push(whoLiked);
-      }
-    } else {
-      // Remove user from likes array if user already liked the post
-      post.likedBy = post.likedBy.filter((id) => id.toString() !== whoLiked);
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
     }
-    post.likeCount = post.likedBy.length;
+
+    // Create the liker object based on whether it's a user or company
+    const liker = {
+      type: type, // Set type based on isCompany
+      id: whoLiked, // ID of the user or company
+    };
+
+    // Check if the liker is already in the likedBy array
+    if (
+      !post.likedBy.some(
+        (like) => like.id.toString() === whoLiked && like.type === liker.type
+      )
+    ) {
+      // Add user/company to likes array if not already liked
+      post.likedBy.push(liker);
+    } else {
+      // Remove user/company from likes array if already liked
+      post.likedBy = post.likedBy.filter(
+        (like) => !(like.id.toString() === whoLiked && like.type === liker.type)
+      );
+    }
+
+    post.likeCount = post.likedBy.length; // Update the like count
 
     let finalRes = await post.save();
-    console.log(finalRes);
+    let FinalLikeStatus = finalRes.likedBy.some(
+      (like) => like.id.toString() === whoLiked && like.type === liker.type
+    );
+
     if (finalRes) {
-      res.status(200).json({ success: true, message: "Like status updated" });
+      res.status(200).json({
+        success: true,
+        message: "Like status updated",
+        FinalLikeStatus: FinalLikeStatus,
+      });
     } else {
       res
         .status(201)
@@ -101,7 +158,7 @@ export const updateLike = async (req, res) => {
     }
   } catch (error) {
     console.log(
-      `error while calling updateLike API & error is ${error.message}`
+      `Error while calling updateLike API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -110,10 +167,15 @@ export const updateLike = async (req, res) => {
 // save comment into DB
 export const saveCommentIntoDB = async (req, res) => {
   // console.log(req.body);
-  let { postId, whoCommented, text } = req.body;
+  let { postId, whoCommented, text, type } = req.body;
   try {
+    let userIs = {
+      type: type, // Set type based on isCompany
+      id: whoCommented, // ID of the user or company
+    };
+
     const newComment = new Comment({
-      user: whoCommented,
+      createdBy: userIs,
       text: text,
       post: postId,
     });
@@ -144,10 +206,10 @@ export const saveCommentIntoDB = async (req, res) => {
 export const sendCommentAccPost = async (req, res) => {
   // console.log(req.query);
   try {
-    let commentsList = await Comment.find({ post: req.query.postId }).populate(
-      "user",
-      "name city profilePicture"
-    );
+    let commentsList = await Comment.find({ post: req.query.postId }).populate({
+      path: "createdBy.id", // Use the dynamic reference
+      select: "name city profilePicture", // Specify fields to return
+    });
     if (commentsList) {
       res.status(200).json({ commentsList });
     } else {
@@ -181,6 +243,67 @@ export const sendCommentCount = async (req, res) => {
   } catch (error) {
     console.log(
       `error while calling sendCommentCount API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// update post
+export const updatePostDataInDB = async (req, res) => {
+  console.log(req.body);
+  let { postId, text, mediaUrls, who, createdId } = req.body;
+
+  let whoIs = who || createdId;
+  try {
+    const post = await Post.findById(postId);
+    if (post.createdBy.id.toString() !== whoIs.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: "you are not authorized to update this post",
+      });
+    }
+    post.text = text;
+    post.mediaUrls = mediaUrls;
+    let finalRes = await post.save();
+    console.log("updated pppost is here", finalRes);
+    if (finalRes) {
+      res.status(200).json({ success: true, message: "Post Updated" });
+    } else {
+      res
+        .status(201)
+        .json({ success: false, message: "Post not Updated !!!!!" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling updatePostDataInDB API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const sendAllPostsAccUser = async (req, res) => {
+  // Extract page and limit from the request query parameters
+  const { page = 1, limit = 10, userid } = req.query; // Default to page 1 and limit 10 if not provided
+  console.log("req queary is for post acc user", req.query);
+  try {
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    // Calculate the number of posts to skip
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Fetch posts with pagination
+    let allPosts = await Post.find({ "createdBy.id": userid })
+      .populate("createdBy.id", "name city followers profilePicture") // Populate user information
+      .sort({ createdAt: -1 }) // Sort by creation date, latest first
+      .skip(skip) // Skip the posts according to pagination
+      .limit(limitNumber); // Limit the number of posts fetched
+
+    res.status(200).json({ allPosts });
+  } catch (error) {
+    console.log(
+      `Error while calling sendAllPostsAccUser API & error is: ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

@@ -1,83 +1,472 @@
 import React, { useEffect, useState, useContext } from "react";
 
 import { AllContext } from "../../context/UserContext";
-import { getUserData } from "../../services/api.js";
+import { getUserData, connectPayment, disconnectPayment } from "../../services/api.js";
 import AddEducationDialog from "../Profile/AddEducationDialog.jsx";
+import Navbar from "./Navbar.jsx";
+import { useNavigate } from "react-router-dom";
+import UserPosts from "./UserPosts.jsx";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EditProfile from "./EditProfile.jsx";
+import linkifyContent from "../../utils/linkify.js";
 
 const ViewProfile = () => {
-  const { currUserData, setCurrUserData } = useContext(AllContext);
+  const { currUserData, isLogin, socket } = useContext(AllContext);
   const [addEduDialog, setAddEduDialog] = useState(false);
+  const [allEducation, setAllEducation] = useState(
+    (currUserData && currUserData.education) || []
+  );
+  const navigate = useNavigate();
+  const [editProfildialog, setEditProfildialog] = useState(false);
+  const [profileData, setProfileData] = useState();
+  const [showMore, setShowMore] = useState(false);
+  const [allPost, setAllPost] = useState([]);
+
+  const maxLength = 250;
+
+
+  const handleConnectPayment = async (data) => {
+    if (currUserData.payment_method) return;
+    let res; // declare the variable outside the switch block
+    switch (data) {
+      case "stripe":
+        res = await connectPayment({ method: "stripe" });
+        if (res.status === 200) {
+
+          window.location.replace(res?.data?.authentication_url);
+        } else {
+          console.log(res.data);
+        }
+        break;
+      case "paypal":
+        // navigate("/paypal");
+        break;
+      case "square":
+        // navigate("/coinbase");
+        break;
+      default:
+        break;
+    }
+  }
+
+
+
+  const handleDisconnectPayment = async (data) => {
+    switch (data) {
+      case "stripe":
+        res = await disconnectPayment({ method: "stripe" });
+        if (res.status === 200) {
+          console.log("payment disconnected")
+        }
+        break;
+      case "paypal":
+        // navigate("/paypal");
+        break;
+      case "square":
+        // navigate("/coinbase");
+        break;
+      default:
+        break;
+    }
+  };
+
+
+
   useEffect(() => {
-    const getData = async () => {
-      let res = await getUserData();
-      console.log(res.data);
-      setCurrUserData(res.data.user);
-    };
-    getData();
-  }, [addEduDialog]);
+    setProfileData({
+      name: currUserData && currUserData.name,
+      state: currUserData && currUserData.state,
+      city: currUserData && currUserData.city,
+      country: currUserData && currUserData.country && currUserData.country,
+      heading: currUserData && currUserData.heading && currUserData.heading,
+      link:
+        currUserData &&
+        currUserData.website &&
+        currUserData.website.link &&
+        currUserData.website.link,
+      linkText:
+        currUserData &&
+        currUserData.website &&
+        currUserData.website.linkText &&
+        currUserData.website.linkText,
+      about: currUserData && currUserData.about && currUserData.about,
+      skills:
+        currUserData &&
+        currUserData.skills &&
+        currUserData.skills[0] &&
+        currUserData.skills,
+      role: currUserData && currUserData.role && currUserData.role,
+    });
+  }, [currUserData]);
 
   return (
-    <div className="view-profile-wrapper p-5">
-      <div className="view-profile">
-        <div className="view-profile-image flex justify-center">
-          <img
-            src={currUserData ? currUserData.profilePicture : "/upload.png"}
-            alt="profile picture"
-            className="w-[10%] h-[50%]"
-          />
-        </div>
-        <div>
-          <p className="text-center">
-            {currUserData ? currUserData.name : "Your Name"}
-          </p>
-        </div>
-        <div className="add-education flex justify-end">
-          <button
-            className="bg-slate-600 text-yellow-100 p-2 rounded-md"
-            onClick={() => setAddEduDialog(true)}
-          >
-            add education
-          </button>
+    <div className='main-overview w-[100vw] bg-[#F4F2EE] h-auto'>
+      <div className='main-overview-wrapper   max-w-[100vw]  overflow-x-hidden'>
+        <AddEducationDialog
+          addEduDialog={addEduDialog}
+          setAddEduDialog={setAddEduDialog}
+          setAllEducation={setAllEducation}
+        />
+        {/* Navbar Apper in All Social Routs */}
+        <Navbar />
+        <EditProfile
+          editProfildialog={editProfildialog}
+          setEditProfildialog={setEditProfildialog}
+          currUserData={currUserData}
+          setAddEduDialog={setAddEduDialog}
+          setProfileData={setProfileData}
+        />
 
-          <AddEducationDialog
-            addEduDialog={addEduDialog}
-            setAddEduDialog={setAddEduDialog}
-          />
-        </div>
-        <div className="flex w-[100%]">
-          <div className="other-details w-[40%]">
-            {currUserData && (
-              <>
-                <p className="font-semibold">Some Details</p>
-                <div>
-                  <p>Mobile: {currUserData.mobile}</p>
-                  <p>City: {currUserData.city}</p>
-                  <p>Country: {currUserData.country}</p>
-                  <p>State: {currUserData.state}</p>
+        <div className='main-display w-[80vw]   min-h-[100vh] h-fit flex justify-center   m-auto p-2  '>
+          <div className='main-down mt-[60px] flex space-x-3  w-[95%]  min-h-[70%]'>
+            <div className='w-[65%]'>
+              <div className='profile-wrapper-all bg-[#fff] border-2 relative shadow-sm border-gray-400 border-opacity-40 w-[100%] p-5 pl-10 rounded-md flex-row space-y-3  '>
+                <IconButton
+                  onClick={() => setEditProfildialog(true)}
+                  color='primary'
+                  className='text-[#000] cursor-pointer absolute top-[210px] left-[630px]'
+                >
+                  <EditIcon fontSize='medium' />
+                </IconButton>
+                <div className='profil-pic'>
+                  <img
+                    src={
+                      currUserData ? currUserData.profilePicture : "/upload.png"
+                    }
+                    className='min-w-[150px] border-2 
+ border-gray-400 shadow-sm border-opacity-40 min-h-[150px]  rounded-full max-w-[150px] max-h-[150px] '
+                    alt='profil pic'
+                  />
                 </div>
-              </>
-            )}
-          </div>
-          <div className="show-education w-[60%] ">
-            <p className=" font-semibold">Education</p>
-            {currUserData ? (
-              currUserData.education.map((edu, index) => {
-                return (
-                  <div
-                    className="edus border border-black mt-2 w-1/3 p-2"
-                    key={index}
-                  >
-                    <p className="">{edu.school}</p>
-                    <p className="text-[#6c6c6c] text-sm">{edu.degree}</p>
-                    <p className="text-[#6c6c6c] text-sm">
-                      {edu.startDate.year}-{edu.endDate.year}
+                <div className='profil-details'>
+                  <p className='text-[#000] text-[24px] font-semibold hover:bg-[#c2c2c2] w-fit cursor-pointer rounded-md'>
+                    {currUserData
+                      ? profileData && profileData.name
+                      : "Your Name"}
+                    &nbsp;&nbsp;&nbsp; &nbsp;
+                    <span className='text-[#9b9b9b] text-[15px]'>
+                      {currUserData
+                        ? profileData && profileData.role
+                        : "Your Role"}
+                    </span>
+                  </p>
+                  <p className='text-[#252525] heading-para text-xl font-semibold  w-fit cursor-pointer rounded-md'>
+                    {currUserData && profileData && profileData.heading
+                      ? profileData.heading
+                      : "<----Add Heading---->"}
+                  </p>
+                  <p className='text-[#686868] mt-2 text-sm'>
+                    {`${currUserData ? profileData && profileData.city : ""}, ${currUserData ? profileData && profileData.state : ""
+                      }, ${currUserData ? profileData && profileData.country : ""
+                      }`}
+                  </p>
+                  {currUserData &&
+                    profileData &&
+                    profileData.linkText &&
+                    profileData.linkText ? (
+                    <div className='flex space-x-1 mt-2 cursor-pointer'>
+                      <a
+                        href={profileData.link}
+                        target='_blank'
+                        rel='noreferrer'
+                      >
+                        <p className='text-[#352eff] text-sm hover:underline'>
+                          {profileData.linkText}
+                        </p>
+                      </a>
+                      <OpenInNewIcon
+                        fontSize='small'
+                        className='text-[#352eff]'
+                        onClick={() => window.open(profileData.link)}
+                      />
+                    </div>
+                  ) : (
+                    profileData &&
+                    profileData.link &&
+                    profileData.link && (
+                      <div className='flex space-x-1 cursor-pointer'>
+                        <a
+                          href={
+                            currUserData &&
+                            profileData &&
+                            profileData.link &&
+                            profileData.link
+                          }
+                        >
+                          {currUserData &&
+                            profileData &&
+                            profileData.link &&
+                            profileData.link}
+                        </a>
+                        <OpenInNewIcon
+                          fontSize='small'
+                          className='text-[#352eff]'
+                          onClick={() => window.open(profileData.link)}
+                        />
+                      </div>
+                    )
+                  )}
+                  <p className='text-[#686868] text-sm mt-2'>
+                    {currUserData ? currUserData.followers.length : ""}{" "}
+                    followers
+                  </p>
+                </div>
+              </div>
+
+              <div className='bg-white  w-[100%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
+                <p className='text-[#000] text-xl font-semibold'>About Me</p>
+                <div className='p-2'>
+                  {currUserData && profileData && profileData.about ? (
+                    <div>
+                      <pre
+                        className=' text-wrap'
+                        dangerouslySetInnerHTML={{
+                          __html: !showMore
+                            ? linkifyContent(
+                              currUserData &&
+                              profileData &&
+                              profileData.about &&
+                              profileData.about.substring(0, maxLength)
+                            )
+                            : linkifyContent(
+                              currUserData &&
+                              profileData &&
+                              profileData.about &&
+                              profileData.about
+                            ),
+                        }}
+                      ></pre>
+                      {profileData.about.length > maxLength && (
+                        <p
+                          className='text-blue-600 inline cursor-pointer mt-2'
+                          onClick={() => setShowMore(true)}
+                        >
+                          {" "}
+                          {!showMore && "more..."}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className='p-2 space-y-1'>
+                      <div>Add About Me to search jobs</div>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4]  hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          setEditProfildialog(true);
+                        }}
+                      >
+                        Add About Me
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className=' bg-white  w-[100%] mt-2 p-4 rounded-md border-2 border-gray-400 border-opacity-40'>
+                <p className='text-[#000] text-xl font-semibold'>My Skills</p>
+                <div className='p-2 relative'>
+                  <div className='p-2 flex justify-end items-center absolute top-[-30px] right-0'>
+                    <button
+                      className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4]  hover:border-[#004182] hover:text-[#004182]'
+                      onClick={() => {
+                        setEditProfildialog(true);
+                      }}
+                    >
+                      Add Skills
+                    </button>
+                  </div>
+                  {currUserData &&
+                    profileData &&
+                    profileData.skills &&
+                    profileData.skills.length > 0 ? (
+                    profileData.skills.map((skill, index) => {
+                      return (
+                        <div
+                          className='flex p-2 items-center space-x-2 border-b-2 border-gray-400 border-opacity-40'
+                          key={index}
+                        >
+                          <p className='text-[#686868] hover:underline cursor-pointer text-sm'>
+                            {skill}
+                          </p>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className='p-2 space-y-1 '>
+                      <div>no skills here, please Add Skill to search jobs</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ADD EDU */}
+
+              <div
+                className='profile-wrapper-all bg-[#fff] border-2 
+ border-gray-400 border-opacity-40 mt-3 w-[100%] p-3  rounded-md flex-row space-y-3  '
+              >
+                <p className='text-[#000] text-xl font-semibold'>Education</p>
+                {currUserData && currUserData.education[0] ? (
+                  allEducation.map((edu) => {
+                    return (
+                      <div
+                        key={currUserData._id}
+                        className='profile-edu bg-[#F4F2EE] p-2 pl-3 rounded-md w-[80%] flex  items-center'
+                      >
+                        <div>
+                          <p className='text-[#000]'>{edu.degree}</p>
+
+                          <p className='text-[#686868] -mb-1 text-sm'>
+                            {edu.university}
+                          </p>
+                          <p className='text-[#686868] -mb-1 text-sm'>{`${edu.startDate.year} - ${edu.endDate.year}`}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className='text-[#000]'>No Any Education Here</p>
+                )}
+              </div>
+              <div
+                className='profile-wrapper-all bg-[#fff] border-2 
+ border-gray-400 border-opacity-40 mt-3  w-[100%] p-3   rounded-md flex  items-center space-y-3  '
+              >
+                <div className=' w-[100%]'>
+                  <p className='text-[#000] text-xl font-semibold'>Posts</p>
+                  <UserPosts
+                    userData={currUserData}
+                    what={"me"}
+                    allPost={allPost}
+                    setAllPost={setAllPost}
+                  />
+                </div>
+              </div>
+              <div className='  w-[100%] mt-2'>
+                <div className=' border-2 border-gray-400 bg-white rounded-md border-opacity-40 border-b-0 w-[100%]'>
+                  <div className='border-b-2 p-2 border-gray-400 border-opacity-40'>
+                    <p className=' font-semibold text-xl'>
+                      Connect Payment Method
                     </p>
                   </div>
-                );
-              })
-            ) : (
-              <div>please add education</div>
-            )}
+                  <div>
+                    <div className='flex justify-between p-4'>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          // Handle Stripe payment
+                          handleConnectPayment("stripe");
+                        }}
+                      >
+                        Connect with Stripe
+                      </button>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          // Handle PayPal payment
+                        }}
+                      >
+                        Connect with PayPal
+                      </button>
+                      <button
+                        className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
+                        onClick={() => {
+                          // Handle Square payment
+                        }}
+                      >
+                        Connect with Square
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {
+                currUserData && currUserData.payment_method &&
+                <div className='  w-[100%] mt-2'>
+                  <div className=' border-2 border-gray-400 bg-white rounded-md border-opacity-40  border-b-0 w-[100%]'>
+                    <div className='border-b-2 p-2 border-gray-400 border-opacity-40'>
+                      <p className=' font-semibold text-xl'>
+                        Disconnect Method
+                      </p>
+                    </div>
+                    <button
+                      className='p-2 pl-4 pr-4 font-semibold border-2 mt-2  rounded-full border-[#FF0000] text-[#FF0000] hover:border-[#B22222] hover:text-[#B22222]'
+                      onClick={() => {
+                        // Handle disconnect payment method
+                        handleDisconnectPayment(currUserData.payment_method);
+                      }}
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                </div>
+              }
+              <div>
+                <div className='flex mt-2'>
+                  <button
+                    className='p-2 border-2 border-[#0A66C4] hover:bg-[#0A66C4] hover:text-white text-[#0A66C4]  rounded-md '
+                    onClick={() => {
+                      localStorage.removeItem("token");
+                      navigate("/login");
+                      if (currUserData)
+                        socket && socket.emit("remove_user", currUserData._id);
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+            {currUserData &&
+              currUserData.company &&
+              currUserData.company.length > 0 && (
+                <div className='  w-[35%]'>
+                  <div className=' border-2 border-gray-400 bg-white rounded-md border-opacity-40 border-b-0 w-[100%]'>
+                    <div className='border-b-2 p-2 border-gray-400 border-opacity-40'>
+                      <p className=' font-semibold text-xl'>
+                        Switch to company
+                      </p>
+                    </div>
+
+                    {currUserData &&
+                      currUserData.company &&
+                      currUserData.company.length > 0 &&
+                      currUserData.company.map((comp, index) => {
+                        return (
+                          <div
+                            key={index}
+                            onClick={() => {
+                              navigate(`/company/${comp._id}/admin`);
+                            }}
+                            className='flex hover:bg-[#F4F2EE] cursor-pointer p-2 rounded-md border-collapse items-center border-b-2 border-gray-400 border-opacity-40 space-x-2'
+                          >
+                            <div>
+                              <img
+                                src={comp.profilePicture || "/blank.png"}
+                                className='w-[70px] border rounded-md border-gray-400 border-opacity-40 h-[70px]'
+                                alt=''
+                              />
+                            </div>
+                            <div>
+                              <p className='text-[#000]'>{comp.name}</p>
+                              <p className='text-sm text-[#626262]'>
+                                {comp.industry}
+                              </p>
+                              <p className='text-sm text-[#626262]'>
+                                {comp.companySize}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
+
+
+
           </div>
         </div>
       </div>

@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useContext } from "react";
 import { sendLoginData } from "./../services/api.js";
-import { toast } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup"; // Import Yup for validation
 import { useNavigate } from "react-router-dom";
+import Loader from "./Loader/Loader.jsx";
 import {
   verifyTokenFunc,
   checkAdminFunc,
@@ -13,22 +13,31 @@ import {
 // components
 import Input from "./Reusable Components/Input";
 import Button from "./Reusable Components/Button";
-import Tostify from "./Tostify";
 
 //context
 import { AllContext } from "../context/UserContext";
+import SnakBar from "./SnakBar.jsx";
 
 const Login = () => {
-  const { loginData, setIsLogin, setLoginData, isLogin } =
-    useContext(AllContext);
+  const {
+    loginData,
+    setIsLogin,
+    setLoginData,
+    isLogin,
+    setLoading,
+    setIsSnakBar,
+  } = useContext(AllContext);
   const navigate = useNavigate();
+  const [snak, setSnak] = useState({ type: null, text: null });
 
   useEffect(() => {
+    setLoading(true);
     if (localStorage.getItem("token")) {
       if (!loginRedirect()) {
         console.log("continue please");
       }
     }
+    setLoading(false);
   }, []);
 
   // formik validation
@@ -45,6 +54,7 @@ const Login = () => {
       password: Yup.string().required("Password is required"),
     }),
     onSubmit: async (values) => {
+      setLoading(true);
       // This will be executed when the form is submitted
       console.log(values); // Log the values here
 
@@ -58,31 +68,21 @@ const Login = () => {
         localStorage.setItem("token", res.data.accessToken);
         localStorage.setItem("refreshToken", res.data.refreshToken);
         // console.log("saved token", localStorage.getItem("token"));
-        toast.success(`Welcome ${values.email}`, {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "success",
+          text: `Welcome ${values.email}`,
         });
         setLoginData(values);
         setTimeout(() => {
-          navigate("/social");
+          setLoading(false);
+          navigate("/");
         }, 2000);
       } else if (res.status === 201) {
-        toast.error("Invalid Email or Password", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: "Invalid email or password",
         });
+        setLoading(false);
       } else if (res.status === 202) {
         console.log(res);
         setIsLogin(true);
@@ -96,47 +96,39 @@ const Login = () => {
           localStorage.getItem("refreshToken")
         );
         // toast success for admin login
-        toast.success("Welcome Back Admin", {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "success",
+          text: "Welcome back Admin",
         });
         setTimeout(() => {
+          setLoading(false);
           navigate("/lists");
         }, 2000);
       } else {
-        toast.error("Something went wrong... please try later", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+        setSnak({
+          type: "error",
+          text: "Somthing Error.. please tye again",
         });
+        setLoading(false);
       }
+      setIsSnakBar(true);
     },
   });
 
   return (
-    <div className="login-wrapper p-5 flex w-[100%] justify-center">
-      <Tostify />
-      <div className="login mt-16 flex flex-col items-center gap-4 p-5 border border-black rounded-md w-[25%]">
-        <h2 className="font-semibold text-2xl  text-center w-[100%]">
+    <div className='login-wrapper login-bg-img  min-h-[100vh]  p-5 flex w-[100%] justify-center items-center'>
+      <Loader />
+      {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+      <div className='login mt-[100px] relative right-[-300px] top-[50px] flex flex-col h-[300px] items-center    gap-4 p-5 rounded-lg w-[25%]'>
+        <h2 className='font-semibold text-2xl  text-center w-[100%]'>
           Login Here
         </h2>
         <form
           onSubmit={formik.handleSubmit}
-          className="flex-row space-y-2  w-[100%]"
+          className='flex-row space-y-2  w-[100%]'
         >
-          <div className="w-full flex justify-center">
-            <div className="w-[90%] ">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%] '>
               <Input
                 type={"email"}
                 lable={"Enter Email"}
@@ -147,12 +139,12 @@ const Login = () => {
                 name={"email"}
               />
               {formik.touched.email && formik.errors.email ? (
-                <div className="text-red-500">{formik.errors.email}</div>
+                <div className='text-red-500'>{formik.errors.email}</div>
               ) : null}
             </div>
           </div>
-          <div className="w-full flex justify-center">
-            <div className="w-[90%]">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%]'>
               <Input
                 type={"password"}
                 lable={"Enter Password"}
@@ -163,16 +155,16 @@ const Login = () => {
                 name={"password"}
               />
               {formik.touched.password && formik.errors.password ? (
-                <div className="text-red-500">{formik.errors.password}</div>
+                <div className='text-red-500'>{formik.errors.password}</div>
               ) : null}
             </div>
           </div>
-          <div className="w-full flex justify-center">
-            <div className="w-[100px]">
+          <div className='w-full flex justify-center'>
+            <div className='w-[90%]'>
               <Button
                 type={"submit"}
                 lable={"Login"}
-                className={"btn rounded-md w-[100px]"}
+                className={"btn rounded-md w-full font-semibold"}
               />
             </div>
           </div>
@@ -180,12 +172,13 @@ const Login = () => {
         <p>
           Are You New User?
           <span
-            className="text-blue-600 cursor-pointer"
+            className='text-blue-600 cursor-pointer'
             onClick={() => {
-              navigate("/");
+              navigate("/signup");
             }}
           >
-            Register
+            {" "}
+            &nbsp; Register
           </span>
         </p>
       </div>

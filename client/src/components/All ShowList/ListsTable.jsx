@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import Button from "../Reusable Components/Button";
 import { useNavigate } from "react-router-dom";
-import UserProfile from "./UserProfile";
+// import UserProfile from "./UserProfile";
 
 //MUI-style:
 const Tcell = styled(TableCell)`
@@ -45,9 +45,9 @@ const ListsTable = ({ allData }) => {
               allData.map((user) => (
                 <TableRow
                   className="hover:bg-[#c5c5c5] cursor-pointer"
-                  onClick={() => {
-                    navigate(`/admin/user/profile/${user._id}`);
-                  }}
+                  // onClick={() => {
+                  //   navigate(`/admin/user/profile/${user._id}`);
+                  // }}
                   key={user._id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >

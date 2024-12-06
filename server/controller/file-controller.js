@@ -82,7 +82,23 @@ export const saveURLIntoDB = async (req, res) => {
 // generate presined for posts
 export const sendPreSignedURLFORPOST = async (req, res) => {
   console.log(req.body);
-  const fileName = `${uuidv4()}.${req.body.fileType.split("/")[1]}`; // Generate a unique file name
+  let fileName;
+
+  if (
+    req.body.fileType ===
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ) {
+    fileName = `${uuidv4()}.xlsx`; // Generate a unique file name
+  } else if (
+    req.body.fileType ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    fileName = `${uuidv4()}.docx`; // Generate a unique file name
+  } else if (req.body.fileType === "application/pdf") {
+    fileName = `${uuidv4()}.pdf`; // Generate a unique file name
+  } else {
+    fileName = `${uuidv4()}.${req.body.fileType.split("/")[1]}`; // Generate a unique file name
+  }
 
   try {
     const putObject = async (data) => {
@@ -107,6 +123,31 @@ export const sendPreSignedURLFORPOST = async (req, res) => {
   } catch (error) {
     console.log(
       `error while calling sendPreSignedURLFORPOST API & error is ${error.message}`
+    );
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// generate presigend url for download
+
+export const sendURLForDownload = async (req, res) => {
+  console.log("presined url generation is ", req.body);
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: `PostPicture/${req.body.fileName}`,
+      Expires: 60, // Expiry time for the link
+      ResponseContentDisposition: `attachment; filename="${req.body.fileName}"`,
+    });
+    const url = await getSignedUrl(s3Client, command);
+    if (url) {
+      res.status(200).json({ url });
+    } else {
+      res.status(201).json({ message: "URL NOT FOUND FROM AWS" });
+    }
+  } catch (error) {
+    console.log(
+      `error while calling sendURLForDownload API & error is ${error.message}`
     );
     res.status(500).json({ message: "Internal Server Error" });
   }

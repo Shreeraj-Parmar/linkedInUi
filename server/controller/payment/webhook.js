@@ -1,0 +1,94 @@
+import Stripe from "stripe";
+import Company from "../../model/company.js";
+import User from "../../model/user.js";
+import StripeCustomer from "../../model/stripe-customer.js";
+import Subscription from "../../model/subscription.js";
+// import getRawBody from "raw-body";
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+
+
+export const handleStripeWebhook = async (req, res) => {
+
+    const sig = req.headers["stripe-signature"];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+        // console.log("event is from signature", event);
+
+
+        switch (event.type) {
+            case "invoice.paid":
+                let obje = {
+
+                    customerId: event.data.object.customer,
+
+                    subscriptionId: event.data.object.subscription,
+                    provider: "stripe",
+                };
+                // console.log("dara is", event.data.object);
+
+                const customer = await stripe.customers.retrieve(obje.customerId);
+                // console.log("customer is", customer);
+                obje.userId = customer.metadata.userId;
+                const subscription = await stripe.subscriptions.retrieve(event.data.object.subscription);
+
+                let planName;
+                switch (subscription.plan.product) {
+                    case process.env.STRIPE_FREEBIE_MONTHLY:
+                        planName = "Freebie";
+                        break;
+                    case process.env.STRIPE_FREEBIE_YEARLY:
+                        planName = "Freebie";
+                        break;
+                    case process.env.STRIPE_PROFESSIONAL_MONTHLY:
+                        planName = "Professional";
+                        break;
+                    case process.env.STRIPE_PROFESSIONAL_YEARLY:
+                        planName = "Professional";
+                        break;
+                    case process.env.STRIPE_ENTERPRISE_MONTHLY:
+                        planName = "Enterprise";
+                        break;
+                    case process.env.STRIPE_ENTERPRISE_YEARLY:
+                        planName = "Enterprise";
+                        break;
+                    default:
+                        planName = "none";
+                }
+                obje.start_date = subscription.current_period_start;
+                obje.end_date = subscription.current_period_end;
+
+                obje.plan = {
+                    name: planName,
+                    interval: subscription.plan.interval,
+                }
+
+                console.log("obje is", obje);
+                const newSub = new Subscription(obje);
+                await newSub.save();
+
+
+                // console.log("subscription is", subscription);
+                // console.log(paymentIntent);
+                break;
+            case "invoice.payment_failed":
+                const paymentFailed = event.data.object;
+                console.log("Payment Failed");
+                // console.log(paymentFailed);
+                break;
+            default:
+                console.log(`Unhandled event type ${event.type}`);
+        }
+
+
+    } catch (err) {
+        console.log("stripe event", err);
+        res.status(400).send(`Webhook Error: ${err.message}`);
+        return;
+    }
+
+}

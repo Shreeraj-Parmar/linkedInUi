@@ -1,0 +1,337 @@
+import React, { useEffect, useState, useContext, useRef } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import { Dialog } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import SnakBar from "../SnakBar.jsx";
+
+import {
+  getURLForPOST,
+  uploadFileAWS,
+  updatePostData,
+} from "../../services/api.js";
+
+const dialogStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  margin: "auto",
+  Width: "90vw",
+  color: "#000",
+
+  maxHeight: "75vh",
+
+  //   overflow: "hidden",
+  borderRadius: "8px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "#F4F2EE",
+};
+
+const UpdatePostDialog = ({
+  setSnak,
+  snak,
+  updatePostDialog,
+  actAs,
+  setIsSnakBar,
+  setAllPost,
+  setUpdatePostDialog,
+  setShowAllMedia,
+  setSelectedPostForUpdate,
+  selectedPostForUpdate,
+}) => {
+  const [previewUrl, setPreviewUrl] = useState([]); // for image preview
+  const [postFile, setPostFile] = useState([]);
+  const [postText, setPostText] = useState(selectedPostForUpdate.text);
+  const [uploadedUrls, setUploadedUrls] = useState([]);
+  const postPhotoRef = useRef();
+  useEffect(() => {
+    const UrlFromPost = selectedPostForUpdate.mediaUrls.map((media) => {
+      return {
+        url: media.url,
+        fileType: media.fileType,
+      };
+    });
+    setUploadedUrls(UrlFromPost);
+    // const PreviewSet = selectedPostForUpdate.mediaUrls.map((media) => {
+    //   return media.url;
+    // });
+    setPreviewUrl(UrlFromPost);
+    console.log("url from post is", UrlFromPost);
+    return () => {};
+  }, []);
+
+  const handlePostFileClick = () => {
+    postPhotoRef.current.click();
+    console.log("clicked", previewUrl);
+    console.log("postFile", postFile);
+    console.log("uploadedUrls", uploadedUrls);
+  };
+
+  const handlePostFileChange = (e) => {
+    setIsSnakBar(true);
+    const files = Array.from(e.target.files); // Convert FileList to an array
+    if (postFile.includes(files[0])) {
+      setSnak({
+        type: "error",
+        text: "File already selected !",
+      });
+      return;
+    }
+    setPostFile((prevFiles) => [...prevFiles, ...files]); // Append new files to the existing array
+    const previews = files.map((file) => ({
+      url: URL.createObjectURL(file),
+      fileType: file.type,
+      name: file.name,
+    })); // Generate previews for all new files
+    setPreviewUrl((prevUrls) => [...prevUrls, ...previews]);
+  };
+
+  const handlePostSubmit = async () => {
+    setIsSnakBar(true);
+    if (postText === "" && previewUrl.length === 0) {
+      setSnak({
+        type: "error",
+        text: "Please Write Somthing Or Select Photo. !",
+      });
+      return;
+    }
+
+    let newUrls = []; // Array to store uploaded file URLs
+
+    if (postFile.length > 0) {
+      for (const file of postFile) {
+        let res = await getURLForPOST({ fileType: file.type });
+        if (res.status === 200) {
+          const nameOfFile = res.data.fileName;
+
+          let resOfAWS = await uploadFileAWS({
+            uploadURL: res.data.url,
+            postFile: file,
+            fileType: file.type,
+          });
+
+          if (resOfAWS.status === 200) {
+            const bucket = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
+            const region = import.meta.env.VITE_AWS_REGION;
+            const permanentUrlForPost = `https://${bucket}.s3.${region}.amazonaws.com/PostPicture/${nameOfFile}`;
+            newUrls.push({
+              url: permanentUrlForPost,
+              fileType: file.type,
+            }); // Store the uploaded URL
+          } else {
+            setSnak({
+              type: "error",
+              text: "Error While Uploading IMAGE . !",
+            });
+          }
+        }
+      }
+
+      console.log("total New urls", newUrls);
+
+      let newUploadUrl = [...uploadedUrls, ...newUrls];
+      setUploadedUrls(newUploadUrl);
+
+      console.log("new upload in mongo url is", newUploadUrl);
+
+      // save post in db
+      let res = await updatePostData({
+        postId: selectedPostForUpdate._id,
+        mediaUrls: newUploadUrl,
+        text: postText,
+        who: actAs.id,
+        helo: "asdsd",
+      });
+
+      if (res.status === 200) {
+        console.log("post saved successfully");
+        setSnak({
+          type: "success",
+          text: "Post Updated Successfully !",
+        });
+
+        setAllPost((prev) =>
+          prev.map((post) =>
+            post._id === selectedPostForUpdate._id
+              ? { ...post, text: postText, mediaUrls: newUploadUrl }
+              : post
+          )
+        );
+        setShowAllMedia((prev) => ({
+          ...prev,
+          [selectedPostForUpdate._id]: false,
+        }));
+        setPostText("");
+        setPostFile(null);
+        setPreviewUrl([]);
+        setUpdatePostDialog(false);
+      } else {
+        setSnak({
+          type: "error",
+          text: " Error While Uploading IMAGE . !",
+        });
+        console.log("error while generating url");
+
+        setPostFile([]);
+        setPreviewUrl([]);
+        setPostText("");
+      }
+    } else {
+      console.log("new upload in mongo url is", uploadedUrls);
+      let res = await updatePostData({
+        postId: selectedPostForUpdate._id,
+        mediaUrls: uploadedUrls,
+        text: postText,
+        createdId: actAs.id,
+      });
+      if (res.status === 200) {
+        setSnak({
+          type: "success",
+          text: "Post Updated Successfully !",
+        });
+        setAllPost((prev) =>
+          prev.map((post) =>
+            post._id === selectedPostForUpdate._id
+              ? { ...post, text: postText, mediaUrls: uploadedUrls }
+              : post
+          )
+        );
+
+        console.log("post saved successfully");
+
+        setPostText("");
+        setPostFile(null);
+        setPreviewUrl([]);
+        setUpdatePostDialog(false);
+      } else {
+        console.log("error while generating url");
+      }
+    }
+
+    setPostFile([]);
+    setPreviewUrl([]);
+  };
+
+  return (
+    <Dialog
+      open={updatePostDialog}
+      PaperProps={{
+        sx: {
+          ...dialogStyle,
+        },
+      }}
+    >
+      <div className='w-[100%] p-5 mt-[5%] h-[100%]'>
+        {snak.type && <SnakBar type={snak.type} text={snak.text} />}
+
+        <div className='p-4 '>
+          <div>
+            <textarea
+              name='post'
+              onChange={(e) => {
+                setPostText(e.target.value);
+              }}
+              rows={6}
+              value={postText}
+              className=' text-xl text-black w-[100%] bg-white border-2 border-gray-400 border-opacity-80 rounded-md p-2'
+              placeholder='What Do You Want To Talk About?'
+              id='post'
+            ></textarea>
+          </div>
+
+          {postFile && (
+            <div className='previews flex gap-2  justify-start p-2 items-center flex-wrap'>
+              {previewUrl.map((pre, index) => (
+                <div
+                  key={index}
+                  className={`relative border-2 border-gray-400 border-opacity-40  animate-fadeIn  rounded-md preview-post`}
+                  id={`preview-${index}`}
+                >
+                  {previewUrl[index].fileType === "video/mp4" ? (
+                    <video
+                      src={pre.url}
+                      controls
+                      className='w-[118px] h-[120px] rounded-md '
+                    />
+                  ) : (
+                    <img
+                      src={pre.url}
+                      alt='preview'
+                      className='w-[118px] h-[120px] rounded-md preview-post'
+                    />
+                  )}
+                  <CloseIcon
+                    onClick={() => {
+                      setPreviewUrl((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                      setUploadedUrls((prev) =>
+                        prev.filter((obj) => obj.url !== pre.url)
+                      );
+                      const updatedFiles = postFile.filter(
+                        (file) => file.name !== pre.name // Compare using file name
+                      );
+                      setPostFile(updatedFiles);
+                    }}
+                    fontSize='small'
+                    className='absolute top-[-9px]  right-[-8px] hover:text-[#e74c3c] text-[#ffffff] bg-[#4f4f4f] rounded-full cursor-pointer'
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <AddPhotoAlternateIcon
+            className=' cursor-pointer text-blue-400'
+            fontSize='large'
+            onClick={() => {
+              handlePostFileClick();
+            }}
+          />
+
+          <div className='profile-file-form'>
+            <input
+              type='file'
+              multiple // Enable multiple file selection
+              name=''
+              id=''
+              ref={postPhotoRef}
+              onChange={(e) => {
+                handlePostFileChange(e);
+              }}
+            />
+          </div>
+        </div>
+        <div className='flex justify-end'>
+          <button
+            className='bg-[#4eacff] text-black p-2 mr-3 mb-3 hover:bg-[#2c618f] rounded-md'
+            onClick={() => {
+              handlePostSubmit();
+            }}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+
+      <div
+        className='absolute top-[15px] right-[20px] text-2xl cursor-pointer'
+        onClick={() => {
+          setPostFile([]);
+          setPreviewUrl([]);
+          setUpdatePostDialog(false);
+        }}
+      >
+        <IconButton>
+          <CloseIcon />
+        </IconButton>
+      </div>
+    </Dialog>
+  );
+};
+
+export default UpdatePostDialog;

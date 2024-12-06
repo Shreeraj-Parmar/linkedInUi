@@ -1,4 +1,8 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect, useRef } from "react";
+
+import { getUserData, verifyToken, refresIt } from "./../services/api.js";
+import { io } from "socket.io-client";
+const socketLinkURL = import.meta.env.VITE_SOCKET_LINK_URL;
 
 export const AllContext = createContext(null);
 
@@ -30,6 +34,90 @@ const UserContext = ({ children }) => {
   const [currUserData, setCurrUserData] = useState(null);
   const [file, setFile] = useState(null);
   const [currMenu, setCurrMenu] = useState("home");
+  const [currConversationId, setCurrConversationId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [socket, setSocket] = useState(null);
+  const [unreadMSG, setUnreadMSG] = useState({});
+  const [IsSnakBar, setIsSnakBar] = useState(true);
+  const [lightMode, setLightMode] = useState(true);
+  const [actAs, setActAs] = useState({});
+  const [changeAsDialog, setChangeAsDialog] = useState(false);
+  const [createDialog, setCreateDialog] = useState(false);
+
+  const [selectCompanyForJob, setSelectCompanyForJob] = useState(null);
+
+  const [loginDialog, setLoginDialog] = useState(false);
+
+  const [allOnlineUsers, setAllOnlineUsers] = useState({});
+
+  // for loader
+  const [loading, setLoading] = useState(false);
+
+  const getData = async () => {
+    let res = await getUserData();
+    console.log(res.data);
+    setCurrUserData(res.data.user);
+  };
+  const verifyTokenForIslogin = async () => {
+    let res = await verifyToken();
+    if (res.status === 200) {
+      console.log("TOken is valid");
+      getData();
+      setIsLogin(true);
+    } else if (res.status === 204) {
+      console.log("TOken is invalid ! please relogin");
+      // window.location.href = "/login";
+      setIsLogin(false);
+    }
+  };
+
+  const refreshMyToken = async () => {
+    // TODO: add a try catch block in case the refresh token is invalid
+    try {
+      let res = await refresIt({
+        refreshToken: localStorage.getItem("refreshToken"),
+      });
+      // console.log(res);
+      localStorage.removeItem("token");
+      localStorage.setItem("token", res.data.accessToken);
+    } catch (err) {
+      console.error(err);
+      // If the refresh token is invalid, log the user out
+      setIsLogin(false);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+    }
+  };
+
+  useEffect(() => {
+    setActAs({
+      type: "user",
+      id: currUserData && currUserData._id,
+    });
+  }, [currUserData]);
+
+  useEffect(() => {
+    verifyTokenForIslogin();
+    console.log("useEffect is nunning now Socket URL:", socketLinkURL);
+    let socketOn = io(socketLinkURL);
+    console.log("Socket URL:", socketLinkURL);
+
+    socketOn.on("connect", () => {
+      console.log("Socket connected with ID:", socketOn.id);
+    });
+    setSocket(socketOn);
+    const refreshInterval = setInterval(() => {
+      refreshMyToken();
+    }, 6 * 60 * 1000); // 6 minutes
+
+    return () => {
+      socketOn.off("receive_message");
+      socketOn.off("online_users");
+      socketOn.off("join_conversation");
+      socketOn.disconnect();
+      clearInterval(refreshInterval);
+    };
+  }, []);
 
   return (
     <AllContext.Provider
@@ -42,17 +130,43 @@ const UserContext = ({ children }) => {
         defaultSignUpdata,
         allUserData,
         setAllUserData,
+        allOnlineUsers,
+        setAllOnlineUsers,
         currUserData,
         setCurrUserData,
+        IsSnakBar,
+        setIsSnakBar,
         selectMenu,
         setSelectMenu,
-
+        selectCompanyForJob,
+        setSelectCompanyForJob,
         isLogin,
         setIsLogin,
+        changeAsDialog,
+        createDialog,
+        setCreateDialog,
+        setChangeAsDialog,
+        loginDialog,
+        setLoginDialog,
         file,
         setFile,
         currMenu,
         setCurrMenu,
+        actAs,
+        setActAs,
+        currConversationId,
+        setCurrConversationId,
+        messages,
+        setMessages,
+        loading,
+
+        socket,
+
+        setLoading,
+        lightMode,
+        setLightMode,
+        unreadMSG,
+        setUnreadMSG,
       }}
     >
       {children}

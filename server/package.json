@@ -20,6 +20,9 @@
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.3",
+    "raw-body": "^3.0.0",
+    "socket.io": "^4.8.0",
+    "stripe": "^17.4.0",
     "uuid": "^10.0.0"
   }
 }
