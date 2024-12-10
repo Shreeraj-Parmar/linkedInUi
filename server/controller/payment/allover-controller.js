@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import Company from "../../model/company.js";
 import User from "../../model/user.js";
 import StripeCustomer from "../../model/stripe-customer.js";
+import Subscription from "../../model/subscription.js";
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 
@@ -395,5 +396,94 @@ export const createSubscription = async (req, res) => {
         res.status(500).json({
             err_server: "An error occurred while calling  createSubscription .",
         });
+    }
+}
+
+
+const verifySubscriptionIntoStripe = async (data) => {
+
+    const subscription = await stripe.subscriptions.retrieve(data.subscriptionId);
+    console.log("subscription is", subscription);
+
+    if (subscription && subscription.status === "active") {
+        return {
+            is_active: true,
+            plan: data.plan.name,
+            interval: data.plan.interval,
+            start_date: data.start_date,
+            end_date: data.end_date
+        };
+    } else {
+        return {
+            is_active: false
+        }
+    }
+}
+
+
+// verify subscription 
+export const verifySubscription = async (req, res) => {
+    console.log("verifySubscription called");
+    try {
+
+        let subscriptionAvailable = await Subscription.findOne({ userId: req._id });
+        if (!subscriptionAvailable) return res.status(201).json({ message: "Subscription Not Available" });
+
+        switch (subscriptionAvailable.provider) {
+            case "square":
+                // await createSubscriptionIntoSquare(data, req._id);
+                break;
+            case "paypal":
+                // await createSubscriptionIntoPayPal(data, req._id);
+                break;
+            case "stripe":
+                let resFrom = await verifySubscriptionIntoStripe(subscriptionAvailable);
+                return res.status(200).json({ obj: resFrom });
+
+            default:
+                return res.status(400).json({ message: "payment method Not Available" });
+        }
+
+    } catch (e) {
+        console.log("error while calling verifySubscription", e.message);
+    }
+}
+
+
+const cancleFromStripe = async (data) => {
+    const subscription = await stripe.subscriptions.retrieve(data.subscriptionId);
+    // console.log("subscription is", subscription);
+    if (subscription && subscription.status === "active") {
+        await stripe.subscriptions.cancel(data.subscriptionId);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+// cancleFromPaymentProvider
+export const cancleFromPaymentProvider = async (req, res) => {
+    try {
+        let subscriptionAvailable = await Subscription.findOne({ userId: req._id });
+        if (!subscriptionAvailable) return res.status(201).json({ message: "Subscription Not Available" });
+
+        switch (subscriptionAvailable.provider) {
+            case "square":
+                // await createSubscriptionIntoSquare(data, req._id);
+                break;
+            case "paypal":
+                // await createSubscriptionIntoPayPal(data, req._id);
+                break;
+            case "stripe":
+                let resFrom = await cancleFromStripe(subscriptionAvailable);
+                return res.status(200).json({ status: resFrom });
+
+            default:
+                return res.status(400).json({ message: "payment method Not Available" });
+        }
+
+    } catch (e) {
+        console.log("error while calling cancleFromPaymentProvider", e.message);
     }
 }

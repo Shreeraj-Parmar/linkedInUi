@@ -8,6 +8,14 @@ import Subscription from "../../model/subscription.js";
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 
+const handleInvoicePaymentFailed = async (id) => {
+    console.log("id is", id)
+    const res = await Subscription.findOneAndDelete({
+        subscriptionId: id
+    });
+    console.log(res)
+};
+
 
 export const handleStripeWebhook = async (req, res) => {
 
@@ -21,6 +29,30 @@ export const handleStripeWebhook = async (req, res) => {
 
 
         switch (event.type) {
+            case "customer.deleted":
+                // console.log("customer delete ");
+                // await Company.findOneAndUpdate(
+                //   {
+                //     "subscription.customer_id":
+                //       process.env.NODE_ENV === "production"
+                //         ? event?.data?.object?.customer
+                //         : event.data.customer,
+                //   },
+                //   {
+                //     "subscription.is_active": false,
+                //     "subscription.plan": "Free",
+                //     "subscription.customer": "",
+                //   }
+                // );
+                break;
+            case "customer.subscription.deleted":
+                console.log("customer.subscription.deleted");
+                await handleInvoicePaymentFailed(event.data.object.id);
+                break;
+            case "customer.subscription.pending_update_expired":
+                console.log("customer.subscription.pending_update_expired");
+                // await handleInvoicePaymentFailed(event.data);
+                break;
             case "invoice.paid":
                 let obje = {
 

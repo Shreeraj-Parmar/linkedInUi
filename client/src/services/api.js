@@ -1318,3 +1318,36 @@ export const createCheckoutSession = async (data) => {
     console.log(`error while calling subscribe & error is : ${error.message}`);
   }
 };
+
+// get subscription details
+export const checkSubscription = async () => {
+  try {
+    let res = await axios.get(`${API}/subscription/verify`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling checkSubscription & error is : ${error.message}`
+    );
+  }
+};
+
+
+// cancleSubscription for cancle the subscription
+export const cancleSubscription = async () => {
+  try {
+    let res = await axios.delete(`${API}/subscription/cancel`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling cancleSubscription & error is : ${error.message}`
+    );
+  }
+};

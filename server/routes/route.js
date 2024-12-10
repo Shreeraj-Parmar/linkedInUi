@@ -96,8 +96,8 @@ import {
   deleteJobInDB,
 } from "../controller/job-controller.js";
 
-import { sendSessionLink, disconnectFromPaymentProvder, verifyPaymentAccount, createSubscription } from "../controller/payment/allover-controller.js";
 import { handleStripeWebhook } from "../controller/payment/webhook.js"
+import { sendSessionLink, disconnectFromPaymentProvder, verifyPaymentAccount, createSubscription, verifySubscription, cancleFromPaymentProvider } from "../controller/payment/allover-controller.js";
 
 // webhook
 // router.post("/webhook/stripe", express.raw({ type: 'application/json' }), handleStripeWebhook);
@@ -109,6 +109,8 @@ router.post("/payment/connect", jwtMiddle, sendSessionLink);
 router.post("/payment/disconnect", jwtMiddle, disconnectFromPaymentProvder);
 router.post("/check-acc-status", jwtMiddle, verifyPaymentAccount);
 router.post("/subscription", jwtMiddle, createSubscription);
+router.get("/subscription/verify", jwtMiddle, verifySubscription);
+router.delete("/subscription/cancel", jwtMiddle, cancleFromPaymentProvider);
 
 // job apis
 

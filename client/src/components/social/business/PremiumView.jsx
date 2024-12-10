@@ -1,13 +1,107 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useCallback, useEffect, useRef, useState, useContext } from "react";
+
 import Navbar from '../Navbar';
 import SnakBar from '../../SnakBar';
-import { createCheckoutSession, checkAccountStatus } from '../../../services/api';
+import { createCheckoutSession, checkAccountStatus, checkSubscription, cancleSubscription } from '../../../services/api';
 import { AllContext } from '../../../context/UserContext';
 import Loader from '../../Loader/Loader';
 const PremiumView = () => {
     const [snak, setSnak] = useState({ type: null, text: null });
     const [monthPrice, setMonthPrice] = useState(true);
     const { currUserData, setIsSnakBar, setLoading } = useContext(AllContext);
+    const [anyPlan, setAnyPlan] = useState(null);
+    const [subscriptionDetails, setSubscriptionDetails] = useState(null);
+
+    const [countDownTime, setCountDownTime] = useState({
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+    });
+
+
+    const intervalId = useRef(null);
+
+
+
+    const getTimeDifference = useCallback((countDownDate) => {
+        const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
+        const timeDifference = countDownDate - currentTime;
+
+        const days = Math.floor(timeDifference / (24 * 60 * 60));
+        const hours = Math.floor((timeDifference % (24 * 60 * 60)) / (60 * 60));
+        const minutes = Math.floor((timeDifference % (60 * 60)) / 60);
+        const seconds = Math.floor(timeDifference % 60);
+
+        if (timeDifference <= 0) {
+            clearInterval(intervalId.current);
+            setCountDownTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        } else {
+            setCountDownTime({ days, hours, minutes, seconds });
+        }
+    }, []);
+
+    const startCountDown = useCallback((data) => {
+
+
+        const countDownDate = data; // Unix timestamp in seconds
+        intervalId.current = setInterval(() => {
+            getTimeDifference(countDownDate);
+        }, 1000);
+    }, [getTimeDifference]);
+
+
+
+
+    const checkSubscriptionData = async () => {
+        let res = await checkSubscription();
+        if (res.status === 200) {
+
+            console.log(res.data.obj);
+            if (res.data.obj.is_active) {
+                setAnyPlan(true);
+                startCountDown(res.data.obj.end_date);
+
+            } else {
+                return;
+            }
+            setSubscriptionDetails(res.data.obj);
+
+        } else if (res.status === 201) {
+            console.log(res.data.message);
+            setAnyPlan(false);
+        } else {
+            setAnyPlan(false);
+        }
+    }
+
+    useEffect(() => {
+        checkSubscriptionData();
+        return () => clearInterval(intervalId.current);
+    }, [])
+
+
+    const handleCancleSubscription = async () => {
+        setLoading(true);
+        setIsSnakBar(true);
+        let res = await cancleSubscription();
+        if (res.status === 200) {
+            console.log("webhook initialted");
+            setTimeout(() => {
+                setSnak({ type: "success", text: "Subscription canceled successfully!" });
+                setTimeout(() => {
+                    setLoading(false);
+
+                    window.location.href = "/premium";
+                }, 2000);
+            }, 4000);
+        } else {
+            console.log("error while cancle the subscription")
+        }
+    }
+
+
+
 
     const pricingData = [
         {
@@ -190,103 +284,145 @@ const PremiumView = () => {
 
                 <div className='main-display  min-h-[100vh] h-[90vh] m-auto  '>
 
-                    <container className="flex flex-col justify-center items-center py-3 bg-gray-300 min-h-screen font-sans">
-                        {/* heading section  */}
-                        <div className="flex flex-col w-auto px-6 text-center text-2xl sm:text-3xl md:text-4xl">
-                            <span className="font-medium">Powerful features for</span>
-                            <span
-                                className="font-medium pt-4 text-transparent bg-clip-text bg-[#365CCE]"
-                            >
-                                powerful creators.
-                            </span>
-                            <span className="text-xl mt-4">
-                                Chose a plan that&apos;s right for you
-                            </span>
-                            <div className="text-base mt-8 md:mt-12 gap-4 flex items-center justify-center pl-5">
-                                <span>Pay monthly </span>
-                                <div className="items-center flex">
-                                    <label
-                                        htmlFor="small-toggle"
-                                        className="inline-flex relative cursor-pointer"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            value=""
-                                            onClick={() => setMonthPrice(!monthPrice)}
-                                            id="small-toggle"
-                                            className="sr-only peer"
-                                        />
-                                        <div
-                                            className="w-9 h-5 flex-1 align-middle bg-gray-200 peer-focus:outline-none dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-[#365CCE]"
-                                        ></div>
-                                    </label>
-                                </div>
-                                <span>Pay yearly</span>
-                            </div>
-                        </div>
-                        <div className="w-[300px] sm:w-[350px] md:w-[590px] flex justify-end pt-2 md:pt-0">
-                            <Arrow strokColor={`#365CCE`} />
-                            <span
-                                className="text-sm md:text-lg text-[#365CCE] font-medium pr-2 pt-2"
-                            >
-                                50% Discount
-                            </span>
-                        </div>
-                        {/* pricing section   */}
-                        <div className="flex flex-col lg:flex-row gap-6 h-full px-5">
-                            {pricingData.map((data, index) => (
-                                <div
-                                    className={`flex flex-col h-full max-w-[378px] py-6 px-5 sm:px-10 lg:w-auto xl:w-[378px] rounded-xl ${data?.isSelected
-                                        ? `bg-[#365CCE] text-white`
-                                        : "bg-white text-black"
-                                        }`}
-                                    key={index}
-                                >
-                                    <div className="flex flex-col text-left">
-                                        <div className="flex flex-col gap-3">
-                                            <span className="text-2xl">{data?.mainTitle}</span>
-                                            <span>{data?.infoNote}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 my-4">
-                                            <span className="text-6xl font-semibold">
-                                                ${monthPrice ? data?.monthlyPrice : data?.yerlyPrice}
-                                            </span>
-                                            <span className="font-light">
-                                                /&nbsp;&nbsp;{monthPrice ? "Month" : "Year"}
-                                            </span>
-                                        </div>
+
+
+
+
+                    {
+                        anyPlan ?
+                            <>
+
+                                <container className="flex flex-col justify-center items-center py-3 bg-gray-300 min-h-screen font-sans">
+                                    <div className="flex flex-col w-auto px-6 text-center text-2xl sm:text-3xl md:text-4xl">
+                                        <span className="font-medium">You Subscribed</span>
+                                        <span
+                                            className="font-medium pt-4 text-transparent bg-clip-text bg-[#365CCE]"
+                                        >
+                                            {subscriptionDetails.plan} {subscriptionDetails.interval === "month" ? "Monthly" : "yearly"} Plan
+                                        </span>
                                         <button
-                                            className={`w-full border-[1px] cursor-pointer rounded py-2.5 text-[#365CCE] ${data?.isSelected
-                                                ? "bg-white"
-                                                : "bg-transparent border-[#365CCE]"
-                                                }`}
+                                            className={`w-full mt-4 border-[1px] cursor-pointer border-red-500 hover:bg-red-200 rounded py-2.5 text-[#f00] }`}
                                             onClick={() => {
-                                                handleCheckoutSeesionForSubscription(data);
+                                                handleCancleSubscription();
                                             }}
                                         >
-                                            Get Started Now
+                                            Cancle Plan
                                         </button>
-                                        <div className="mt-10 space-y-3">
-                                            {data?.getIn?.map((description, index) => (
-                                                <div className="flex items-center gap-4 max-w-xs" key={index}>
-                                                    <div className="w-8 h-8">
-                                                        {description?.rightIcon ? (
-                                                            <RightIcon fillColor={`#365CCE`} />
-                                                        ) : (
-                                                            <CloseIcon fillColor={`#365CCE`} />
-                                                        )}
-                                                    </div>
-                                                    <span className="font-medium text-base">
-                                                        {description?.description}
-                                                    </span>
-                                                </div>
-                                            ))}
+                                        <div className="flex mt-3 justify-center items-center">
+                                            <p className="text-sm">
+                                                ends in
+                                            </p> &nbsp;
+                                            <p className="text-sm font-semibold">
+                                                {`   ${countDownTime.days} days, ${countDownTime.hours} hours, ${countDownTime.minutes} minutes, ${countDownTime.seconds} seconds`}
+                                            </p>
                                         </div>
+
+                                    </div>
+                                </container>
+
+                            </>
+
+                            :
+                            <container className="flex flex-col justify-center items-center py-3 bg-gray-300 min-h-screen font-sans">
+                                {/* heading section  */}
+                                <div className="flex flex-col w-auto px-6 text-center text-2xl sm:text-3xl md:text-4xl">
+                                    <span className="font-medium">Powerful features for</span>
+                                    <span
+                                        className="font-medium pt-4 text-transparent bg-clip-text bg-[#365CCE]"
+                                    >
+                                        powerful creators.
+                                    </span>
+                                    <span className="text-xl mt-4">
+                                        Chose a plan that&apos;s right for you
+                                    </span>
+                                    <div className="text-base mt-8 md:mt-12 gap-4 flex items-center justify-center pl-5">
+                                        <span>Pay monthly </span>
+                                        <div className="items-center flex">
+                                            <label
+                                                htmlFor="small-toggle"
+                                                className="inline-flex relative cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value=""
+                                                    onClick={() => setMonthPrice(!monthPrice)}
+                                                    id="small-toggle"
+                                                    className="sr-only peer"
+                                                />
+                                                <div
+                                                    className="w-9 h-5 flex-1 align-middle bg-gray-200 peer-focus:outline-none dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-[#365CCE]"
+                                                ></div>
+                                            </label>
+                                        </div>
+                                        <span>Pay yearly</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </container>
+                                <div className="w-[300px] sm:w-[350px] md:w-[590px] flex justify-end pt-2 md:pt-0">
+                                    <Arrow strokColor={`#365CCE`} />
+                                    <span
+                                        className="text-sm md:text-lg text-[#365CCE] font-medium pr-2 pt-2"
+                                    >
+                                        50% Discount
+                                    </span>
+                                </div>
+                                {/* pricing section   */}
+                                <div className="flex flex-col lg:flex-row gap-6 h-full px-5">
+                                    {pricingData.map((data, index) => (
+                                        <div
+                                            className={`flex flex-col h-full max-w-[378px] py-6 px-5 sm:px-10 lg:w-auto xl:w-[378px] rounded-xl ${data?.isSelected
+                                                ? `bg-[#365CCE] text-white`
+                                                : "bg-white text-black"
+                                                }`}
+                                            key={index}
+                                        >
+                                            <div className="flex flex-col text-left">
+                                                <div className="flex flex-col gap-3">
+                                                    <span className="text-2xl">{data?.mainTitle}</span>
+                                                    <span>{data?.infoNote}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3 my-4">
+                                                    <span className="text-6xl font-semibold">
+                                                        ${monthPrice ? data?.monthlyPrice : data?.yerlyPrice}
+                                                    </span>
+                                                    <span className="font-light">
+                                                        /&nbsp;&nbsp;{monthPrice ? "Month" : "Year"}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    className={`w-full border-[1px] cursor-pointer rounded py-2.5 text-[#365CCE] ${data?.isSelected
+                                                        ? "bg-white"
+                                                        : "bg-transparent border-[#365CCE]"
+                                                        }`}
+                                                    onClick={() => {
+                                                        handleCheckoutSeesionForSubscription(data);
+                                                    }}
+                                                >
+                                                    Get Started Now
+                                                </button>
+                                                <div className="mt-10 space-y-3">
+                                                    {data?.getIn?.map((description, index) => (
+                                                        <div className="flex items-center gap-4 max-w-xs" key={index}>
+                                                            <div className="w-8 h-8">
+                                                                {description?.rightIcon ? (
+                                                                    <RightIcon fillColor={`#365CCE`} />
+                                                                ) : (
+                                                                    <CloseIcon fillColor={`#365CCE`} />
+                                                                )}
+                                                            </div>
+                                                            <span className="font-medium text-base">
+                                                                {description?.description}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className='mt-8 text-sm'>Curruntly You Have No any Plan</p>
+                            </container>
+                    }
+
                 </div>
             </div>
         </div>
