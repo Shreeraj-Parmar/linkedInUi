@@ -1351,3 +1351,20 @@ export const cancleSubscription = async () => {
     );
   }
 };
+
+
+// send Reward
+export const checkOutReward = async (data) => {
+  try {
+    let res = await axios.post(`${API}/reward/checkout`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res;
+  } catch (error) {
+    console.log(
+      `error while calling checkOutReward & error is : ${error.message}`
+    );
+  }
+};

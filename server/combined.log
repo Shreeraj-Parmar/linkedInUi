@@ -1,0 +1,114 @@
+{"level":"info","message":"server started"}
+{"level":"error","message":"server started"}
+{"level":"debug","message":"server started"}
+{"level":"warn","message":"server started"}
+{"level":"info","message":"server started"}
+{"level":"error","message":"server started"}
+{"level":"debug","message":"server started"}
+{"level":"warn","message":"server started"}
+2024-12-13T13:19:14.380Z [development] info: server started
+2024-12-13T13:19:14.383Z [development] error: server started
+2024-12-13T13:19:14.384Z [development] debug: server started
+2024-12-13T13:19:14.385Z [development] warn: server started
+2024-12-13T13:19:57.687Z [undefined] info: server started
+2024-12-13T13:19:57.690Z [undefined] error: server started
+2024-12-13T13:19:57.690Z [undefined] debug: server started
+2024-12-13T13:19:57.691Z [undefined] warn: server started
+2024-12-13T13:20:24.359Z [undefined] info: server started
+2024-12-13T13:20:24.361Z [undefined] error: server started
+2024-12-13T13:20:24.362Z [undefined] debug: server started
+2024-12-13T13:20:24.362Z [undefined] warn: server started
+2024-12-13 18:50:55 [undefined] info: server started
+2024-12-13 18:50:55 [undefined] error: server started
+2024-12-13 18:50:55 [undefined] debug: server started
+2024-12-13 18:50:55 [undefined] warn: server started
+2024-12-13 18:51:50 info: server started
+2024-12-13 18:51:50 error: server started
+2024-12-13 18:51:50 debug: server started
+2024-12-13 18:51:50 warn: server started
+2024-12-13 18:52:03 [info]: server started
+2024-12-13 18:52:03 [error]: server started
+2024-12-13 18:52:03 [debug]: server started
+2024-12-13 18:52:03 [warn]: server started
+2024-12-13 18:54:29 [[32minfo[39m]: server started
+2024-12-13 18:54:29 [[31merror[39m]: server started
+2024-12-13 18:54:29 [[34mdebug[39m]: server started
+2024-12-13 18:54:29 [[33mwarn[39m]: server started
+2024-12-13 18:54:54 [[32minfo[39m]: server started
+2024-12-13 18:54:54 [[31merror[39m]: server started
+2024-12-13 18:54:54 [[34mdebug[39m]: server started
+2024-12-13 18:54:54 [[33mwarn[39m]: server started
+2024-12-13 18:55:24 [[32minfo[39m]: server started
+2024-12-13 18:55:24 [[31merror[39m]: server started
+2024-12-13 18:55:24 [[34mdebug[39m]: server started
+2024-12-13 18:55:24 [[33mwarn[39m]: server started
+2024-12-13 18:56:20 [[32minfo[39m]: server started
+2024-12-13 18:56:20 [[31merror[39m]: server started
+2024-12-13 18:56:20 [[34mdebug[39m]: server started
+2024-12-13 18:56:20 [[33mwarn[39m]: server started
+2024-12-13 18:57:06 [[32minfo[39m]: server started
+2024-12-13 18:57:06 [[31merror[39m]: server started
+2024-12-13 18:57:06 [[34mdebug[39m]: server started
+2024-12-13 18:57:06 [[33mwarn[39m]: server started
+2024-12-13 18:59:38 [[32minfo[39m]: server started
+2024-12-13 18:59:38 [[31merror[39m]: server started
+2024-12-13 18:59:38 [[34mdebug[39m]: server started
+2024-12-13 18:59:38 [[33mwarn[39m]: server started
+2024-12-13 18:59:52 [info]: server started
+2024-12-13 18:59:52 [error]: server started
+2024-12-13 18:59:52 [debug]: server started
+2024-12-13 18:59:52 [warn]: server started
+2024-12-13 19:01:49 [[32minfo[39m]: server started
+2024-12-13 19:01:49 [[31merror[39m]: server started
+2024-12-13 19:01:49 [[34mdebug[39m]: server started
+2024-12-13 19:01:49 [[33mwarn[39m]: server started
+2024-12-13 19:02:26 [[32minfo[39m]: server started
+2024-12-13 19:02:26 [[31merror[39m]: server started
+2024-12-13 19:02:26 [[34mdebug[39m]: server started
+2024-12-13 19:02:26 [[33mwarn[39m]: server started
+2024-12-13 19:05:52 [[32minfo[39m]: server started
+2024-12-13 19:05:52 [[31merror[39m]: server started
+2024-12-13 19:05:52 [[34mdebug[39m]: server started
+2024-12-13 19:05:52 [[33mwarn[39m]: server started
+2024-12-13 19:10:55 [[32minfo[39m]: server started
+2024-12-13 19:10:55 [[31merror[39m]: server started
+2024-12-13 19:10:55 [[34mdebug[39m]: server started
+2024-12-13 19:10:55 [[33mwarn[39m]: server started
+2024-12-13 19:11:06 [[32minfo[39m]: server started
+2024-12-13 19:11:06 [[31merror[39m]: server started
+2024-12-13 19:11:06 [[34mdebug[39m]: server started
+2024-12-13 19:11:06 [[33mwarn[39m]: server started
+2024-12-13 19:12:41 [[32minfo[39m]: server started
+2024-12-13 19:12:41 [[31merror[39m]: server started
+2024-12-13 19:12:41 [[34mdebug[39m]: server started
+2024-12-13 19:12:41 [[33mwarn[39m]: server started
+2024-12-13 19:14:05 [[32minfo[39m]: server started
+2024-12-13 19:14:05 [[31merror[39m]: server started
+2024-12-13 19:14:05 [[34mdebug[39m]: server started
+2024-12-13 19:14:05 [[33mwarn[39m]: server started
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /user 304 - - 82.799 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /token/verify 200 36 - 48.900 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User 304 - - 71.054 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /notification/count 201 34 - 92.713 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /connection-req/count 200 11 - 88.009 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /post/all?page=1&limit=3 304 - - 117.001 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User 304 - - 42.332 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /notification/count 201 34 - 20.611 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /user/same-city?page=1&limit=7 304 - - 147.657 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /connection-req/count 304 - - 35.944 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  POST /user/url-check 200 116 - 160.131 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  GET /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User 304 - - 26.479 ms
+2024-12-13 19:26:37 [[32minfo[39m]: [13/Dec/2024:13:56:37 +0000]  POST /refresh-verify 200 179 - 23.027 ms
+2024-12-13 19:28:43 [[32minfo[39m]: [13/Dec/2024:13:58:43 +0000] --- GET --- /conversation?reqId=6731ae0cf56f4cf901784b1c&reqIdType=user --- 404 36 - 58.281 ms
+2024-12-13 19:28:43 [[32minfo[39m]: [13/Dec/2024:13:58:43 +0000] --- GET --- /notification/count --- 201 34 - 43.232 ms
+2024-12-13 19:28:43 [[32minfo[39m]: [13/Dec/2024:13:58:43 +0000] --- GET --- /connection-req/count --- 304 - - 41.284 ms
+2024-12-13 19:28:43 [[32minfo[39m]: [13/Dec/2024:13:58:43 +0000] --- GET --- /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User --- 304 - - 47.599 ms
+2024-12-13 19:28:43 [[32minfo[39m]: [13/Dec/2024:13:58:43 +0000] --- GET --- /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User --- 304 - - 8.377 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /notification/count --- 201 --- 34 --- 63.423 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User --- 304 --- - --- 51.953 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /jobs?what=all&page=1&limit=7undefinedundefined --- 304 --- - --- 61.338 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /connection-req/count --- 304 --- - --- 68.082 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /notification/count --- 201 --- 34 --- 19.054 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User --- 304 --- - --- 24.302 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /connection-req/count --- 304 --- - --- 19.446 ms
+2024-12-13 19:29:01 [[32minfo[39m]: [13/Dec/2024:13:59:01 +0000] --- GET --- /msg-unread?reqId=6731ae0cf56f4cf901784b1c&reqIdType=User --- 304 --- - --- 11.736 ms

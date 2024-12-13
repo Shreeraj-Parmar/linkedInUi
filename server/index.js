@@ -1,4 +1,6 @@
 import express from "express";
+import logger from "./logger/index.js";
+import morgan from "morgan";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotEnv from "dotenv";
@@ -11,6 +13,14 @@ import { handleStripeWebhook } from "./controller/payment/webhook.js";
 const app = express();
 app.use(cors());
 dotEnv.config();
+
+const morganFormat = "[:date[clf]] --- :method --- :url --- :status --- :res[content-length] --- :response-time ms";
+
+app.use(morgan(morganFormat, {
+  stream: {
+    write: (message) => logger.info(message.trim())
+  }
+}));
 
 app.post(
   "/webhook/stripe",

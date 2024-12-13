@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import Loader from "./../Loader/Loader.jsx";
 import {
   getUserDataAccId,
   sendFollowReq,
@@ -11,6 +12,7 @@ import {
   checkConnectionEachOther,
   deleteJob,
   getAllJobsAcc,
+  checkOutReward
 } from "../../services/api.js";
 import LoginDialog from "./LoginDialog.jsx";
 import { AllContext } from "../../context/UserContext.jsx";
@@ -23,7 +25,32 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import linkifyContent from "../../utils/linkify.js";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SnakBar from "../SnakBar.jsx";
+import CloseIcon from "@mui/icons-material/Close";
+import { Dialog, styled } from "@mui/material";
+
+
+const dialogStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  margin: "auto",
+  width: "30vw",
+  color: "#000",
+
+  maxHeight: "60vh",
+
+  //   overflow: "hidden",
+  borderRadius: "8px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "#F4F2EE",
+};
 
 const UserProfile = () => {
   const {
@@ -38,6 +65,7 @@ const UserProfile = () => {
     setIsSnakBar,
     setSelectCompanyForJob,
     setCurrConversationId,
+    setLoading,
   } = useContext(AllContext);
 
   const { userId } = useParams();
@@ -53,6 +81,8 @@ const UserProfile = () => {
   const [hasMore, setHasMore] = useState(true);
   const [jobList, setJobList] = useState([]);
   const [snak, setSnak] = useState({ type: null, text: null });
+  const [rewardDialog, setRewardDialog] = useState(false);
+  const [rewardDetails, setRewardDetails] = useState({ email: "", name: "", amount: null, payment_method: null });
 
   const maxLength = 100;
   const getUserDataFunc = async () => {
@@ -242,6 +272,24 @@ const UserProfile = () => {
     }
   };
 
+
+  const handleCheckoutReward = async () => {
+    console.log(rewardDetails);
+    setLoading(true);
+
+    let res = await checkOutReward({ ...rewardDetails, userId: userData?._id });
+    if (res.status === 200) {
+      console.log(res.data);
+      window.location.href = res.data.url;
+    } else {
+      console.log("somthing error");
+    }
+
+    setLoading(false);
+  }
+
+
+
   useLayoutEffect(() => {
     getUserDataFunc();
     // if (isLogin) createNoti();
@@ -255,6 +303,7 @@ const UserProfile = () => {
         setLoginDialog={setLoginDialog}
         loginDialog={loginDialog}
       />
+      <Loader />
       <div className='main-overview-wrapper   max-w-[100vw]  overflow-x-hidden'>
         {/* Navbar Apper in All Social Routs */}
         <Navbar />
@@ -290,9 +339,8 @@ const UserProfile = () => {
                   </p>
                 )}
                 <p className='text-[#686868] mt-2 text-sm'>
-                  {`${userData ? userData.city : ""}, ${
-                    userData ? userData.state : ""
-                  }, ${userData ? userData.country : ""}`}
+                  {`${userData ? userData.city : ""}, ${userData ? userData.state : ""
+                    }, ${userData ? userData.country : ""}`}
                 </p>
 
                 {userData && userData.website && userData.website.linkText ? (
@@ -406,9 +454,115 @@ const UserProfile = () => {
                         <span>Pending</span>
                       </button>
                     )}
+
                   </div>
                 )}
+              <button
+                onClick={() => {
+                  setRewardDialog(true);
+                }}
+                className='p-1 w-fit pr-2 flex space-x-1 rounded-full border-[2px] border-[#0A66C2] bg-[] text-[#0A66C2] hover:border-[#004182] hover:text-[#004182] '
+              >
+                <AttachMoneyIcon />
+                <span>Give Reward </span>
+              </button>
             </div>
+
+
+            {/* Reward Dialog Start Here */}
+
+            <Dialog
+              open={rewardDialog}
+              PaperProps={{
+                sx: {
+                  ...dialogStyle,
+                },
+              }}
+            >
+
+              <div>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  handleCheckoutReward();
+
+                }
+                }
+                  className="flex justify-center items-center"
+                >
+                  <div className="w-[70%] ">
+
+                    <input type="text" required name="name"
+                      placeholder="Enter Your Name"
+                      className="border-2  rounded-full bg-white border-black  mt-[3px] border-opacity-70 placeholder:text-[#908282]  w-[100%] text-black h-[30px] p-5"
+                      onChange={(e) => {
+                        setRewardDetails({ ...rewardDetails, name: e.target.value });
+                      }}
+                    />
+                    <input type="email" required name="email"
+                      placeholder="Enter Your Email"
+                      className="border-2  rounded-full bg-white border-black  mt-[3px] border-opacity-70 placeholder:text-[#908282]  w-[100%] text-black h-[30px] p-5"
+                      onChange={(e) => {
+                        setRewardDetails({ ...rewardDetails, email: e.target.value });
+                      }}
+                    />
+
+                    <input type="number" min={10} step={"any"} required name="reward_amount"
+                      placeholder="Enter reward amount"
+                      className="border-2  rounded-full bg-white border-black  mt-[3px] border-opacity-70 placeholder:text-[#908282]  w-[100%] text-black h-[30px] p-5"
+                      onChange={(e) => {
+                        let valuee = e.target.value;
+                        if (valuee > 0 && valuee !== "" && valuee !== null) {
+                          console.log(valuee);
+                          setRewardDetails({ ...rewardDetails, amount: valuee });
+                        }
+                      }}
+                    />
+                    <div className="flex justify-center items-center space-x-5 mt-5">
+                      <label className="flex items-center space-x-2">
+                        <input type="radio" required name="payment_method" value="paypal" onChange={(e) => {
+                          setRewardDetails({ ...rewardDetails, payment_method: e.target.value });
+                        }} />
+                        <span className="text-black">Paypal</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input type="radio" required name="payment_method" value="stripe" onChange={(e) => {
+                          setRewardDetails({ ...rewardDetails, payment_method: e.target.value });
+                        }} />
+                        <span className="text-black">Stripe</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input type="radio" required name="payment_method" value="square" onChange={(e) => {
+                          setRewardDetails({ ...rewardDetails, payment_method: e.target.value });
+                        }} />
+                        <span className="text-black">Square</span>
+                      </label>
+                    </div>
+                    <button
+                      type="submit"
+                      className='p-2 w-full mt-3 rounded-full bg-[#0A66C2] text-white hover:bg-[#004182] font-semibold'
+                    >
+                      Pay Reward
+                    </button>
+                    <p className="text-[10px] text-right mt-5">* 50% platform fee will be charged</p>
+                    <p className="text-[15px] text-center font-semibold mt-5">After Successful Payment, reciept will be sent to your email</p>
+                  </div>
+
+                </form>
+              </div>
+
+              <div
+                className='absolute top-[20px] right-[30px] text-2xl cursor-pointer'
+                onClick={() => {
+                  setRewardDialog(false);
+                }}
+              >
+                <CloseIcon />
+              </div>
+            </Dialog>
+
+
+
+
             {userData &&
               userData.education &&
               userData.education.length > 0 && (
@@ -619,13 +773,13 @@ const UserProfile = () => {
                     dangerouslySetInnerHTML={{
                       __html: !showMore
                         ? linkifyContent(
-                            userData &&
-                              userData.about &&
-                              userData.about.substring(0, maxLength)
-                          )
+                          userData &&
+                          userData.about &&
+                          userData.about.substring(0, maxLength)
+                        )
                         : linkifyContent(
-                            userData && userData.about && userData.about
-                          ),
+                          userData && userData.about && userData.about
+                        ),
                     }}
                   ></pre>
                   {userData.about.length > maxLength && (
@@ -641,8 +795,8 @@ const UserProfile = () => {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

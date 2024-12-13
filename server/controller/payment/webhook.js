@@ -3,6 +3,7 @@ import Company from "../../model/company.js";
 import User from "../../model/user.js";
 import StripeCustomer from "../../model/stripe-customer.js";
 import Subscription from "../../model/subscription.js";
+import transporter from "../../utils/mailer.js";
 // import getRawBody from "raw-body";
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -112,6 +113,29 @@ export const handleStripeWebhook = async (req, res) => {
                 console.log("Payment Failed");
                 // console.log(paymentFailed);
                 break;
+
+            case "checkout.session.completed":
+                console.log("checkout.session.completed");
+                console.log("event is the ...................", event.data.object);
+                const paymentIntent = await stripe.paymentIntents.retrieve(
+                    event.data.object.payment_intent
+                );
+
+                console.log("paymentIntent is", paymentIntent);
+                const chargeId = paymentIntent.latest_charge;
+
+                try {
+                    const charge = await stripe.charges.retrieve(chargeId);
+                    const receiptUrl = charge.receipt_url;
+                    console.log('Receipt URL:', receiptUrl);
+
+                    // Use the receipt URL (e.g., store it, display it, email it to the customer)
+                } catch (error) {
+                    console.error('Error fetching charge:', error.message);
+                }
+
+                break;
+
             default:
                 console.log(`Unhandled event type ${event.type}`);
         }

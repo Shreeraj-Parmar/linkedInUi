@@ -424,6 +424,7 @@ const verifySubscriptionIntoStripe = async (data) => {
 // verify subscription 
 export const verifySubscription = async (req, res) => {
     console.log("verifySubscription called");
+
     try {
 
         let subscriptionAvailable = await Subscription.findOne({ userId: req._id });
@@ -485,5 +486,85 @@ export const cancleFromPaymentProvider = async (req, res) => {
 
     } catch (e) {
         console.log("error while calling cancleFromPaymentProvider", e.message);
+    }
+}
+
+
+const requestToStripeForRewardLink = async (user, name, amount, email) => {
+
+    try {
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card', "alipay", "us_bank_account"],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: 'Reward', // Customize with the donation name/description
+                        },
+                        unit_amount: amount * 100, // Amount in smallest currency unit (e.g., cents for USD)
+                    },
+                    quantity: 1,
+                },
+            ],
+            payment_intent_data: {
+                application_fee_amount: Math.floor(amount * 0.5) * 100, // Platform's 50% fee
+                transfer_data: {
+                    destination: user.payment_details.stripe.accountId, // The receiver's connected account ID
+                },
+            },
+            mode: 'payment',
+            metadata: {
+                recipient: `${user._id}`,
+                sender_name: name,
+                sender_email: email,
+                total_amount: amount,
+            },
+            success_url: `http://localhost:5173/user/${user._id}`, // Redirect after successful payment
+            cancel_url: `http://localhost:5173/user/${user._id}`, // Redirect after canceled payment
+        });
+
+        console.log("session is", session);
+
+        return session.url;
+    } catch (e) {
+        console.log("error while calling requestToStripeForRewardLink", e.message);
+    }
+}
+
+
+// send reward checkout link
+export const sendSessionLinkOfReward = async (req, res) => {
+    const { name, amount, payment_method, userId, email } = req.body;
+    console.log("........................................................../........../........../...........")
+    console.log("req.body is", req.body);
+    try {
+        let user = await User.findOne({ _id: userId });
+        console.log("user is", user);
+        if (!user.payment_method) return res.status(201).json({ message: "payment method not connected" });
+
+        if (user.payment_method == payment_method) {
+            console.log("..............if else.........../...................if else........../..............inside if else");
+            switch (payment_method) {
+                case "square":
+                    // await sendSessionLinkToSquare(req, res, companyId);
+                    return res.status(201).json({ message: "Coming Soon............." });
+                case "paypal":
+                    // await sendSessionLinkToPayPal(req, res, companyId);
+                    return res.status(201).json({ message: "Coming Soon............." });
+                case "stripe":
+                    if (!user.payment_details.stripe.accountId) return res.status(201).json({ message: "Account Not Connected" });
+                    let resFrom = await requestToStripeForRewardLink(user, name, amount, email);
+                    return res.status(200).json({ message: "Url Generated Successfully", url: resFrom });
+                default:
+                    return res.status(400).json({ message: "payment method Not Available" });
+            }
+        } else {
+            console.log("All Payment connected each others in Future.......");
+            res.status(201).json({ message: "All Payment connected each others in Future......." });
+        }
+    } catch (error) {
+        console.log("error while calling sendSessionLinkOfReward", error.message);
     }
 }

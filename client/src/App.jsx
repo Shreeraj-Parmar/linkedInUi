@@ -128,7 +128,7 @@ function App() {
       windowPath === "/signup" ||
       windowPath === "/" ||
       windowPath === "/exe" ||
-      windowPath === "/user/:userId" ||
+      windowPath.startsWith("/user") ||
       windowPath === "/company/:companyId"
     ) {
       return;
