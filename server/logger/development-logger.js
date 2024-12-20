@@ -1,4 +1,6 @@
 // import winston from "winston"
+import moment from "moment";
+import fs from "node:fs"
 import { createLogger, format, transports } from "winston";
 const { combine, timestamp, label, printf, colorize } = format;
 
@@ -7,6 +9,16 @@ const developmentLogger = () => {
     const myFormat = printf(({ level, message, label, timestamp }) => {
         return `${timestamp} [${level}]: ${message}`;
     });
+
+    const logDir = "logs"
+    const sevenDaysAgo = moment().subtract(7, "days")
+    fs.readdirSync(logDir).forEach(file => {
+        const filePath = `${logDir}/${file}`
+        const fileDate = moment(fs.statSync(filePath).ctime)
+        if (fileDate.isBefore(sevenDaysAgo)) {
+            fs.unlinkSync(filePath)
+        }
+    })
 
     return createLogger({
         level: "debug", // abvove this level not running
@@ -17,8 +29,7 @@ const developmentLogger = () => {
         ),
         transports: [
             new transports.Console(), // logs in console
-            new transports.File({ filename: "combined.log" }), // all logs in combined.log file
-            new transports.File({ filename: "error.log", level: "error" }), // only error logs in error.log file
+            new transports.File({ filename: `logs/${moment().format("DD-MM-YYYY")}.log` }), // all logs in combined.log file
         ],
     })
 }

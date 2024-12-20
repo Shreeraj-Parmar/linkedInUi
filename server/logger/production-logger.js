@@ -8,6 +8,17 @@ const productionLogger = () => {
         return ` [${level}]:  ${timestamp}  ${message}`;
     });
 
+    const logDir = "logs"
+    const sevenDaysAgo = moment().subtract(7, "days")
+    fs.readdirSync(logDir).forEach(file => {
+        const filePath = `${logDir}/${file}`
+        const fileDate = moment(fs.statSync(filePath).ctime)
+        if (fileDate.isBefore(sevenDaysAgo)) {
+            fs.unlinkSync(filePath)
+        }
+    })
+
+
     return createLogger({
         level: "debug", // abvove this level not running
         format: combine(  // combine method used to combine the formates
@@ -17,8 +28,7 @@ const productionLogger = () => {
         ),
         transports: [
             new transports.Console(), // logs in console
-            new transports.File({ filename: "myLogs.log" }), // all logs in combined.log file
-            // new transports.File({ filename: "error.log", level: "error" }), // only error logs in error.log file
+            new transports.File({ filename: `logs/${moment().format("DD-MM-YYYY")}.log` }), // all logs in combined.log file
         ],
     })
 }
