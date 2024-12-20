@@ -3,6 +3,8 @@ import Company from "../../model/company.js";
 import User from "../../model/user.js";
 import StripeCustomer from "../../model/stripe-customer.js";
 import Subscription from "../../model/subscription.js";
+import getToken from "../../utils/get-access-token-paypal.js";
+import axios from "axios";
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 
@@ -61,6 +63,68 @@ const connectToStripe = async (method, user) => {
 }
 
 
+const connectToPayPal = async (method, user) => { // first fill the form to request to integrate connect system
+    try {
+        let accessToken = await getToken();
+
+        if (!accessToken) {
+            return;
+        }
+
+        let url = `${process.env.PAYPAL_URL_DEVELOPMENT}/v2/customer/partner-referrals`;
+        // console.log(accessToken)
+        // console.log("this is url to send to the paypal", url)
+        let headersOfURL = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        }
+
+        const referralData = {
+            email: user.email,
+            tracking_id: `${user._id}`,
+            partner_config_override: {
+                return_url: "http://localhost:5173/profile",
+                return_url_description:
+                    "the url to return the merchant after the paypal onboarding process.",
+                show_add_credit_card: true,
+            },
+            operations: [
+                {
+                    operation: "API_INTEGRATION",
+                    api_integration_preference: {
+                        rest_api_integration: {
+                            integration_method: "PAYPAL",
+                            integration_type: "THIRD_PARTY",
+                            third_party_details: {
+                                features: ["PAYMENT", "REFUND", "PARTNER_FEE"],
+                            },
+                        },
+                    },
+                },
+            ],
+            products: ["PAYMENT_METHODS"],
+            capabilities: ["APPLE_PAY"],
+            legal_consents: [{ type: "SHARE_DATA_CONSENT", granted: true }],
+        };
+
+        // let resFromPaypal = await axios.post(url, referralData, { headers: headersOfURL });
+        const resFromPaypal = await axios({
+            url: url,
+            method: "post",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            data: referralData,
+        });
+        console.log("This is Response From Paypal", resFromPaypal);
+
+    } catch (e) {
+        console.log("error while calling connectToPayPal", e);
+    }
+}
+
+
 
 // connect Payment Method
 export const sendSessionLink = async (req, res) => {
@@ -91,7 +155,7 @@ export const sendSessionLink = async (req, res) => {
                 // authentication_url = await connectToSquare(req, res, companyId);
                 break;
             case "paypal":
-                // authentication_url = await connectToPayPal(req.body, companyId);
+                authentication_url = await connectToPayPal(method, user);
                 break;
             case "stripe":
                 authentication_url = await connectToStripe(method, user);
@@ -298,13 +362,103 @@ const createSubscriptionIntoStripe = async (env, id) => {
 }
 
 
+const createSubscriptionIntoPayPal = async (user) => {
+
+    let accessToken = await getToken();
+
+    let headersOfURL = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+    }
+    let url = "https://api.sandbox.paypal.com/v1/billing/subscriptions";
+
+    let data = {
+        plan_id: process.env.PAYPAL_TEST_SUB_ID,
+        subscriber: {
+            name: {
+                given_name: user.name,
+            },
+            email_address: user.email,
+            // phone: {
+            //     phone_number: user.mobile,
+            // },
+        },
+        application_context: {
+            locale: "en-US",
+            user_action: "SUBSCRIBE_NOW",
+            payment_method: {
+                payer_selected: "PAYPAL",
+                payee_preferred: "IMMEDIATE_PAYMENT_REQUIRED",
+            },
+            return_url: "http://localhost:5173/premium",
+            cancel_url: "http://localhost:5173/premium",
+            custom_id: `${user._id}`,
+        },
+    };
+
+
+    const resFromPaypal = await axios.post(url, data, { headers: headersOfURL });
+
+    console.log("resFromPaypal is", resFromPaypal.data);
+
+    let linkObj = resFromPaypal.data.links.find((link) => {
+        return link.rel === "approve"
+    })
+
+    let planis = {
+        name: "Freebie",
+        interval: "month"
+    }
+
+
+    let existSub = await Subscription.findOne({ userId: user._id });
+    if (existSub) {
+        await Subscription.findOneAndUpdate({ userId: user._id }, {
+            $set: {
+                paypalThrough: {
+                    billing_id: resFromPaypal.data.id,
+                    plan: planis,
+                },
+                userId: user._id,
+                provider: "paypal",
+            },
+        });
+    } else {
+
+        let newSub = new Subscription({
+            paypalThrough: {
+
+                billing_id: resFromPaypal.data.id,
+                plan: planis,
+            },
+            userId: user._id,
+            provider: "paypal",
+        });
+
+        await newSub.save();
+    }
+
+
+    return linkObj.href;
+}
+
+
+
+
+
+
 
 //createSubscription 
 export const createSubscription = async (req, res) => {
     const { mainTitle, monthPrice } = req.body;
     console.log("body is", req.body)
     try {
+        let user = await User.findById(req._id);
+        if (user.payment_method === "paypal") {
+            let resFrom = await createSubscriptionIntoPayPal(user);
+            return res.status(200).json({ message: "Url Generated Successfully", url: resFrom });
 
+        }
 
         let customer_id;
         let env;
@@ -328,7 +482,6 @@ export const createSubscription = async (req, res) => {
             customer_id = existCustomer.customerId;
         }
         console.log("customer_id is", customer_id);
-        let user = await User.findById(req._id);
         let method = user.payment_method;
         if (monthPrice) {
 
@@ -350,11 +503,11 @@ export const createSubscription = async (req, res) => {
                     // await createSubscriptionIntoSquare(data, req._id);   
                     break;
                 case "paypal":
-                    // await createSubscriptionIntoPayPal(data, req._id);
+                    let resFromPaypal = await createSubscriptionIntoPayPal(data, req._id);
                     break;
                 case "stripe":
-                    let resFrom = await createSubscriptionIntoStripe(env, customer_id);
-                    return res.status(200).json({ message: "Url Generated Successfully", url: resFrom });
+                    let resFromStripe = await createSubscriptionIntoStripe(env, customer_id);
+                    return res.status(200).json({ message: "Url Generated Successfully", url: resFromStripe });
 
                 default:
                     return res.status(400).json({ message: "payment method Not Available" });
@@ -402,16 +555,16 @@ export const createSubscription = async (req, res) => {
 
 const verifySubscriptionIntoStripe = async (data) => {
 
-    const subscription = await stripe.subscriptions.retrieve(data.subscriptionId);
+    const subscription = await stripe.subscriptions.retrieve(data.stripeThrough.subscriptionId);
     console.log("subscription is", subscription);
 
     if (subscription && subscription.status === "active") {
         return {
             is_active: true,
-            plan: data.plan.name,
-            interval: data.plan.interval,
-            start_date: data.start_date,
-            end_date: data.end_date
+            plan: data.stripeThrough.plan.name,
+            interval: data.stripeThrough.plan.interval,
+            start_date: data.stripeThrough.start_date,
+            end_date: data.stripeThrough.end_date
         };
     } else {
         return {
@@ -419,6 +572,46 @@ const verifySubscriptionIntoStripe = async (data) => {
         }
     }
 }
+
+
+const verifySubscriptionIntoPaypal = async (data) => {
+    console.log("data is", data);
+    let url = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + data.paypalThrough.billing_id;
+    let accessToken = await getToken();
+    console.log("accessToken is", accessToken);
+    let headersOfURL = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+    }
+
+    const res = await axios.get(url, { headers: headersOfURL });
+    console.log("resFromPaypal is", res.data);
+
+    const startDate = new Date(res.data.start_time);
+    const endDate = new Date(res.data.billing_info.next_billing_time);
+
+    // Convert to Unix timestamps (seconds since epoch)
+    const startUnix = Math.floor(startDate.getTime() / 1000);
+    const endUnix = Math.floor(endDate.getTime() / 1000);
+
+    // console.log("Start Date (Unix):", startUnix);
+    // console.log("End Date (Unix):", endUnix);
+
+    if (res.data && res.data.status === "ACTIVE") {
+        return {
+            is_active: true,
+            plan: data.paypalThrough.plan.name,
+            interval: data.paypalThrough.plan.interval,
+            start_date: startUnix,
+            end_date: endUnix
+        };
+    } else {
+        return {
+            is_active: false
+        }
+    }
+}
+
 
 
 // verify subscription 
@@ -429,17 +622,19 @@ export const verifySubscription = async (req, res) => {
 
         let subscriptionAvailable = await Subscription.findOne({ userId: req._id });
         if (!subscriptionAvailable) return res.status(201).json({ message: "Subscription Not Available" });
+        console.log("subscriptionAvailable is", subscriptionAvailable);
 
         switch (subscriptionAvailable.provider) {
             case "square":
                 // await createSubscriptionIntoSquare(data, req._id);
                 break;
             case "paypal":
-                // await createSubscriptionIntoPayPal(data, req._id);
-                break;
+                console.log("verifySubscriptionIntoPaypal called");
+                let resFrompaypal = await verifySubscriptionIntoPaypal(subscriptionAvailable);
+                return res.status(200).json({ obj: resFrompaypal });
             case "stripe":
-                let resFrom = await verifySubscriptionIntoStripe(subscriptionAvailable);
-                return res.status(200).json({ obj: resFrom });
+                let resFromStripe = await verifySubscriptionIntoStripe(subscriptionAvailable);
+                return res.status(200).json({ obj: resFromStripe });
 
             default:
                 return res.status(400).json({ message: "payment method Not Available" });
@@ -463,6 +658,23 @@ const cancleFromStripe = async (data) => {
 }
 
 
+const cancleFromPaypal = async (data) => {
+    let url = `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${data.paypalThrough.billing_id}/cancel`;
+    let accessToken = await getToken();
+
+    let res = await axios.post(url, {
+        reason: "User not Satisfied With My LinkedIn Service"
+    }, {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`
+        }
+    })
+
+    console.log("res is cancelled", res.data);
+}
+
+
 // cancleFromPaymentProvider
 export const cancleFromPaymentProvider = async (req, res) => {
     try {
@@ -474,7 +686,7 @@ export const cancleFromPaymentProvider = async (req, res) => {
                 // await createSubscriptionIntoSquare(data, req._id);
                 break;
             case "paypal":
-                // await createSubscriptionIntoPayPal(data, req._id);
+                await cancleFromPaypal(subscriptionAvailable);
                 break;
             case "stripe":
                 let resFrom = await cancleFromStripe(subscriptionAvailable);

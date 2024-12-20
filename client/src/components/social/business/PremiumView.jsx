@@ -251,6 +251,18 @@ const PremiumView = () => {
     };
 
     const handleCheckoutSeesionForSubscription = async (data) => {
+        if (currUserData?.payment_method === "paypal") {
+
+            setLoading(true);
+            console.log("ready to paypal", data);
+            let res = await createCheckoutSession({ ...data, monthPrice });
+            if (res.status === 200) {
+                window.location.href = res.data.url;
+            } else if (res.status !== 200) {
+                setSnak({ type: "error", text: res.data.message });
+            }
+            setLoading(false);
+        }
         setIsSnakBar(true);
         setLoading(true);
 

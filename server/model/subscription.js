@@ -11,36 +11,53 @@ const subscriptionSchema = new mongoose.Schema({
         enum: ["stripe", "paypal", "square"],
         required: true,
     },
-    subscriptionId: {
-        type: String,
-        required: true,
-    },
-    start_date: {
-        type: Number,
-        required: true,
-    },
-    end_date: {
-        type: Number,
-        required: true,
-    },
-    customerId: {
-        type: String,
-        required: true,
-    },
-    plan: {
-
-        name: {
+    stripeThrough: {
+        subscriptionId: {
             type: String,
-            enum: ["Freebie", "Professional", "Enterprise"],
-            required: true
+            required: ({ provider }) => provider === "stripe",
         },
-        interval: {
+        start_date: {
+            type: Number,
+            required: ({ provider }) => provider === "stripe",
+        },
+        end_date: {
+            type: Number,
+            required: ({ provider }) => provider === "stripe",
+        },
+        customerId: {
             type: String,
-            enum: ["month", "year"],
-            required: true
+            required: ({ provider }) => provider === "stripe",
         },
-
-
+        plan: {
+            name: {
+                type: String,
+                enum: ["Freebie", "Professional", "Enterprise"],
+                required: ({ provider }) => provider === "stripe"
+            },
+            interval: {
+                type: String,
+                enum: ["month", "year"],
+                required: ({ provider }) => provider === "stripe"
+            },
+        }
+    },
+    paypalThrough: {
+        billing_id: {
+            type: String,
+            required: ({ provider }) => provider === "paypal"
+        },
+        plan: {
+            name: {
+                type: String,
+                enum: ["Freebie", "Professional", "Enterprise"],
+                required: ({ provider }) => provider === "paypal"
+            },
+            interval: {
+                type: String,
+                enum: ["month", "year"],
+                required: ({ provider }) => provider === "paypal"
+            },
+        }
     }
 
 });

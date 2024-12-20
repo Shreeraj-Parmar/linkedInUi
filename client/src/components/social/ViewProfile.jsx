@@ -29,48 +29,29 @@ const ViewProfile = () => {
 
   const handleConnectPayment = async (data) => {
     if (currUserData.payment_method) return;
-    let res; // declare the variable outside the switch block
-    switch (data) {
-      case "stripe":
-        res = await connectPayment({ method: "stripe" });
-        if (res.status === 200) {
+    let res = await connectPayment({ method: data });
+    if (res.status === 200) {
 
-          window.location.replace(res?.data?.authentication_url);
-        } else {
-          console.log(res.data);
-        }
-        break;
-      case "paypal":
-        // navigate("/paypal");
-        break;
-      case "square":
-        // navigate("/coinbase");
-        break;
-      default:
-        break;
+      window.location.replace(res?.data?.authentication_url);
+    } else {
+      console.log(res.data);
     }
+
   }
 
 
 
   const handleDisconnectPayment = async (data) => {
-    switch (data) {
-      case "stripe":
-        res = await disconnectPayment({ method: "stripe" });
-        if (res.status === 200) {
-          console.log("payment disconnected")
-        }
-        break;
-      case "paypal":
-        // navigate("/paypal");
-        break;
-      case "square":
-        // navigate("/coinbase");
-        break;
-      default:
-        break;
+    let res = await disconnectPayment({ method: data });
+    if (res.status === 200) {
+      console.log("payment disconnected")
     }
-  };
+    else {
+      console.log(res.data);
+    }
+  }
+
+
 
 
 
@@ -100,7 +81,6 @@ const ViewProfile = () => {
       role: currUserData && currUserData.role && currUserData.role,
     });
   }, [currUserData]);
-
   return (
     <div className='main-overview w-[100vw] bg-[#F4F2EE] h-auto'>
       <div className='main-overview-wrapper   max-w-[100vw]  overflow-x-hidden'>
@@ -136,7 +116,7 @@ const ViewProfile = () => {
                       currUserData ? currUserData.profilePicture : "/upload.png"
                     }
                     className='min-w-[150px] border-2 
- border-gray-400 shadow-sm border-opacity-40 min-h-[150px]  rounded-full max-w-[150px] max-h-[150px] '
+   border-gray-400 shadow-sm border-opacity-40 min-h-[150px]  rounded-full max-w-[150px] max-h-[150px] '
                     alt='profil pic'
                   />
                 </div>
@@ -304,7 +284,7 @@ const ViewProfile = () => {
 
               <div
                 className='profile-wrapper-all bg-[#fff] border-2 
- border-gray-400 border-opacity-40 mt-3 w-[100%] p-3  rounded-md flex-row space-y-3  '
+   border-gray-400 border-opacity-40 mt-3 w-[100%] p-3  rounded-md flex-row space-y-3  '
               >
                 <p className='text-[#000] text-xl font-semibold'>Education</p>
                 {currUserData && currUserData.education[0] ? (
@@ -331,7 +311,7 @@ const ViewProfile = () => {
               </div>
               <div
                 className='profile-wrapper-all bg-[#fff] border-2 
- border-gray-400 border-opacity-40 mt-3  w-[100%] p-3   rounded-md flex  items-center space-y-3  '
+   border-gray-400 border-opacity-40 mt-3  w-[100%] p-3   rounded-md flex  items-center space-y-3  '
               >
                 <div className=' w-[100%]'>
                   <p className='text-[#000] text-xl font-semibold'>Posts</p>
@@ -365,6 +345,8 @@ const ViewProfile = () => {
                         className='p-2 pl-4 pr-4 font-semibold border-2 rounded-full border-[#0A66C4] text-[#0A66C4] hover:border-[#004182] hover:text-[#004182]'
                         onClick={() => {
                           // Handle PayPal payment
+                          handleConnectPayment("paypal");
+
                         }}
                       >
                         Connect with PayPal
@@ -473,5 +455,10 @@ const ViewProfile = () => {
     </div>
   );
 };
+
+
+
+
+
 
 export default ViewProfile;
