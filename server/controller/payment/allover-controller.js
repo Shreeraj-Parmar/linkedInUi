@@ -574,6 +574,26 @@ const verifySubscriptionIntoStripe = async (data) => {
 }
 
 
+const getCardInfo = async (id) => {
+    try {
+
+        let url = "https://api-m.sandbox.paypal.com/v1/vault/payment-tokens?customer_id=" + id;
+        let accessToken = await getToken();
+        console.log("accessToken is", accessToken);
+        let headersOfURL = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`
+        }
+
+        const res = await axios.get(url, { headers: headersOfURL });
+        console.log("Customer Info IS The is ...............................................", res.data);
+        return res;
+    } catch (error) {
+        console.log("error while calling getCardInfo API & error is", error.message);
+    }
+}
+
+
 const verifySubscriptionIntoPaypal = async (data) => {
     console.log("data is", data);
     let url = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + data.paypalThrough.billing_id;
@@ -586,6 +606,17 @@ const verifySubscriptionIntoPaypal = async (data) => {
 
     const res = await axios.get(url, { headers: headersOfURL });
     console.log("resFromPaypal is", res.data);
+
+    let payerId = res.data.subscriber.payer_id;
+    console.log("payerId is", payerId);
+
+
+
+    let dataFronVeri = await getCardInfo(payerId);
+    console.log("dataFronVeri is", dataFronVeri);
+
+
+
 
     const startDate = new Date(res.data.start_time);
     const endDate = new Date(res.data.billing_info.next_billing_time);
@@ -671,7 +702,7 @@ const cancleFromPaypal = async (data) => {
         }
     })
 
-    console.log("res is cancelled", res.data);
+    return true;
 }
 
 
@@ -686,11 +717,12 @@ export const cancleFromPaymentProvider = async (req, res) => {
                 // await createSubscriptionIntoSquare(data, req._id);
                 break;
             case "paypal":
-                await cancleFromPaypal(subscriptionAvailable);
+                let paypalRes = await cancleFromPaypal(subscriptionAvailable);
+                return res.status(200).json({ status: paypalRes });
                 break;
             case "stripe":
-                let resFrom = await cancleFromStripe(subscriptionAvailable);
-                return res.status(200).json({ status: resFrom });
+                let stripeRes = await cancleFromStripe(subscriptionAvailable);
+                return res.status(200).json({ status: stripeRes });
 
             default:
                 return res.status(400).json({ message: "payment method Not Available" });

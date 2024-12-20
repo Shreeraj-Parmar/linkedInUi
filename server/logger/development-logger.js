@@ -18,7 +18,7 @@ const developmentLogger = () => {
         if (fileDate.isBefore(sevenDaysAgo)) {
             fs.unlinkSync(filePath)
         }
-    })
+    });
 
     return createLogger({
         level: "debug", // abvove this level not running

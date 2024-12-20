@@ -110,12 +110,20 @@ export const handleStripeWebhook = async (req, res) => {
                 }
 
                 console.log("obje is", obje);
+
+                let existSubscription = await Subscription.findOne({
+                    stripeThrough: { subscriptionId: obje.stripeThrough.subscriptionId },
+                });
+                if (existSubscription) {
+                    await Subscription.findOneAndDelete({
+                        "stripeThrough.subscriptionId": obje.stripeThrough.subscriptionId
+                    });
+                }
+
                 const newSub = new Subscription(obje);
                 await newSub.save();
 
-
-                // console.log("subscription is", subscription);
-                // console.log(paymentIntent);
+                res.status(200).json({ message: "success" });
                 break;
             case "invoice.payment_failed":
                 const paymentFailed = event.data.object;
@@ -141,6 +149,7 @@ export const handleStripeWebhook = async (req, res) => {
                     const charge = await stripe.charges.retrieve(chargeId);
                     const receiptUrl = charge.receipt_url;
                     console.log('Receipt URL:', receiptUrl);
+
 
                     // Use the receipt URL (e.g., store it, display it, email it to the customer)
                 } catch (error) {
@@ -305,15 +314,26 @@ export const handlePaypalWebhook = async (req, res) => {
             let resObj = data;
 
 
+
             if (resObj?.event_type === "PAYMENT.SALE.COMPLETED") {
                 console.log(`Payment completed for ${resObj?.resource?.billing_agreement_id}`);
+
                 viewDetailsOfPaypalSubscription(resObj?.resource?.billing_agreement_id);
-                res.status(200).send("Success");
+                res.status(200).json({ message: "success" });
+            } else if (resObj?.event_type === "BILLING.SUBSCRIPTION.CREATED") {
+                res.status(200).json({ message: "success" });
+            } else if (resObj?.event_type === "BILLING.SUBSCRIPTION.CANCELLED") {
+                console.log(`Subscription cancelled for ${resObj?.resource?.id}`);
+                let findSub = await Subscription.findOneAndDelete({
+                    "paypalThrough.billing_id": resObj?.resource?.id
+                });
+                // console.log("findSub is", findSub);  
+                res.status(200).json({ message: "success" });
             }
 
         } else {
             console.log(`Signature is not valid for ${resObj?.id} ${headers?.['correlation-id']}`);
-            res.status(400).send("Bad Request");
+            res.status(400).json({ message: "Bad Request" });
             // Reject processing the webhook event. May wish to log all headers+data for debug purposes.
         }
 
